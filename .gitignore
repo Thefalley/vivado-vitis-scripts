@@ -1,0 +1,33 @@
+# ==== Vivado generated files ====
+*/build/
+*.cache/
+*.hw/
+*.ip_user_files/
+*.runs/
+*.sim/
+*.gen/
+*.srcs/
+
+# Vivado logs and journals
+vivado*.jou
+vivado*.log
+vivado*.str
+vivado*.backup.*
+*.pb
+dfx_runtime.txt
+
+# Bitstreams (generated, not source)
+*.bit
+*.bin
+*.ltx
+
+# Temp and OS
+.Xil/
+*.swp
+*~
+Thumbs.db
+.DS_Store
+
+# Python
+__pycache__/
+*.pyc
