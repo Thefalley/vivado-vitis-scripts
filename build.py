@@ -185,7 +185,12 @@ def cmd_vitis(project_dir: Path, cfg: dict):
         sys.exit(1)
     sw_dir = project_dir / "sw"
     vitis_py = sw_dir / "create_vitis.py"
-    app_src = sw_dir / "dma_test.c"
+    # Find the .c source file in sw/ (first .c file found)
+    c_files = list(sw_dir.glob("*.c"))
+    if not c_files:
+        print(f"ERROR: No se encontro ningun .c en {sw_dir}")
+        sys.exit(1)
+    app_src = c_files[0]
     ws_dir = project_dir / "vitis_ws"
     if not vitis_py.exists():
         print(f"ERROR: No se encontro {vitis_py}")
@@ -195,18 +200,23 @@ def cmd_vitis(project_dir: Path, cfg: dict):
 
 def cmd_run(project_dir: Path, cfg: dict):
     bit_file = find_bitstream(project_dir, cfg)
-    elf_file = project_dir / "vitis_ws" / "dma_test" / "build" / "dma_test.elf"
-    if not elf_file.exists():
-        elf_file = project_dir / "vitis_ws" / "dma_test" / "Debug" / "dma_test.elf"
-    if not elf_file.exists():
-        print(f"ERROR: ELF no encontrado")
+    # Find ELF (search vitis_ws for any .elf that is not fsbl)
+    ws_dir = project_dir / "vitis_ws"
+    elf_files = [f for f in ws_dir.rglob("*.elf")
+                 if "fsbl" not in f.name and ("build" in str(f) or "Debug" in str(f))]
+    if not elf_files:
+        print(f"ERROR: ELF no encontrado en {ws_dir}")
         print(f"Ejecuta primero: python build.py {project_dir.name} vitis")
         sys.exit(1)
+    elf_file = elf_files[0]
     # Find FSBL
-    fsbl_file = project_dir / "vitis_ws" / "zynq_dma_platform" / "export" / "zynq_dma_platform" / "sw" / "boot" / "fsbl.elf"
-    if not fsbl_file.exists():
-        print(f"ERROR: FSBL no encontrado: {fsbl_file}")
+    fsbl_files = list(ws_dir.rglob("fsbl.elf"))
+    if not fsbl_files:
+        print(f"ERROR: FSBL no encontrado en {ws_dir}")
         sys.exit(1)
+    fsbl_file = fsbl_files[0]
+    print(f"  ELF:  {elf_file}")
+    print(f"  FSBL: {fsbl_file}")
     run_tcl = project_dir / "sw" / "run.tcl"
     run_xsct(run_tcl, [bit_file, elf_file, fsbl_file])
 

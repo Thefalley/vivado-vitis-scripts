@@ -32,7 +32,8 @@ python build.py <proyecto> <comando>
 |----------|-------------|
 | `P_1_blink_led` | Hello world: LED rotando por 8 LEDs (RTL puro) |
 | `P_2_zynq_dma` | Zynq PS + AXI DMA loopback + DDR (Block Design + bare-metal C) |
-| `P_3_stream_adder` | Modulo AXI-Stream con suma configurable via AXI-Lite + skid buffers |
+| `P_3_stream_adder` | Solo RTL: modulo AXI-Stream adder (no genera bitstream, solo verifica sintesis) |
+| `P_4_zynq_adder` | Zynq PS + DMA + stream_adder en medio (Block Design completo) |
 
 ## Estructura
 
