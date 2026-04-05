@@ -1,0 +1,76 @@
+Timing sweep @ 10.0ns (100 MHz) on xc7z020clg484-1
+Operaciones: ['ADD', 'MULT', 'SHIFT_VAR', 'MAC']
+Anchos: [8, 16, 24, 32, 48, 64] bits
+Total: 24 tests
+
+[ 1/24] ADD          8b ->   9b result ... WNS=+7.669ns  DSP=0  LUT=0  FF=0  [OK]
+[ 2/24] ADD         16b ->  17b result ... WNS=+7.423ns  DSP=0  LUT=0  FF=0  [OK]
+[ 3/24] ADD         24b ->  25b result ... WNS=+7.129ns  DSP=0  LUT=0  FF=0  [OK]
+[ 4/24] ADD         32b ->  33b result ... WNS=+6.961ns  DSP=0  LUT=0  FF=0  [OK]
+[ 5/24] ADD         48b ->  49b result ... WNS=+6.619ns  DSP=0  LUT=0  FF=0  [OK]
+[ 6/24] ADD         64b ->  65b result ... WNS=+5.887ns  DSP=0  LUT=0  FF=0  [OK]
+[ 7/24] MULT         8b ->  16b result ... WNS=+3.623ns  DSP=0  LUT=0  FF=0  [OK]
+[ 8/24] MULT        16b ->  32b result ... WNS=+8.546ns  DSP=0  LUT=0  FF=0  [OK]
+[ 9/24] MULT        24b ->  48b result ... WNS=+4.333ns  DSP=0  LUT=0  FF=0  [OK]
+[10/24] MULT        32b ->  64b result ... WNS=+4.336ns  DSP=0  LUT=0  FF=0  [OK]
+[11/24] MULT        48b ->  96b result ... WNS=+2.613ns  DSP=0  LUT=0  FF=0  [OK]
+[12/24] MULT        64b -> 128b result ...     
+    Time (s): cpu = 00:00:02 ; elapsed = 00:00:01 . Memory (MB): peak = 1993.891 ; gain = 0.000
+    10 Infos, 0 Warnings, 0 Critical Warnings and 4 Errors encountered.
+    place_design failed
+    INFO: [Common 17-206] Exiting Vivado at Sun Apr  5 09:34:45 2026...
+ERROR
+[13/24] SHIFT_VAR    8b ->   8b result ... WNS=+7.218ns  DSP=0  LUT=0  FF=0  [OK]
+[14/24] SHIFT_VAR   16b ->  16b result ... WNS=+6.337ns  DSP=0  LUT=0  FF=0  [OK]
+[15/24] SHIFT_VAR   24b ->  24b result ... WNS=+5.481ns  DSP=0  LUT=0  FF=0  [OK]
+[16/24] SHIFT_VAR   32b ->  32b result ... WNS=+5.595ns  DSP=0  LUT=0  FF=0  [OK]
+[17/24] SHIFT_VAR   48b ->  48b result ... WNS=+4.415ns  DSP=0  LUT=0  FF=0  [OK]
+[18/24] SHIFT_VAR   64b ->  64b result ... WNS=+4.184ns  DSP=0  LUT=0  FF=0  [OK]
+[19/24] MAC          8b ->  17b result ... WNS=+2.114ns  DSP=0  LUT=0  FF=0  [OK]
+[20/24] MAC         16b ->  33b resul  WARNWNS=+8.485ns  DSP=0  LUT=0  FF=0  [OK]
+[21/24] MAC        WARNING: No result for MWNS=+1.257ns  DSP=0  LUT=0  FF=0  [OK]
+[22/24] MAC         32b ->  65b result ... WNS=-0.166ns  DSP=0  LUT=0  FF=0  [FAIL]
+[23/24] MAC         48b ->  97b result ...     
+    Time (s): cpu = 00:00:02 ; elapsed = 00:00:01 . Memory (MB): peak = 1992.598 ; gain = 0.000
+    10 Infos, 0 Warnings, 0 Critical Warnings and 4 Errors encountered.
+    place_design failed
+    INFO: [Common 17-206] Exiting Vivado at Sun Apr  5 09:57:01 2026...
+ERROR
+[24/24] MAC         64b -> 129b result ...     
+    Time (s): cpu = 00:00:03 ; elapsed = 00:00:02 . Memory (MB): peak = 1978.793 ; gain = 0.000
+    10 Infos, 0 Warnings, 0 Critical Warnings and 4 Errors encountered.
+    place_design failed
+    INFO: [Common 17-206] Exiting Vivado at Sun Apr  5 09:58:18 2026...
+ERROR
+
+==========================================================================================
+OP         |  IN | OUT |  WNS(ns) |  MET | Fmax(MHz) | DSP |  LUT |   FF
+------------------------------------------------------------------------------------------
+ADD        |   8 |   9 |   +7.669 |   OK |     429.0 |   0 |    0 |    0
+ADD        |  16 |  17 |   +7.423 |   OK |     388.0 |   0 |    0 |    0
+ADD        |  24 |  25 |   +7.129 |   OK |     348.3 |   0 |    0 |    0
+ADD        |  32 |  33 |   +6.961 |   OK |     329.1 |   0 |    0 |    0
+ADD        |  48 |  49 |   +6.619 |   OK |     295.8 |   0 |    0 |    0
+ADD        |  64 |  65 |   +5.887 |   OK |     243.1 |   0 |    0 |    0
+MULT       |   8 |  16 |   +3.623 |   OK |     156.8 |   0 |    0 |    0
+MULT       |  16 |  32 |   +8.546 |   OK |     687.8 |   0 |    0 |    0
+MULT       |  24 |  48 |   +4.333 |   OK |     176.5 |   0 |    0 |    0
+MULT       |  32 |  64 |   +4.336 |   OK |     176.6 |   0 |    0 |    0
+MULT       |  48 |  96 |   +2.613 |   OK |     135.4 |   0 |    0 |    0
+SHIFT_VAR  |   8 |   8 |   +7.218 |   OK |     359.5 |   0 |    0 |    0
+SHIFT_VAR  |  16 |  16 |   +6.337 |   OK |     273.0 |   0 |    0 |    0
+SHIFT_VAR  |  24 |  24 |   +5.481 |   OK |     221.3 |   0 |    0 |    0
+SHIFT_VAR  |  32 |  32 |   +5.595 |   OK |     227.0 |   0 |    0 |    0
+SHIFT_VAR  |  48 |  48 |   +4.415 |   OK |     179.1 |   0 |    0 |    0
+SHIFT_VAR  |  64 |  64 |   +4.184 |   OK |     171.9 |   0 |    0 |    0
+MAC        |   8 |  17 |   +2.114 |   OK |     126.8 |   0 |    0 |    0
+MAC        |  16 |  33 |   +8.485 |   OK |     660.1 |   0 |    0 |    0
+MAC        |  24 |  49 |   +1.257 |   OK |     114.4 |   0 |    0 |    0
+MAC        |  32 |  65 |   -0.166 | FAIL |      98.4 |   0 |    0 |    0
+==========================================================================================
+
+Clock target: 10.0ns (100 MHz)
+WNS > 0 = timing met (sobra tiempo)
+WNS < 0 = timing violation (falta tiempo, hay que partir)
+Fmax = frecuencia maxima real de esa operacion combinacional
+DSP > 0 = Vivado usa DSP48 slices (multiplicadores HW)
