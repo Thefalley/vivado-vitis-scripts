@@ -31,3 +31,25 @@ Thumbs.db
 # Python
 __pycache__/
 *.pyc
+
+# Vitis workspaces (generated, heavy)
+*/vitis_ws/
+*/vitis_ws_old/
+
+# Sweep build artifacts (regenerable)
+*/build_sweep/
+*/sim_work*/
+
+# Remote output (downloaded from server)
+*/remote_output/
+
+# Claude config (local)
+.claude/
+
+# XSim snapshots
+xsim.dir/
+*.wdb
+xsim.jou
+xsim.log
+xelab.log
+xvhdl.log
