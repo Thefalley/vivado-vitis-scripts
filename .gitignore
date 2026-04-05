@@ -53,3 +53,6 @@ xsim.jou
 xsim.log
 xelab.log
 xvhdl.log
+*/results/
+clockInfo.txt
+*.bak
