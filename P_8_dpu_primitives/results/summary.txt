@@ -1,0 +1,15 @@
+DPU Primitives — Verificacion individual @ 10.0ns (100 MHz)
+FPGA: xc7z020clg484-1 (Zynq-7020 / ZedBoard)
+
+Modulo               |  DSP |   LUT |    FF |  WNS(ns) |  Met | Fmax(MHz)
+---------------------+------+-------+-------+----------+------+-----------
+mul_s32x32_pipe      |    4 |    77 |   166 |   +6.158 |   OK |     260.3
+mul_s9xu30_pipe      |    2 |    11 |    81 |   +7.376 |   OK |     381.1
+mac_unit             |    0 |   134 |    85 |   +5.544 |   OK |     224.4
+mac_array            | ERROR impl: ERROR: [Common 17-69] Command failed: Placer could not place all instances
+
+requantize           |    4 |   354 |   313 |   +3.500 |   OK |     153.8
+leaky_relu           |    4 |   547 |   466 |   +2.608 |   OK |     135.3
+elem_add             |    4 |   357 |   368 |   +2.846 |   OK |     139.8
+maxpool_unit         |    0 |    12 |     9 |   +5.993 |   OK |     249.6
+---------------------+------+-------+-------+----------+------+-----------
