@@ -3,4 +3,18 @@
   Total: 36 tests
 ====================================================================================================
 
-[ 1/36] ADD_U          8b ->   9b ... 
+[ 1/36] ADD_U          8b ->   9b ... WNS=+7.619ns  LUT=   8  FF=  27  Fmax=420MHz  [OK]
+[ 2/36] ADD_U          9b ->  10b ... WNS=+7.615ns  LUT=   9  FF=  30  Fmax=419MHz  [OK]
+[ 3/36] ADD_U         18b ->  19b ... WNS=+7.238ns  LUT=  18  FF=  57  Fmax=362MHz  [OK]
+[ 4/36] ADD_U         32b ->  33b ... WNS=+6.897ns  LUT=  32  FF=  99  Fmax=322MHz  [OK]
+[ 5/36] ADD_U         48b ->  49b ... WNS=+6.555ns  LUT=  48  FF= 147  Fmax=290MHz  [OK]
+[ 6/36] ADD_U         64b ->  65b ... WNS=+5.837ns  LUT=  64  FF= 195  Fmax=240MHz  [OK]
+[ 7/36] ADD_S          8b ->   9b ... WNS=+7.669ns  LUT=   8  FF=  27  Fmax=429MHz  [OK]
+[ 8/36] ADD_S          9b ->  10b ... WNS=+7.511ns  LUT=   9  FF=  30  Fmax=402MHz  [OK]
+[ 9/36] ADD_S         18b ->  19b ... WNS=+7.238ns  LUT=  18  FF=  57  Fmax=362MHz  [OK]
+[10/36] ADD_S         32b ->  33b ... WNS=+6.961ns  LUT=  32  FF=  99  Fmax=329MHz  [OK]
+[11/36] ADD_S         48b ->  49b ... WNS=+6.619ns  LUT=  48  FF= 147  Fmax=296MHz  [OK]
+[12/36] ADD_S         64b ->  65b ... WNS=+5.887ns  LUT=  64  FF= 195  Fmax=243MHz  [OK]
+[13/36] ADD_3WAY       8b ->  10b ... WNS=+6.333ns  LUT=   9  FF=  36  Fmax=273MHz  [OK]
+[14/36] ADD_3WAY       9b ->  11b ... WNS=+6.320ns  LUT=  10  FF=  40  Fmax=272MHz  [OK]
+[15/36] ADD_3WAY      18b ->  20b ... 
