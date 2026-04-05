@@ -1,0 +1,8 @@
+Multiplicacion 32x30 en xc7z020clg484-1 @ 10.0ns (100 MHz)
+
+Variante                  | DSP |  LUT |   FF | Lat |   Throughput |  WNS(ns) |  Met | Fmax(MHz)
+------------------------------------------------------------------------------------------------
+4 DSP + tree sum          |   4 |   64 |  159 |   4 |      1/ciclo |   -0.482 | FAIL |      95.4
+4 DSP cascada             |   4 |   34 |   65 |   3 |      1/ciclo |   -1.330 | FAIL |      88.3
+2 DSP mux                 |   2 |   74 |  258 |   4 |   1/4 ciclos |   -0.945 | FAIL |      91.4
+1 DSP secuencial          |   1 |   90 |  239 |   5 |   1/5 ciclos |   -0.945 | FAIL |      91.4

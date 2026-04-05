@@ -1,0 +1,50 @@
+Carry chain limits @ 10.0ns (100 MHz) on xc7z020clg484-1
+
+
+ADD_U:
+    8b  WNS=-99.000  FAIL  Fmax=9  LUT=0  FF=0
+    9b  WNS=-99.000  FAIL  Fmax=9  LUT=0  FF=0
+   18b  WNS=-99.000  FAIL  Fmax=9  LUT=0  FF=0
+   32b  WNS=-99.000  FAIL  Fmax=9  LUT=0  FF=0
+   48b  WNS=-99.000  FAIL  Fmax=9  LUT=0  FF=0
+   64b  WNS=-99.000  FAIL  Fmax=9  LUT=0  FF=0
+
+ADD_S:
+    8b  WNS=-99.000  FAIL  Fmax=9  LUT=0  FF=0
+    9b  WNS=-99.000  FAIL  Fmax=9  LUT=0  FF=0
+   18b  WNS=-99.000  FAIL  Fmax=9  LUT=0  FF=0
+   32b  WNS=-99.000  FAIL  Fmax=9  LUT=0  FF=0
+   48b  WNS=-99.000  FAIL  Fmax=9  LUT=0  FF=0
+   64b  WNS=-99.000  FAIL  Fmax=9  LUT=0  FF=0
+
+ADD_3WAY:
+    8b  WNS=-99.000  FAIL  Fmax=9  LUT=0  FF=0
+    9b  WNS=-99.000  FAIL  Fmax=9  LUT=0  FF=0
+   18b  WNS=-99.000  FAIL  Fmax=9  LUT=0  FF=0
+   32b  WNS=-99.000  FAIL  Fmax=9  LUT=0  FF=0
+   48b  WNS=-99.000  FAIL  Fmax=9  LUT=0  FF=0
+   64b  WNS=-99.000  FAIL  Fmax=9  LUT=0  FF=0
+
+ADD_4TREE:
+    8b  WNS=-99.000  FAIL  Fmax=9  LUT=0  FF=0
+    9b  WNS=-99.000  FAIL  Fmax=9  LUT=0  FF=0
+   18b  WNS=-99.000  FAIL  Fmax=9  LUT=0  FF=0
+   32b  WNS=-99.000  FAIL  Fmax=9  LUT=0  FF=0
+   48b  WNS=-99.000  FAIL  Fmax=9  LUT=0  FF=0
+   64b  WNS=-99.000  FAIL  Fmax=9  LUT=0  FF=0
+
+ADD_CARRY:
+    8b  WNS=-99.000  FAIL  Fmax=9  LUT=0  FF=0
+    9b  WNS=-99.000  FAIL  Fmax=9  LUT=0  FF=0
+   18b  WNS=-99.000  FAIL  Fmax=9  LUT=0  FF=0
+   32b  WNS=-99.000  FAIL  Fmax=9  LUT=0  FF=0
+   48b  WNS=-99.000  FAIL  Fmax=9  LUT=0  FF=0
+   64b  WNS=-99.000  FAIL  Fmax=9  LUT=0  FF=0
+
+SHIFT_VAR:
+    8b  WNS=-99.000  FAIL  Fmax=9  LUT=0  FF=0
+    9b  WNS=-99.000  FAIL  Fmax=9  LUT=0  FF=0
+   18b  WNS=-99.000  FAIL  Fmax=9  LUT=0  FF=0
+   32b  WNS=-99.000  FAIL  Fmax=9  LUT=0  FF=0
+   48b  WNS=-99.000  FAIL  Fmax=9  LUT=0  FF=0
+   64b  WNS=-99.000  FAIL  Fmax=9  LUT=0  FF=0
