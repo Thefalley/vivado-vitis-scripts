@@ -17,4 +17,14 @@
 [12/36] ADD_S         64b ->  65b ... WNS=+5.887ns  LUT=  64  FF= 195  Fmax=243MHz  [OK]
 [13/36] ADD_3WAY       8b ->  10b ... WNS=+6.333ns  LUT=   9  FF=  36  Fmax=273MHz  [OK]
 [14/36] ADD_3WAY       9b ->  11b ... WNS=+6.320ns  LUT=  10  FF=  40  Fmax=272MHz  [OK]
-[15/36] ADD_3WAY      18b ->  20b ... 
+[15/36] ADD_3WAY      18b ->  20b ... WNS=+5.712ns  LUT=  19  FF=  76  Fmax=233MHz  [OK]
+[16/36] ADD_3WAY      32b ->  34b ... WNS=+5.724ns  LUT=  33  FF= 132  Fmax=234MHz  [OK]
+[17/36] ADD_3WAY      48b ->  50b ... WNS=+5.187ns  LUT=  49  FF= 196  Fmax=208MHz  [OK]
+[18/36] ADD_3WAY      64b ->  66b ...     ERROR: no RESULT for ADD_3WAY_64
+    Time (s): cpu = 00:00:03 ; elapsed = 00:00:04 . Memory (MB): peak = 2022.188 ; gain = 0.000
+    10 Infos, 0 Warnings, 0 Critical Warnings and 4 Errors encountered.
+    place_design failed
+    place_design: Time (s): cpu = 00:00:06 ; elapsed = 00:00:08 . Memory (MB): peak = 2022.188 ; gain = 0.000
+    INFO: [Common 17-206] Exiting Vivado at Sun Apr  5 23:18:01 2026...
+ERROR
+[19/36] ADD_4TREE      8b ->  10b ... 
