@@ -66,13 +66,13 @@ entity conv_engine is
         dbg_ic       : out unsigned(9 downto 0);
         dbg_w_base   : out unsigned(19 downto 0);
         dbg_mac_a    : out signed(8 downto 0);
-        dbg_mac_b0   : out signed(7 downto 0);
-        dbg_mac_b1   : out signed(7 downto 0);
+        -- Arrays completos via mac_array_pkg
+        dbg_mac_b    : out weight_array_t;
+        dbg_mac_bi   : out bias_array_t;
+        dbg_mac_acc  : out acc_array_t;
         dbg_mac_vi   : out std_logic;
         dbg_mac_clr  : out std_logic;
         dbg_mac_lb   : out std_logic;
-        dbg_mac_acc0 : out signed(31 downto 0);
-        dbg_mac_acc1 : out signed(31 downto 0);
         dbg_pad      : out std_logic;
         dbg_act_addr : out unsigned(24 downto 0)
     );
@@ -201,8 +201,7 @@ begin
                   M0=>cfg_M0, n_shift=>cfg_n_shift, y_zp=>cfg_y_zp,
                   y_out=>rq_out, valid_out=>rq_vo);
 
-    -- DEBUG port assignments (combinacional, sin coste de timing en sintesis
-    -- porque son drivers de salidas; quitar al sintetizar para hardware final)
+    -- DEBUG port assignments (combinacional)
     dbg_state    <= state_t'pos(state);
     dbg_oh       <= oh;
     dbg_ow       <= ow;
@@ -211,13 +210,12 @@ begin
     dbg_ic       <= ic;
     dbg_w_base   <= w_base_idx_r;
     dbg_mac_a    <= mac_a;
-    dbg_mac_b0   <= mac_b(0);
-    dbg_mac_b1   <= mac_b(1);
+    dbg_mac_b    <= mac_b;
+    dbg_mac_bi   <= mac_bi;
+    dbg_mac_acc  <= mac_acc;
     dbg_mac_vi   <= mac_vi;
     dbg_mac_clr  <= mac_clr;
     dbg_mac_lb   <= mac_lb;
-    dbg_mac_acc0 <= mac_acc(0);
-    dbg_mac_acc1 <= mac_acc(1);
     dbg_pad      <= pad_saved;
     dbg_act_addr <= act_addr_r;
 

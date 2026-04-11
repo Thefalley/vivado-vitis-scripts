@@ -5,10 +5,16 @@ use std.textio.all;
 use ieee.std_logic_textio.all;
 use work.mac_array_pkg.all;
 
-entity conv_engine_tb is
+-- TB para conv_engine_v2 con TILING ACTIVO
+-- Mismo input que v1 (3x3x3 → 32 filtros, layer_005)
+-- pero forzamos ic_tile_size = 1 para que haya 3 tiles por pixel
+-- Asi en la GUI se puede ver el tiling completo: cargar tile, MAC, cargar
+-- siguiente tile, MAC, ..., requantize.
+
+entity conv_engine_v2_tb is
 end;
 
-architecture bench of conv_engine_tb is
+architecture bench of conv_engine_v2_tb is
     constant CLK_PERIOD : time := 10 ns;
 
     signal clk           : std_logic := '0';
@@ -29,6 +35,7 @@ architecture bench of conv_engine_tb is
     signal cfg_addr_weights : unsigned(24 downto 0) := (others => '0');
     signal cfg_addr_bias    : unsigned(24 downto 0) := (others => '0');
     signal cfg_addr_output  : unsigned(24 downto 0) := (others => '0');
+    signal cfg_ic_tile_size : unsigned(9 downto 0) := (others => '0');
     signal start         : std_logic := '0';
     signal done          : std_logic;
     signal busy          : std_logic;
@@ -39,43 +46,31 @@ architecture bench of conv_engine_tb is
     signal ddr_wr_data   : std_logic_vector(7 downto 0);
     signal ddr_wr_en     : std_logic;
 
-    -- DEBUG signals (conectadas a puertos debug del conv_engine)
-    signal dbg_state    : integer range 0 to 31;
-    signal dbg_oh       : unsigned(9 downto 0);
-    signal dbg_ow       : unsigned(9 downto 0);
-    signal dbg_kh       : unsigned(9 downto 0);
-    signal dbg_kw       : unsigned(9 downto 0);
-    signal dbg_ic       : unsigned(9 downto 0);
+    -- Debug
+    signal dbg_state    : integer range 0 to 63;
+    signal dbg_oh, dbg_ow, dbg_kh, dbg_kw, dbg_ic : unsigned(9 downto 0);
+    signal dbg_oc_tile_base, dbg_ic_tile_base : unsigned(9 downto 0);
     signal dbg_w_base   : unsigned(19 downto 0);
     signal dbg_mac_a    : signed(8 downto 0);
     signal dbg_mac_b    : weight_array_t;
     signal dbg_mac_bi   : bias_array_t;
     signal dbg_mac_acc  : acc_array_t;
-    signal dbg_mac_vi   : std_logic;
-    signal dbg_mac_clr  : std_logic;
-    signal dbg_mac_lb   : std_logic;
-    signal dbg_pad      : std_logic;
+    signal dbg_mac_vi, dbg_mac_clr, dbg_mac_lb, dbg_pad : std_logic;
     signal dbg_act_addr : unsigned(24 downto 0);
 
-    -- Direcciones
     constant ADDR_INPUT   : natural := 16#000#;
     constant ADDR_WEIGHTS : natural := 16#400#;
     constant ADDR_BIAS    : natural := 16#800#;
     constant ADDR_OUTPUT  : natural := 16#C00#;
 
-    -- Senal para indicar que la inicializacion + ejecucion termino
     signal sim_done : std_logic := '0';
-
-    -- ============================================================
-    -- Acceso a senales internas de conv_engine para los logs
-    -- (uut.* en xsim funciona como hierarchical access)
-    -- ============================================================
 
 begin
 
     clk <= not clk after CLK_PERIOD / 2;
 
-    uut : entity work.conv_engine
+    uut : entity work.conv_engine_v2
+        generic map (WB_SIZE => 32768)
         port map (
             clk => clk, rst_n => rst_n,
             cfg_c_in => cfg_c_in, cfg_c_out => cfg_c_out,
@@ -85,6 +80,7 @@ begin
             cfg_M0 => cfg_M0, cfg_n_shift => cfg_n_shift, cfg_y_zp => cfg_y_zp,
             cfg_addr_input => cfg_addr_input, cfg_addr_weights => cfg_addr_weights,
             cfg_addr_bias => cfg_addr_bias, cfg_addr_output => cfg_addr_output,
+            cfg_ic_tile_size => cfg_ic_tile_size,
             start => start, done => done, busy => busy,
             ddr_rd_addr => ddr_rd_addr, ddr_rd_data => ddr_rd_data,
             ddr_rd_en => ddr_rd_en,
@@ -92,6 +88,7 @@ begin
             ddr_wr_en => ddr_wr_en,
             dbg_state => dbg_state, dbg_oh => dbg_oh, dbg_ow => dbg_ow,
             dbg_kh => dbg_kh, dbg_kw => dbg_kw, dbg_ic => dbg_ic,
+            dbg_oc_tile_base => dbg_oc_tile_base, dbg_ic_tile_base => dbg_ic_tile_base,
             dbg_w_base => dbg_w_base,
             dbg_mac_a => dbg_mac_a, dbg_mac_b => dbg_mac_b, dbg_mac_bi => dbg_mac_bi,
             dbg_mac_acc => dbg_mac_acc,
@@ -99,23 +96,16 @@ begin
             dbg_pad => dbg_pad, dbg_act_addr => dbg_act_addr
         );
 
-    -- ============================================================
-    -- PROCESO UNIFICADO: DDR + STIM + VERIFY
-    -- (un solo driver de la "DDR" como variable interna)
-    -- ============================================================
     p_main : process
-
-        -- DDR como variable (un unico driver, no hay conflicto)
         type ddr_t is array(0 to 4095) of std_logic_vector(7 downto 0);
         variable ddr : ddr_t := (others => (others => '0'));
 
-        -- Helpers
-        procedure ddr_write_byte(addr : natural; val : integer) is
+        procedure ddr_w8(addr : natural; val : integer) is
         begin
             ddr(addr) := std_logic_vector(to_signed(val, 8));
         end procedure;
 
-        procedure ddr_write_int32(addr : natural; val : integer) is
+        procedure ddr_w32(addr : natural; val : integer) is
             variable v : std_logic_vector(31 downto 0);
         begin
             v := std_logic_vector(to_signed(val, 32));
@@ -125,7 +115,6 @@ begin
             ddr(addr + 3) := v(31 downto 24);
         end procedure;
 
-        -- Datos de test
         type img_t is array(0 to 26) of integer;
         constant img : img_t := (
             56,-106,21, 50,-102,17, 6,-97,-6,
@@ -178,10 +167,8 @@ begin
             -6950,1229,-10249,2056,-8582,1821,3756,814
         );
 
-        -- Expected calculados con Python para MIS inputs sinteticos 3x3
-        -- (los expected anteriores eran para layer_005 pixel(200,200) del modelo
-        -- real, no para este test sintetico)
         type exp_t is array(0 to 31) of integer;
+        -- Mismos expected que v1 (calculados con Python para este input)
         constant expected : exp_t := (
             -9,-31,-20,-31,-33,-12,-11,0,-22,-61,-47,-23,12,-11,-2,-16,
             -50,26,-7,1,-16,-36,-6,-25,-39,-47,-48,-4,-49,-6,64,-13
@@ -192,30 +179,28 @@ begin
         variable timeout : integer;
 
     begin
-        -- ============================================================
-        -- 1. INICIALIZAR DDR (todo en variable, sin conflictos)
-        -- ============================================================
-        for i in 0 to 26 loop
-            ddr_write_byte(ADDR_INPUT + i, img(i));
-        end loop;
+        report "==============================================" severity note;
+        report "TEST conv_engine_v2 con TILING (ic_tile_size=1)" severity note;
+        report "c_in=3, ic_tile_size=1, 3 tiles por pixel" severity note;
+        report "==============================================" severity note;
 
+        -- Cargar DDR (mismo layout que v1)
+        for i in 0 to 26 loop
+            ddr_w8(ADDR_INPUT + i, img(i));
+        end loop;
         for oc in 0 to 31 loop
-            for w in 0 to 26 loop
-                ddr_write_byte(ADDR_WEIGHTS + oc * 27 + w, wt(oc)(w));
+            for k in 0 to 26 loop
+                ddr_w8(ADDR_WEIGHTS + oc*27 + k, wt(oc)(k));
             end loop;
         end loop;
-
         for i in 0 to 31 loop
-            ddr_write_int32(ADDR_BIAS + i * 4, biases(i));
+            ddr_w32(ADDR_BIAS + i*4, biases(i));
         end loop;
 
-        report "DDR initialized" severity note;
+        report "DDR loaded" severity note;
 
-        -- ============================================================
-        -- 2. RESET
-        -- ============================================================
+        -- Reset
         rst_n <= '0';
-        start <= '0';
         for i in 0 to 9 loop
             wait until rising_edge(clk);
         end loop;
@@ -223,9 +208,7 @@ begin
         wait until rising_edge(clk);
         wait until rising_edge(clk);
 
-        -- ============================================================
-        -- 3. CONFIGURAR
-        -- ============================================================
+        -- Configurar
         cfg_c_in        <= to_unsigned(3, 10);
         cfg_c_out       <= to_unsigned(32, 10);
         cfg_h_in        <= to_unsigned(3, 10);
@@ -242,59 +225,46 @@ begin
         cfg_addr_weights<= to_unsigned(ADDR_WEIGHTS, 25);
         cfg_addr_bias   <= to_unsigned(ADDR_BIAS, 25);
         cfg_addr_output <= to_unsigned(ADDR_OUTPUT, 25);
+        -- *** TILING ACTIVO: 1 canal por tile (3 tiles por pixel) ***
+        cfg_ic_tile_size <= to_unsigned(1, 10);
+
         wait until rising_edge(clk);
         wait until rising_edge(clk);
 
-        -- ============================================================
-        -- 4. START
-        -- ============================================================
-        report "START" severity note;
+        report "STARTING v2 with ic_tile_size=1" severity note;
         start <= '1';
         wait until rising_edge(clk);
         start <= '0';
 
-        -- ============================================================
-        -- 5. LOOP DE EJECUCION: servir DDR y esperar done
-        -- ============================================================
+        -- Loop esperando done + servir DDR
         timeout := 0;
-        while done /= '1' and timeout < 200000 loop
+        while done /= '1' and timeout < 500000 loop
             wait until rising_edge(clk);
             timeout := timeout + 1;
-
-            -- Servir lecturas de DDR (1 ciclo de latencia)
             if ddr_rd_en = '1' then
                 ddr_rd_data <= ddr(to_integer(ddr_rd_addr(11 downto 0)));
             end if;
-
-            -- Servir escrituras de DDR + trace
             if ddr_wr_en = '1' then
                 ddr(to_integer(ddr_wr_addr(11 downto 0))) := ddr_wr_data;
-                -- Trace: imprimir cada escritura
-                report "WR addr=0x" &
-                       integer'image(to_integer(ddr_wr_addr(11 downto 0))) &
-                       " data=" & integer'image(to_integer(signed(ddr_wr_data)))
-                    severity note;
             end if;
         end loop;
 
-        if timeout >= 200000 then
+        if timeout >= 500000 then
             report "TIMEOUT esperando done" severity failure;
         end if;
 
         report "DONE en ciclo " & integer'image(timeout) severity note;
 
-        -- Drenar 5 ciclos para que las ultimas escrituras se asienten
-        for i in 0 to 4 loop
+        for i in 0 to 9 loop
             wait until rising_edge(clk);
             if ddr_wr_en = '1' then
                 ddr(to_integer(ddr_wr_addr(11 downto 0))) := ddr_wr_data;
             end if;
         end loop;
 
-        -- ============================================================
-        -- 6. VERIFICAR
-        -- ============================================================
-        report "Verificando 32 canales pixel(1,1)..." severity note;
+        -- Verificar pixel(1,1) de los 32 canales
+        report "==============================================" severity note;
+        report "VERIFICANDO 32 CANALES" severity note;
         for oc in 0 to 31 loop
             got := to_integer(signed(ddr(ADDR_OUTPUT + oc * 9 + 4)));
             if got /= expected(oc) then
@@ -307,142 +277,16 @@ begin
             end if;
         end loop;
 
-        report "==============================" severity note;
+        report "==============================================" severity note;
         if errors = 0 then
-            report "ALL 32 CHANNELS PASSED" severity note;
+            report "v2 ALL 32 CHANNELS PASSED" severity note;
         else
-            report "FAILED: " & integer'image(errors) & " errors" severity error;
+            report "v2 FAILED: " & integer'image(errors) & " errors" severity error;
         end if;
-        report "==============================" severity note;
+        report "==============================================" severity note;
+
         sim_done <= '1';
         wait;
-    end process;
-
-    -- ============================================================
-    -- LOGGING A CSV (solo señales del boundary, sin external names)
-    -- 2 ficheros:
-    --   ddr_reads.csv  : cycle, addr_dec, addr_hex, data (read)
-    --   ddr_writes.csv : cycle, addr_dec, addr_hex, data (write)
-    -- ============================================================
-    p_log : process(clk)
-        file f_rd  : text open write_mode is "ddr_reads.csv";
-        file f_wr  : text open write_mode is "ddr_writes.csv";
-        file f_mac : text open write_mode is "mac_pulses.csv";
-        file f_b   : text open write_mode is "mac_b_full.csv";
-        file f_acc : text open write_mode is "mac_acc_full.csv";
-        file f_bias: text open write_mode is "mac_bias_full.csv";
-        variable l : line;
-        variable cycle_cnt : integer := 0;
-        variable header_done : boolean := false;
-        variable bias_logged : boolean := false;
-    begin
-        if rising_edge(clk) then
-            if not header_done then
-                write(l, string'("cycle,addr,data")); writeline(f_rd, l);
-                write(l, string'("cycle,addr,data")); writeline(f_wr, l);
-                write(l, string'("cycle,oh,ow,kh,kw,ic,w_base,mac_a,pad,act_addr"));
-                writeline(f_mac, l);
-                -- mac_b CSV: una fila por pulso, 32 columnas de pesos
-                write(l, string'("cycle,oh,ow,kh,kw,ic"));
-                for i in 0 to 31 loop
-                    write(l, string'(",b")); write(l, i);
-                end loop;
-                writeline(f_b, l);
-                -- mac_acc CSV: una fila por pulso
-                write(l, string'("cycle,oh,ow,kh,kw,ic"));
-                for i in 0 to 31 loop
-                    write(l, string'(",acc")); write(l, i);
-                end loop;
-                writeline(f_acc, l);
-                -- bias snapshot
-                write(l, string'("cycle"));
-                for i in 0 to 31 loop
-                    write(l, string'(",bi")); write(l, i);
-                end loop;
-                writeline(f_bias, l);
-                header_done := true;
-            end if;
-
-            cycle_cnt := cycle_cnt + 1;
-
-            -- Log DDR reads
-            if ddr_rd_en = '1' then
-                write(l, cycle_cnt); write(l, string'(","));
-                write(l, to_integer(ddr_rd_addr(11 downto 0))); write(l, string'(","));
-                write(l, to_integer(signed(ddr_rd_data)));
-                writeline(f_rd, l);
-            end if;
-
-            -- Log DDR writes
-            if ddr_wr_en = '1' then
-                write(l, cycle_cnt); write(l, string'(","));
-                write(l, to_integer(ddr_wr_addr(11 downto 0))); write(l, string'(","));
-                write(l, to_integer(signed(ddr_wr_data)));
-                writeline(f_wr, l);
-            end if;
-
-            -- Snapshot del bias cuando se hace load_bias (1 vez)
-            if dbg_mac_lb = '1' and not bias_logged then
-                write(l, cycle_cnt);
-                for i in 0 to 31 loop
-                    write(l, string'(","));
-                    write(l, to_integer(dbg_mac_bi(i)));
-                end loop;
-                writeline(f_bias, l);
-                bias_logged := true;
-            end if;
-
-            -- Log MAC pulses
-            if dbg_mac_vi = '1' then
-                -- mac_pulses.csv (resumen)
-                write(l, cycle_cnt); write(l, string'(","));
-                write(l, to_integer(dbg_oh)); write(l, string'(","));
-                write(l, to_integer(dbg_ow)); write(l, string'(","));
-                write(l, to_integer(dbg_kh)); write(l, string'(","));
-                write(l, to_integer(dbg_kw)); write(l, string'(","));
-                write(l, to_integer(dbg_ic)); write(l, string'(","));
-                write(l, to_integer(dbg_w_base)); write(l, string'(","));
-                write(l, to_integer(dbg_mac_a)); write(l, string'(","));
-                write(l, std_logic'image(dbg_pad)); write(l, string'(","));
-                write(l, to_integer(dbg_act_addr(11 downto 0)));
-                writeline(f_mac, l);
-
-                -- mac_b_full.csv (32 pesos)
-                write(l, cycle_cnt); write(l, string'(","));
-                write(l, to_integer(dbg_oh)); write(l, string'(","));
-                write(l, to_integer(dbg_ow)); write(l, string'(","));
-                write(l, to_integer(dbg_kh)); write(l, string'(","));
-                write(l, to_integer(dbg_kw)); write(l, string'(","));
-                write(l, to_integer(dbg_ic));
-                for i in 0 to 31 loop
-                    write(l, string'(","));
-                    write(l, to_integer(dbg_mac_b(i)));
-                end loop;
-                writeline(f_b, l);
-
-                -- mac_acc_full.csv (32 acumuladores)
-                write(l, cycle_cnt); write(l, string'(","));
-                write(l, to_integer(dbg_oh)); write(l, string'(","));
-                write(l, to_integer(dbg_ow)); write(l, string'(","));
-                write(l, to_integer(dbg_kh)); write(l, string'(","));
-                write(l, to_integer(dbg_kw)); write(l, string'(","));
-                write(l, to_integer(dbg_ic));
-                for i in 0 to 31 loop
-                    write(l, string'(","));
-                    write(l, to_integer(dbg_mac_acc(i)));
-                end loop;
-                writeline(f_acc, l);
-            end if;
-
-            if sim_done = '1' then
-                file_close(f_rd);
-                file_close(f_wr);
-                file_close(f_mac);
-                file_close(f_b);
-                file_close(f_acc);
-                file_close(f_bias);
-            end if;
-        end if;
     end process;
 
 end;
