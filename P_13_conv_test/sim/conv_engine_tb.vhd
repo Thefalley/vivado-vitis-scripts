@@ -39,6 +39,25 @@ architecture bench of conv_engine_tb is
     signal ddr_wr_data   : std_logic_vector(7 downto 0);
     signal ddr_wr_en     : std_logic;
 
+    -- DEBUG signals (conectadas a puertos debug del conv_engine)
+    signal dbg_state    : integer range 0 to 31;
+    signal dbg_oh       : unsigned(9 downto 0);
+    signal dbg_ow       : unsigned(9 downto 0);
+    signal dbg_kh       : unsigned(9 downto 0);
+    signal dbg_kw       : unsigned(9 downto 0);
+    signal dbg_ic       : unsigned(9 downto 0);
+    signal dbg_w_base   : unsigned(19 downto 0);
+    signal dbg_mac_a    : signed(8 downto 0);
+    signal dbg_mac_b0   : signed(7 downto 0);
+    signal dbg_mac_b1   : signed(7 downto 0);
+    signal dbg_mac_vi   : std_logic;
+    signal dbg_mac_clr  : std_logic;
+    signal dbg_mac_lb   : std_logic;
+    signal dbg_mac_acc0 : signed(31 downto 0);
+    signal dbg_mac_acc1 : signed(31 downto 0);
+    signal dbg_pad      : std_logic;
+    signal dbg_act_addr : unsigned(24 downto 0);
+
     -- Direcciones
     constant ADDR_INPUT   : natural := 16#000#;
     constant ADDR_WEIGHTS : natural := 16#400#;
@@ -71,7 +90,14 @@ begin
             ddr_rd_addr => ddr_rd_addr, ddr_rd_data => ddr_rd_data,
             ddr_rd_en => ddr_rd_en,
             ddr_wr_addr => ddr_wr_addr, ddr_wr_data => ddr_wr_data,
-            ddr_wr_en => ddr_wr_en
+            ddr_wr_en => ddr_wr_en,
+            dbg_state => dbg_state, dbg_oh => dbg_oh, dbg_ow => dbg_ow,
+            dbg_kh => dbg_kh, dbg_kw => dbg_kw, dbg_ic => dbg_ic,
+            dbg_w_base => dbg_w_base,
+            dbg_mac_a => dbg_mac_a, dbg_mac_b0 => dbg_mac_b0, dbg_mac_b1 => dbg_mac_b1,
+            dbg_mac_vi => dbg_mac_vi, dbg_mac_clr => dbg_mac_clr, dbg_mac_lb => dbg_mac_lb,
+            dbg_mac_acc0 => dbg_mac_acc0, dbg_mac_acc1 => dbg_mac_acc1,
+            dbg_pad => dbg_pad, dbg_act_addr => dbg_act_addr
         );
 
     -- ============================================================
@@ -299,6 +325,8 @@ begin
     p_log : process(clk)
         file f_rd  : text open write_mode is "ddr_reads.csv";
         file f_wr  : text open write_mode is "ddr_writes.csv";
+        file f_mac : text open write_mode is "mac_pulses.csv";
+        file f_st  : text open write_mode is "states.csv";
         variable l : line;
         variable cycle_cnt : integer := 0;
         variable header_done : boolean := false;
@@ -309,34 +337,70 @@ begin
                 writeline(f_rd, l);
                 write(l, string'("cycle,addr,data"));
                 writeline(f_wr, l);
+                write(l, string'("cycle,oh,ow,kh,kw,ic,w_base,mac_a,mac_b0,mac_b1,mac_acc0,mac_acc1,pad,act_addr"));
+                writeline(f_mac, l);
+                write(l, string'("cycle,state,oh,ow,kh,kw,ic,w_base,mac_clr,mac_lb,mac_vi,pad"));
+                writeline(f_st, l);
                 header_done := true;
             end if;
 
             cycle_cnt := cycle_cnt + 1;
 
-            -- Log DDR reads (when ddr_rd_en=1)
+            -- Log DDR reads
             if ddr_rd_en = '1' then
-                write(l, cycle_cnt);
-                write(l, string'(","));
-                write(l, to_integer(ddr_rd_addr(11 downto 0)));
-                write(l, string'(","));
+                write(l, cycle_cnt); write(l, string'(","));
+                write(l, to_integer(ddr_rd_addr(11 downto 0))); write(l, string'(","));
                 write(l, to_integer(signed(ddr_rd_data)));
                 writeline(f_rd, l);
             end if;
 
             -- Log DDR writes
             if ddr_wr_en = '1' then
-                write(l, cycle_cnt);
-                write(l, string'(","));
-                write(l, to_integer(ddr_wr_addr(11 downto 0)));
-                write(l, string'(","));
+                write(l, cycle_cnt); write(l, string'(","));
+                write(l, to_integer(ddr_wr_addr(11 downto 0))); write(l, string'(","));
                 write(l, to_integer(signed(ddr_wr_data)));
                 writeline(f_wr, l);
             end if;
 
+            -- Log MAC pulses (when conv_engine pulses mac_vi)
+            if dbg_mac_vi = '1' then
+                write(l, cycle_cnt); write(l, string'(","));
+                write(l, to_integer(dbg_oh)); write(l, string'(","));
+                write(l, to_integer(dbg_ow)); write(l, string'(","));
+                write(l, to_integer(dbg_kh)); write(l, string'(","));
+                write(l, to_integer(dbg_kw)); write(l, string'(","));
+                write(l, to_integer(dbg_ic)); write(l, string'(","));
+                write(l, to_integer(dbg_w_base)); write(l, string'(","));
+                write(l, to_integer(dbg_mac_a)); write(l, string'(","));
+                write(l, to_integer(dbg_mac_b0)); write(l, string'(","));
+                write(l, to_integer(dbg_mac_b1)); write(l, string'(","));
+                write(l, to_integer(dbg_mac_acc0)); write(l, string'(","));
+                write(l, to_integer(dbg_mac_acc1)); write(l, string'(","));
+                write(l, std_logic'image(dbg_pad)); write(l, string'(","));
+                write(l, to_integer(dbg_act_addr(11 downto 0)));
+                writeline(f_mac, l);
+            end if;
+
+            -- Log estados (cada cambio)
+            write(l, cycle_cnt); write(l, string'(","));
+            write(l, dbg_state); write(l, string'(","));
+            write(l, to_integer(dbg_oh)); write(l, string'(","));
+            write(l, to_integer(dbg_ow)); write(l, string'(","));
+            write(l, to_integer(dbg_kh)); write(l, string'(","));
+            write(l, to_integer(dbg_kw)); write(l, string'(","));
+            write(l, to_integer(dbg_ic)); write(l, string'(","));
+            write(l, to_integer(dbg_w_base)); write(l, string'(","));
+            write(l, std_logic'image(dbg_mac_clr)); write(l, string'(","));
+            write(l, std_logic'image(dbg_mac_lb)); write(l, string'(","));
+            write(l, std_logic'image(dbg_mac_vi)); write(l, string'(","));
+            write(l, std_logic'image(dbg_pad));
+            writeline(f_st, l);
+
             if sim_done = '1' then
                 file_close(f_rd);
                 file_close(f_wr);
+                file_close(f_mac);
+                file_close(f_st);
             end if;
         end if;
     end process;

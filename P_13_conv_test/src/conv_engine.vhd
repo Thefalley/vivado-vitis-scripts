@@ -55,7 +55,26 @@ entity conv_engine is
         ddr_rd_en   : out std_logic;
         ddr_wr_addr : out unsigned(24 downto 0);
         ddr_wr_data : out std_logic_vector(7 downto 0);
-        ddr_wr_en   : out std_logic
+        ddr_wr_en   : out std_logic;
+
+        -- DEBUG ports (TEMPORAL para simulacion, NO usar en sintesis final)
+        dbg_state    : out integer range 0 to 31;
+        dbg_oh       : out unsigned(9 downto 0);
+        dbg_ow       : out unsigned(9 downto 0);
+        dbg_kh       : out unsigned(9 downto 0);
+        dbg_kw       : out unsigned(9 downto 0);
+        dbg_ic       : out unsigned(9 downto 0);
+        dbg_w_base   : out unsigned(19 downto 0);
+        dbg_mac_a    : out signed(8 downto 0);
+        dbg_mac_b0   : out signed(7 downto 0);
+        dbg_mac_b1   : out signed(7 downto 0);
+        dbg_mac_vi   : out std_logic;
+        dbg_mac_clr  : out std_logic;
+        dbg_mac_lb   : out std_logic;
+        dbg_mac_acc0 : out signed(31 downto 0);
+        dbg_mac_acc1 : out signed(31 downto 0);
+        dbg_pad      : out std_logic;
+        dbg_act_addr : out unsigned(24 downto 0)
     );
 end entity conv_engine;
 
@@ -181,6 +200,26 @@ begin
         port map (clk=>clk, rst_n=>rst_n, acc_in=>rq_acc_in, valid_in=>rq_vi,
                   M0=>cfg_M0, n_shift=>cfg_n_shift, y_zp=>cfg_y_zp,
                   y_out=>rq_out, valid_out=>rq_vo);
+
+    -- DEBUG port assignments (combinacional, sin coste de timing en sintesis
+    -- porque son drivers de salidas; quitar al sintetizar para hardware final)
+    dbg_state    <= state_t'pos(state);
+    dbg_oh       <= oh;
+    dbg_ow       <= ow;
+    dbg_kh       <= kh;
+    dbg_kw       <= kw;
+    dbg_ic       <= ic;
+    dbg_w_base   <= w_base_idx_r;
+    dbg_mac_a    <= mac_a;
+    dbg_mac_b0   <= mac_b(0);
+    dbg_mac_b1   <= mac_b(1);
+    dbg_mac_vi   <= mac_vi;
+    dbg_mac_clr  <= mac_clr;
+    dbg_mac_lb   <= mac_lb;
+    dbg_mac_acc0 <= mac_acc(0);
+    dbg_mac_acc1 <= mac_acc(1);
+    dbg_pad      <= pad_saved;
+    dbg_act_addr <= act_addr_r;
 
     p_fsm : process(clk)
         variable v_ih : signed(10 downto 0);
