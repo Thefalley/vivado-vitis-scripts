@@ -147,3 +147,57 @@ begin
     end process;
 
 end architecture;
+
+
+
+
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+
+entity maxpool_stream_tb is
+end;
+
+architecture bench of maxpool_stream_tb is
+  -- Clock period
+  constant clk_period : time := 5 ns;
+  -- Generics
+  -- Ports
+  signal clk : std_logic        := '0';
+  signal resetn : std_logic     := '0';
+  signal s_axis_tdata : std_logic_vector(31 downto 0);
+  signal s_axis_tvalid : std_logic;
+  signal s_axis_tready : std_logic;
+  signal s_axis_tlast : std_logic;
+  signal m_axis_tdata : std_logic_vector(31 downto 0);
+  signal m_axis_tvalid : std_logic;
+  signal m_axis_tready : std_logic;
+  signal m_axis_tlast : std_logic;
+begin
+
+  maxpool_stream_inst : entity work.maxpool_stream
+  port map (
+    clk => clk,
+    resetn => resetn,
+    s_axis_tdata => s_axis_tdata,
+    s_axis_tvalid => s_axis_tvalid,
+    s_axis_tready => s_axis_tready,
+    s_axis_tlast => s_axis_tlast,
+    m_axis_tdata => m_axis_tdata,
+    m_axis_tvalid => m_axis_tvalid,
+    m_axis_tready => m_axis_tready,
+    m_axis_tlast => m_axis_tlast
+  );
+
+  
+  clk <= not clk after clk_period/2;
+
+  process (clk)
+  begin
+        -- primero hacer un reset para verificar todo la maquina. 
+        -- mandar 25 datos por axi-stream."&"
+
+
+        -- y leugo ver que de verdad se ha enviado el maximo correcto por el stream de salida.
+  end process;
+end;

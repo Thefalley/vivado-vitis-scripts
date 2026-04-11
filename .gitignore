@@ -39,6 +39,8 @@ __pycache__/
 # Sweep build artifacts (regenerable)
 */build_sweep/
 */sim_work*/
+*/sim[0-9]/
+*/sim[0-9][0-9]/
 
 # Remote output (downloaded from server)
 */remote_output/
