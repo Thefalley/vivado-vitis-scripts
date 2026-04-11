@@ -1,6 +1,8 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
+use std.textio.all;
+use ieee.std_logic_textio.all;
 use work.mac_array_pkg.all;
 
 entity conv_engine_tb is
@@ -45,6 +47,11 @@ architecture bench of conv_engine_tb is
 
     -- Senal para indicar que la inicializacion + ejecucion termino
     signal sim_done : std_logic := '0';
+
+    -- ============================================================
+    -- Acceso a senales internas de conv_engine para los logs
+    -- (uut.* en xsim funciona como hierarchical access)
+    -- ============================================================
 
 begin
 
@@ -281,6 +288,57 @@ begin
         report "==============================" severity note;
         sim_done <= '1';
         wait;
+    end process;
+
+    -- ============================================================
+    -- LOGGING A CSV (solo señales del boundary, sin external names)
+    -- 2 ficheros:
+    --   ddr_reads.csv  : cycle, addr_dec, addr_hex, data (read)
+    --   ddr_writes.csv : cycle, addr_dec, addr_hex, data (write)
+    -- ============================================================
+    p_log : process(clk)
+        file f_rd  : text open write_mode is "ddr_reads.csv";
+        file f_wr  : text open write_mode is "ddr_writes.csv";
+        variable l : line;
+        variable cycle_cnt : integer := 0;
+        variable header_done : boolean := false;
+    begin
+        if rising_edge(clk) then
+            if not header_done then
+                write(l, string'("cycle,addr,data"));
+                writeline(f_rd, l);
+                write(l, string'("cycle,addr,data"));
+                writeline(f_wr, l);
+                header_done := true;
+            end if;
+
+            cycle_cnt := cycle_cnt + 1;
+
+            -- Log DDR reads (when ddr_rd_en=1)
+            if ddr_rd_en = '1' then
+                write(l, cycle_cnt);
+                write(l, string'(","));
+                write(l, to_integer(ddr_rd_addr(11 downto 0)));
+                write(l, string'(","));
+                write(l, to_integer(signed(ddr_rd_data)));
+                writeline(f_rd, l);
+            end if;
+
+            -- Log DDR writes
+            if ddr_wr_en = '1' then
+                write(l, cycle_cnt);
+                write(l, string'(","));
+                write(l, to_integer(ddr_wr_addr(11 downto 0)));
+                write(l, string'(","));
+                write(l, to_integer(signed(ddr_wr_data)));
+                writeline(f_wr, l);
+            end if;
+
+            if sim_done = '1' then
+                file_close(f_rd);
+                file_close(f_wr);
+            end if;
+        end if;
     end process;
 
 end;
