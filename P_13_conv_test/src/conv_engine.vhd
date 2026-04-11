@@ -503,7 +503,13 @@ begin
                     if pad_saved = '1' then
                         mac_a <= (others => '0');
                     else
-                        mac_a <= signed('0' & ddr_rd_data) - cfg_x_zp;
+                        -- FIX: ddr_rd_data es signed int8, NO unsigned.
+                        -- Antes: signed('0' & ddr_rd_data) interpretaba el byte como
+                        -- positivo 0..255, dando overflow al restar x_zp negativo.
+                        -- Ahora: sign-extend el byte con resize(signed(...), 9).
+                        -- Rango resultante: [-128..127] - [-128..127] = [-255..255]
+                        -- Cabe en signed(9). Coherente con leaky_relu y mac_unit_tb.
+                        mac_a <= resize(signed(ddr_rd_data), 9) - resize(cfg_x_zp, 9);
                     end if;
                     state <= MAC_FIRE;
 
