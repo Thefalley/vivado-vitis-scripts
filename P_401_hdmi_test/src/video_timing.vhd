@@ -49,8 +49,8 @@ architecture rtl of video_timing is
     signal v_cnt : unsigned(9 downto 0)  := (others => '0');  -- 0..749
 
     -- Internal signals
-    signal h_active : std_logic;
-    signal v_active : std_logic;
+    signal h_act : std_logic;
+    signal v_act : std_logic;
 
 begin
 
@@ -92,15 +92,15 @@ begin
     ---------------------------------------------------------------------------
     -- Active region flags
     ---------------------------------------------------------------------------
-    h_active <= '1' when h_cnt < H_ACTIVE else '0';
-    v_active <= '1' when v_cnt < V_ACTIVE else '0';
+    h_act <= '1' when h_cnt < H_ACTIVE else '0';
+    v_act <= '1' when v_cnt < V_ACTIVE else '0';
 
-    de <= h_active and v_active;
+    de <= h_act and v_act;
 
     ---------------------------------------------------------------------------
     -- Pixel coordinates (valid only during active region)
     ---------------------------------------------------------------------------
-    pixel_x <= h_cnt when h_active = '1' else (others => '0');
-    pixel_y <= v_cnt when v_active = '1' else (others => '0');
+    pixel_x <= h_cnt when h_act = '1' else (others => '0');
+    pixel_y <= v_cnt when v_act = '1' else (others => '0');
 
 end architecture rtl;
