@@ -174,7 +174,8 @@ architecture rtl of conv_engine_v2 is
         WL_EMIT, WL_WAIT, WL_CAPTURE,
         -- MAC loop (dentro del ic_tile)
         MAC_PAD_REG,       -- padding check + act_addr + init wload
-        MAC_WLOAD,         -- 1 peso/ciclo del weight_buf (32 ciclos)
+        MAC_WLOAD,         -- present addr to BRAM (1 cycle latency)
+        MAC_WLOAD_CAP,     -- capture wb_dout + advance
         MAC_EMIT, MAC_WAIT_DDR, MAC_CAPTURE, MAC_FIRE,
         -- Avanzar ic_tile o terminar pixel
         IC_TILE_ADV,       -- siguiente ic_tile del MISMO pixel (sin clear)
@@ -249,7 +250,7 @@ architecture rtl of conv_engine_v2 is
     ---------------------------------------------------------------------------
     signal ih_base_r      : signed(10 downto 0);
     signal iw_base_r      : signed(10 downto 0);
-    signal temp_ihb_w     : unsigned(19 downto 0);
+    signal temp_ihb_w     : signed(20 downto 0);
     signal temp_oh_w      : unsigned(19 downto 0);
     signal act_pixel_base : unsigned(24 downto 0);
     signal act_tile_base  : unsigned(24 downto 0);  -- +hw_reg × ic_tile_base (base del ic_tile)
@@ -282,8 +283,15 @@ architecture rtl of conv_engine_v2 is
     ---------------------------------------------------------------------------
     -- Buffers
     ---------------------------------------------------------------------------
-    type weight_mem_t is array(0 to WB_SIZE-1) of signed(7 downto 0);
-    signal weight_buf : weight_mem_t;
+    type weight_mem_t is array(0 to WB_SIZE-1) of std_logic_vector(7 downto 0);
+    signal wb_ram : weight_mem_t := (others => (others => '0'));
+    attribute ram_style : string;
+    attribute ram_style of wb_ram : signal is "block";
+
+    signal wb_addr : unsigned(14 downto 0) := (others => '0');
+    signal wb_we   : std_logic := '0';
+    signal wb_din  : std_logic_vector(7 downto 0) := (others => '0');
+    signal wb_dout : signed(7 downto 0) := (others => '0');
     signal bias_buf   : bias_array_t;
 
     ---------------------------------------------------------------------------
@@ -312,6 +320,19 @@ begin
     kw_size    <= to_unsigned(1, 10) when cfg_ksize = "00" else to_unsigned(3, 10);
     pad_val    <= to_unsigned(1, 10) when cfg_pad = '1'    else to_unsigned(0, 10);
     stride_val <= to_unsigned(2, 10) when cfg_stride = '1' else to_unsigned(1, 10);
+
+    ---------------------------------------------------------------------------
+    -- Weight buffer BRAM (read-first, 1-cycle latency)
+    ---------------------------------------------------------------------------
+    p_wb_bram : process(clk)
+    begin
+        if rising_edge(clk) then
+            if wb_we = '1' then
+                wb_ram(to_integer(wb_addr)) <= wb_din;
+            end if;
+            wb_dout <= signed(wb_ram(to_integer(wb_addr)));
+        end if;
+    end process;
 
     ---------------------------------------------------------------------------
     -- Instancias reusadas de v1 (NO se tocan)
@@ -395,9 +416,11 @@ begin
                 act_ic_offset <= (others=>'0'); act_kh_offset <= (others=>'0');
                 act_addr_r <= (others=>'0'); w_base_idx_r <= (others=>'0');
                 wload_cnt <= (others=>'0'); wload_addr_r <= (others=>'0');
+                wb_addr <= (others=>'0'); wb_we <= '0'; wb_din <= (others=>'0');
             else
                 -- Defaults de un solo pulso
                 ddr_rd_en <= '0'; ddr_wr_en <= '0';
+                wb_we <= '0';
                 mac_vi <= '0'; mac_lb <= '0'; mac_clr <= '0';
                 rq_vi <= '0'; done <= '0';
 
@@ -496,7 +519,7 @@ begin
                     bias_addr_r    <= bias_addr_r + 1;
                     if bias_byte_idx = "11" then
                         bias_buf(to_integer(bias_word_idx)) <=
-                            signed(ddr_rd_data & bias_shift_reg(31 downto 8));
+                            signed(std_logic_vector'(ddr_rd_data & bias_shift_reg(31 downto 8)));
                         bias_byte_idx <= (others => '0');
                         bias_word_idx <= bias_word_idx + 1;
                     else
@@ -541,7 +564,7 @@ begin
                 -- INIT_PIXEL_2: mult para act base + sumas para RQ base
                 -- 1 mult: ih_base × w_in
                 when INIT_PIXEL_2 =>
-                    temp_ihb_w <= resize(unsigned(ih_base_r(9 downto 0)) * cfg_w_in, 20);
+                    temp_ihb_w <= resize(ih_base_r * signed('0' & std_logic_vector(cfg_w_in)), 21);
                     -- rq_wr_base = cfg_addr_output
                     --            + oc_tile_base × hw_out_reg     (desplazamiento oc_tile)
                     --            + temp_oh_w + ow
@@ -555,8 +578,8 @@ begin
                 -- INIT_PIXEL_3: ensamblar act_pixel_base + reset offsets
                 when INIT_PIXEL_3 =>
                     act_pixel_base <= cfg_addr_input
-                        + resize(temp_ihb_w, 25)
-                        + resize(unsigned(iw_base_r(9 downto 0)), 25);
+                        + unsigned(std_logic_vector(resize(temp_ihb_w, 25)))
+                        + unsigned(std_logic_vector(resize(iw_base_r, 25)));
 
                     act_tile_base <= (others => '0');
                     act_ic_offset <= (others => '0');
@@ -663,7 +686,7 @@ begin
                     state <= WL_CAPTURE;
 
                 when WL_CAPTURE =>
-                    weight_buf(to_integer(wl_buf_addr)) <= signed(ddr_rd_data);
+                    wb_we <= '1'; wb_addr <= wl_buf_addr(14 downto 0); wb_din <= ddr_rd_data;
                     wl_buf_addr <= wl_buf_addr + 1;
 
                     -- Avance de contadores (j → kw → kh → i)
@@ -721,16 +744,23 @@ begin
 
                     wload_cnt    <= (others => '0');
                     wload_addr_r <= w_base_idx_r;
+                    wb_addr      <= w_base_idx_r(14 downto 0);
                     state        <= MAC_WLOAD;
 
                 when MAC_WLOAD =>
-                    -- Peso del filtro i dentro del tile: base + i*tile_filter_stride
-                    mac_b(to_integer(wload_cnt)) <= weight_buf(to_integer(wload_addr_r));
-                    wload_addr_r <= wload_addr_r + tile_filter_stride;
-                    wload_cnt    <= wload_cnt + 1;
+                    wb_addr <= wload_addr_r(14 downto 0);
+                    wb_we   <= '0';
+                    state   <= MAC_WLOAD_CAP;
 
+                when MAC_WLOAD_CAP =>
+                    mac_b(to_integer(wload_cnt)) <= wb_dout;
+                    wload_addr_r <= wload_addr_r + tile_filter_stride;
+                    wb_addr      <= resize(wload_addr_r + tile_filter_stride, 15);
+                    wload_cnt    <= wload_cnt + 1;
                     if wload_cnt = to_unsigned(N_MAC - 1, 6) then
                         state <= MAC_EMIT;
+                    else
+                        state <= MAC_WLOAD;
                     end if;
 
                 when MAC_EMIT =>
