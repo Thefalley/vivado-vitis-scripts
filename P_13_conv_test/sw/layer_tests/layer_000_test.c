@@ -387,9 +387,8 @@ int main(void)
         if (timeout > 10000000) {
             xil_printf("ERROR: Timeout! ctrl=0x%08X\r\n", ctrl);
             res[0] = MAGIC_DONE;
-            res[1] = LAYER_IDX;
-            res[2] = 0;
-            res[3] = 99;
+            res[1] = 0;
+            res[2] = 99;
             Xil_DCacheFlushRange((UINTPTR)res, 64);
             while(1);
         }
@@ -422,9 +421,8 @@ int main(void)
 
     /* Signal result to XSCT */
     res[0] = MAGIC_DONE;
-    res[1] = LAYER_IDX;
-    res[2] = (u32)OUTPUT_BYTES;
-    res[3] = (u32)errors;
+    res[1] = (u32)OUTPUT_BYTES;  /* total tests */
+    res[2] = (u32)errors;
     Xil_DCacheFlushRange((UINTPTR)res, 64);
 
     while(1);

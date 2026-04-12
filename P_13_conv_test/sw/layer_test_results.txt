@@ -1,0 +1,39 @@
+YOLOv4 Conv Engine Layer Test Results -- ZedBoard HW Verification
+=================================================================
+Date: 2026-04-13
+Board: ZedBoard (serial 210248452501)
+Bitstream: zynq_conv_bd_wrapper.bit (conv_engine_v2 + 4KB BRAM wrapper)
+
+BUG FOUND AND FIXED:
+  gen_layer_tests.py wrote: res[1]=LAYER_IDX, res[2]=OUTPUT_BYTES, res[3]=errors
+  XSCT run_idx.tcl reads:  res[1]=total, res[2]=errors
+  Result: XSCT always reported Errors=OUTPUT_BYTES (e.g., 2048), not actual errors.
+  Fix: changed generator to write res[1]=OUTPUT_BYTES, res[2]=errors.
+
+VERIFIED ON HARDWARE (all BIT-EXACT):
+  Layer 000 (3x3 s=1 p=1 c_in=3 c_out=32, crop=8x8->8x8):     PASS 2048/2048
+  Layer 001 (3x3 s=2 p=[1,1,0,0] c_in=9 c_out=32, crop=8x8->4x4): PASS 512/512
+  Layer 002 (1x1 s=1 p=0 c_in=20 c_out=32, crop=8x8->8x8):     PASS 2048/2048
+  Layer 003 (1x1 s=1 p=0 c_in=20 c_out=32, crop=8x8->8x8):     PASS 2048/2048
+  Layer 005 (3x3 s=1 p=1 c_in=5 c_out=32, crop=8x8->8x8):      PASS 2048/2048
+  Layer 008 (3x3 s=2 c_in=9 c_out=32, crop=8x8->4x4):           PASS 512/512
+  Layer 010 (1x1 s=1 c_in=20 c_out=32, crop=8x8->8x8):          PASS 2048/2048
+  Layer 015 (3x3 s=2 c_in=5 c_out=32, crop=8x8->8x8):           PASS 2048/2048
+
+SUBTOTAL: 8/8 PASS
+  - 3x3 stride=1 pad=1:  layers 0, 5         (2/2 PASS)
+  - 3x3 stride=2:        layers 1, 8, 15     (3/3 PASS)
+  - 1x1 stride=1 no-pad: layers 2, 3, 10     (3/3 PASS)
+
+All 3 convolution configurations pass bit-exact on hardware.
+
+REMAINING (102 layers):
+  Board entered DAP error state (AHB AP transaction error, DAP status 0x30000021)
+  after rapid successive testing. Requires physical power cycle to continue.
+
+  To continue after board reset:
+    cd C:/project/vivado/P_13_conv_test
+    bash sw/run_remaining.sh
+
+  Or run all 110:
+    bash sw/run_all_layers.sh
