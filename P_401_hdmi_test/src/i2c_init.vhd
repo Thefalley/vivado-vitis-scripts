@@ -59,18 +59,40 @@ architecture rtl of i2c_init is
     type reg_table_t is array(natural range <>) of reg_entry_t;
 
     constant REG_TABLE : reg_table_t := (
+        -- Power and HPD
         (x"41", x"10"),  -- Power up
-        (x"98", x"03"),  -- Required (ADI recommended)
-        (x"9A", x"E0"),  -- Required
-        (x"9C", x"30"),  -- Required
-        (x"9D", x"01"),  -- Required
-        (x"A2", x"A4"),  -- Required
-        (x"A3", x"A4"),  -- Required
-        (x"AF", x"06"),  -- HDMI mode, not DVI
-        (x"15", x"00"),  -- Input: 24-bit RGB 4:4:4
-        (x"16", x"30"),  -- Output: RGB 4:4:4, 8-bit color depth
-        (x"48", x"08"),  -- Right justified
-        (x"D6", x"C0")   -- HPD always high (override HPD)
+        (x"D6", x"C0"),  -- HPD always high
+        -- ADI mandatory fixed registers
+        (x"98", x"03"),  -- ADI Required
+        (x"99", x"02"),  -- ADI Required
+        (x"9A", x"E0"),  -- ADI Required
+        (x"9C", x"30"),  -- PLL filter
+        (x"9D", x"61"),  -- Clock divide (MUST be 0x61, not 0x01!)
+        (x"A2", x"A4"),  -- ADI Required
+        (x"A3", x"A4"),  -- ADI Required
+        (x"A5", x"44"),  -- ADI Required
+        (x"AB", x"40"),  -- ADI Required
+        (x"BA", x"A0"),  -- Clock delay +0.8ns
+        (x"D0", x"00"),  -- DDR negative edge disable
+        (x"D1", x"FF"),  -- ADI Required
+        (x"DE", x"9C"),  -- ADI Required (TMDS)
+        (x"E0", x"D0"),  -- ADI Required
+        (x"E4", x"60"),  -- VCO swing reference
+        (x"F9", x"00"),  -- VCO swing reference
+        -- Input video format
+        (x"15", x"01"),  -- Input ID=1: 16-bit 4:2:2 separate sync
+        (x"16", x"38"),  -- Output 4:4:4, 8-bit, Style 1
+        (x"17", x"02"),  -- 16:9, DE-based timing
+        (x"18", x"C6"),  -- CSC enable, YCbCr->RGB
+        (x"40", x"80"),  -- GC packet enable
+        (x"48", x"10"),  -- Video input justification
+        (x"49", x"A8"),  -- Dither 4:2:2 to 4:4:4
+        (x"4C", x"00"),  -- Color depth not indicated
+        (x"55", x"00"),  -- RGB AVI InfoFrame
+        (x"56", x"08"),  -- Aspect ratio
+        (x"AF", x"04"),  -- HDMI mode, no HDCP
+        -- Interrupt clear
+        (x"96", x"20")   -- HPD interrupt clear
     );
 
     constant NUM_REGS : natural := REG_TABLE'length;

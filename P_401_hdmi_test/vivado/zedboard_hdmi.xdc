@@ -40,19 +40,17 @@ set_property IOSTANDARD LVCMOS33 [get_ports {hdmi_d[*]}]
 set_property PACKAGE_PIN W18 [get_ports hdmi_clk]
 set_property IOSTANDARD LVCMOS33 [get_ports hdmi_clk]
 
-set_property PACKAGE_PIN V17 [get_ports hdmi_de]
+set_property PACKAGE_PIN U16 [get_ports hdmi_de]
 set_property IOSTANDARD LVCMOS33 [get_ports hdmi_de]
 
-set_property PACKAGE_PIN W17 [get_ports hdmi_int_n]
+set_property PACKAGE_PIN W16 [get_ports hdmi_int_n]
 set_property IOSTANDARD LVCMOS33 [get_ports hdmi_int_n]
 
-set_property PACKAGE_PIN U16 [get_ports hdmi_vsync]
+set_property PACKAGE_PIN W17 [get_ports hdmi_vsync]
 set_property IOSTANDARD LVCMOS33 [get_ports hdmi_vsync]
 
-## NOTE: HD-HSYNC pin - V20 is listed in the user's mapping.
-## Some ZedBoard references show this as Y18 or V20. Using V20 as specified.
-## Verify against your specific board revision if HSYNC doesn't work.
-set_property PACKAGE_PIN V20 [get_ports hdmi_hsync]
+## HD-HSYNC - verified from Digilent master XDC and ADI reference
+set_property PACKAGE_PIN V17 [get_ports hdmi_hsync]
 set_property IOSTANDARD LVCMOS33 [get_ports hdmi_hsync]
 
 ## S/PDIF audio output
