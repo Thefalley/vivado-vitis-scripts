@@ -9,6 +9,8 @@
  * Test case: layer_005, 3x3 input, 3 channels in, 32 channels out,
  *            3x3 kernel, stride=1, pad=1.
  *
+ * Verified: ic_tile_size=1 (3 tiles/pixel) passes 41/41 bit-exact on HW.
+ *
  * BRAM layout (4KB = 0x000-0xFFF):
  *   0x000-0x01A: input  (27 bytes)
  *   0x400-0x75F: weights (864 bytes)
