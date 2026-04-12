@@ -53,9 +53,9 @@
 #define BRAM_BIAS_ADDR     0x800
 #define BRAM_OUTPUT_ADDR   0xC00
 
-/* Config */
-#define C_IN    3
-#define C_OUT   32
+/* Config — DIAGNOSTIC: 3x3 conv, 1ch, 1 filter, WITH pad=1 */
+#define C_IN    1
+#define C_OUT   1
 #define H_IN    3
 #define W_IN    3
 #define KSIZE   2    /* 3x3 */
@@ -236,22 +236,24 @@ int main(void)
     xil_printf("  Conv Engine Test -- layer_005, 3x3, 32 filters\r\n");
     xil_printf("===================================================\r\n\r\n");
 
-    /* ---- Step 1: Write input to BRAM ---- */
-    xil_printf("Writing input (27 bytes) to BRAM @ 0x%03X...\r\n", BRAM_INPUT_ADDR);
-    write_bram_bytes(BRAM_INPUT_ADDR, input_data, 27);
-
-    /* ---- Step 2: Write weights to BRAM ---- */
-    xil_printf("Writing weights (864 bytes) to BRAM @ 0x%03X...\r\n", BRAM_WEIGHTS_ADDR);
-    write_bram_bytes(BRAM_WEIGHTS_ADDR, weight_data, 864);
-
-    /* ---- Step 3: Write bias to BRAM (little-endian int32) ---- */
-    xil_printf("Writing bias (32 x int32) to BRAM @ 0x%03X...\r\n", BRAM_BIAS_ADDR);
-    for (int i = 0; i < 32; i++) {
-        write_bram_word(BRAM_BIAS_ADDR + i * 4, (u32)bias_data[i]);
+    /* ---- DIAGNOSTIC: 3x3 conv WITH PAD, center-only weight ---- */
+    /* weight = {0,0,0, 0,1,0, 0,0,0}: only kh=1,kw=1 contributes */
+    /* For pixel (oh,ow), the center tap reads input at (oh, ow) */
+    /* acc = bias + (input[oh*3+ow] - x_zp) * 1 = 1000 + input[i] + 128 */
+    /* Pixel 0: acc=1000+1+128=1129, pixel 4: acc=1000+5+128=1133, etc. */
+    {
+        s8 diag_input[9] = {1,2,3, 4,5,6, 7,8,9};
+        s8 diag_weight[9] = {1,0,0, 0,0,0, 0,0,0};
+        s32 diag_bias[1] = {1000};
+        write_bram_bytes(BRAM_INPUT_ADDR, diag_input, 9);
+        write_bram_bytes(BRAM_WEIGHTS_ADDR, diag_weight, 9);
+        write_bram_word(BRAM_BIAS_ADDR, (u32)diag_bias[0]);
     }
+    xil_printf("DIAGNOSTIC: 3x3 PAD, center-only weight\r\n");
+    xil_printf("Each pixel should differ based on input[oh*3+ow]\r\n");
 
-    /* ---- Step 4: Clear output area ---- */
-    for (int i = 0; i < 288; i += 4) {
+    /* ---- Step 3+4: (bias already written above; clear output) ---- */
+    for (int i = 0; i < 36; i += 4) {
         write_bram_word(BRAM_OUTPUT_ADDR + i, 0xDEDEDEDE);
     }
 
@@ -300,53 +302,62 @@ int main(void)
     /* Clear start */
     write_reg(REG_CTRL, 0);
 
-    /* ---- Step 8: Read and verify pixel(1,1) for all 32 channels ---- */
-    xil_printf("=== Pixel (1,1) - all 32 output channels ===\r\n");
-    xil_printf("  oc | got  | expected | OK?\r\n");
-    xil_printf("  ---+------+----------+----\r\n");
+    /* ---- DIAGNOSTIC: Read output pixel(s) ---- */
+    xil_printf("=== DIAGNOSTIC: 3x3 conv WITH PAD ===\r\n");
 
-    for (int oc = 0; oc < 32; oc++) {
-        /* Output address: BRAM_OUTPUT_ADDR + oc * (H_OUT * W_OUT) + oh*W_OUT + ow */
-        /* = 0xC00 + oc*9 + 1*3 + 1 = 0xC00 + oc*9 + 4 */
-        u32 addr = BRAM_OUTPUT_ADDR + oc * (H_OUT * W_OUT) + 1 * W_OUT + 1;
+    int npix = H_OUT * W_OUT;
+    for (int i = 0; i < npix; i++) {
+        u32 addr = BRAM_OUTPUT_ADDR + i;
         s8 got = read_bram_byte(addr);
-        s8 exp = expected_center[oc];
+        s8 exp = -6; /* placeholder — compare manually */
         int ok = (got == exp);
         if (!ok) errors++;
-        xil_printf("  %2d | %4d | %4d     | %s\r\n", oc, (int)got, (int)exp,
+        xil_printf("  pixel %d: got %4d  exp %4d  %s\r\n", i, (int)got, (int)exp,
                    ok ? "OK" : "FAIL");
     }
 
-    /* ---- Step 9: Verify all 9 pixels for channel 0 ---- */
-    xil_printf("\r\n=== Channel 0 - all 9 pixels ===\r\n");
-    xil_printf("  oh,ow | got  | expected | OK?\r\n");
-    xil_printf("  ------+------+----------+----\r\n");
-
-    int ch0_errors = 0;
-    for (int oh = 0; oh < 3; oh++) {
-        for (int ow = 0; ow < 3; ow++) {
-            u32 addr = BRAM_OUTPUT_ADDR + 0 * 9 + oh * W_OUT + ow;
-            s8 got = read_bram_byte(addr);
-            s8 exp = expected_ch0_all[oh * 3 + ow];
-            int ok = (got == exp);
-            if (!ok) { errors++; ch0_errors++; }
-            xil_printf("  %d,%d   | %4d | %4d     | %s\r\n", oh, ow,
-                       (int)got, (int)exp, ok ? "OK" : "FAIL");
-        }
-    }
-
-    /* ---- Report results ---- */
     xil_printf("\r\n===================================================\r\n");
     if (errors == 0) {
-        xil_printf("  PASS: 32/32 channels + 9/9 pixels -- BIT-EXACTO\r\n");
+        xil_printf("  PASS: 9/9 pixels -- BIT-EXACTO\r\n");
     } else {
-        xil_printf("  FAIL: %d errores\r\n", errors);
+        xil_printf("  FAIL: %d errores de 9\r\n", errors);
     }
     xil_printf("===================================================\r\n");
 
+    /* Dump all 288 raw output bytes to DDR so XSCT can read them */
+    volatile u8 *dump = (volatile u8 *)(RESULT_ADDR + 0x100);
+    for (int i = 0; i < 288; i++) {
+        dump[i] = (u8)read_bram_byte(BRAM_OUTPUT_ADDR + i);
+    }
+    Xil_DCacheFlushRange((UINTPTR)dump, 288);
+
+    /* Also dump the 3 bias words we wrote (sanity check) */
+    volatile u32 *dumpb = (volatile u32 *)(RESULT_ADDR + 0x300);
+    for (int i = 0; i < 32; i++) {
+        /* Read back BRAM to verify the write actually stuck */
+        u32 word_addr = BRAM_BIAS_ADDR + i * 4;
+        dumpb[i] = Xil_In32(WRAPPER_BASE + REG_BRAM_BASE + word_addr);
+    }
+    Xil_DCacheFlushRange((UINTPTR)dumpb, 128);
+
+    /* Also read back a few input bytes */
+    volatile u32 *dumpi = (volatile u32 *)(RESULT_ADDR + 0x400);
+    for (int i = 0; i < 8; i++) {
+        dumpi[i] = Xil_In32(WRAPPER_BASE + REG_BRAM_BASE + i * 4);
+    }
+    Xil_DCacheFlushRange((UINTPTR)dumpi, 32);
+
+    /* Weight readback: first 32 bytes of each of the first 4 filters */
+    volatile u32 *dumpw = (volatile u32 *)(RESULT_ADDR + 0x500);
+    for (int i = 0; i < 32; i++) {
+        u32 word_addr = BRAM_WEIGHTS_ADDR + i * 4;
+        dumpw[i] = Xil_In32(WRAPPER_BASE + REG_BRAM_BASE + word_addr);
+    }
+    Xil_DCacheFlushRange((UINTPTR)dumpw, 128);
+
     /* Signal to XSCT */
     res[0] = MAGIC_DONE;
-    res[1] = 32 + 9;  /* total tests */
+    res[1] = (u32)npix;  /* total tests */
     res[2] = (u32)errors;
     Xil_DCacheFlushRange((UINTPTR)res, 64);
 

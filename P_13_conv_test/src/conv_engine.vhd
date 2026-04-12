@@ -169,6 +169,10 @@ architecture rtl of conv_engine is
     -- Buffers
     type weight_mem_t is array(0 to WB_SIZE-1) of signed(7 downto 0);
     signal weight_buf : weight_mem_t;
+    -- Forzar BRAM (sin esto Vivado lo implementa como Distributed RAM = 6144 LUTs)
+    attribute ram_style : string;
+    attribute ram_style of weight_buf : signal is "block";
+
     signal bias_buf   : bias_array_t;
 
     -- MAC array

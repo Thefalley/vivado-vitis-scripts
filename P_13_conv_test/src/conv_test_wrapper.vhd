@@ -2,29 +2,23 @@
 -- conv_test_wrapper.vhd — AXI-Lite wrapper for conv_engine test on ZedBoard
 -------------------------------------------------------------------------------
 --
--- Architecture:
+-- Architecture (post-debug rewrite):
 --   - AXI-Lite slave with config registers for conv_engine
---   - Single BRAM (4KB) as DDR model, shared between conv_engine and ARM
---     Conv_engine reads/writes via DDR interface (1-cycle read latency)
---     ARM reads/writes via AXI-Lite (offset 0x1000-0x1FFF)
---     These accesses never overlap: ARM loads data, conv runs, ARM reads back.
+--   - 4 KB BRAM (1024 x 32 bits) inferred via P_100 pattern:
+--       * ram_style="block" forces BRAM (not LUTRAM)
+--       * Single-port with sync read + byte-write-enables
+--       * ce_busy muxes the port: conv while running, AXI while idle
+--   - Conv reads/writes bytes via address mux + byte extraction from the
+--     32-bit word output (1-cycle pipelined to match BRAM read latency)
+--
+-- The ARM and conv_engine never access the BRAM simultaneously:
+--   - ARM writes data, configures regs, pulses start, polls status
+--   - During busy, ARM only reads register space (not BRAM)
+--   - When busy=0, ARM reads output from BRAM
 --
 -- Register map (32-bit, offset from base):
 --   0x00: control (bit 0 = start W, bit 1 = done RO, bit 2 = busy RO)
---   0x04: cfg_c_in (10 bits)
---   0x08: cfg_c_out (10 bits)
---   0x0C: cfg_h_in (10 bits)
---   0x10: cfg_w_in (10 bits)
---   0x14: cfg_ksize(1:0), cfg_stride(2), cfg_pad(3)
---   0x18: cfg_x_zp (9 bits signed)
---   0x1C: cfg_w_zp (8 bits signed)
---   0x20: cfg_M0 (32 bits)
---   0x24: cfg_n_shift (6 bits)
---   0x28: cfg_y_zp (8 bits signed)
---   0x2C: cfg_addr_input (25 bits)
---   0x30: cfg_addr_weights (25 bits)
---   0x34: cfg_addr_bias (25 bits)
---   0x38: cfg_addr_output (25 bits)
+--   0x04-0x38: config registers
 --   0x1000-0x1FFF: BRAM access window (4096 bytes, byte-addressed)
 --
 -------------------------------------------------------------------------------
@@ -35,7 +29,6 @@ use ieee.numeric_std.all;
 
 entity conv_test_wrapper is
     port (
-        -- AXI-Lite slave interface
         s_axi_aclk    : in  std_logic;
         s_axi_aresetn : in  std_logic;
 
@@ -67,27 +60,8 @@ end entity conv_test_wrapper;
 
 architecture rtl of conv_test_wrapper is
 
-    -- Clock and reset
     signal clk   : std_logic;
     signal rst_n : std_logic;
-
-    ---------------------------------------------------------------------------
-    -- BRAM: 4096 bytes
-    -- Single array, written from one unified process.
-    ---------------------------------------------------------------------------
-    type bram_t is array(0 to 4095) of std_logic_vector(7 downto 0);
-    signal bram : bram_t := (others => (others => '0'));
-
-    -- Conv_engine side read data (registered, 1-cycle latency)
-    signal bram_rd_data_a : std_logic_vector(7 downto 0) := (others => '0');
-
-    ---------------------------------------------------------------------------
-    -- AXI-Lite write request to BRAM (from p_axi_wr to p_bram)
-    ---------------------------------------------------------------------------
-    signal axi_bram_wr_en   : std_logic := '0';
-    signal axi_bram_wr_addr : unsigned(11 downto 0) := (others => '0');
-    signal axi_bram_wr_data : std_logic_vector(31 downto 0) := (others => '0');
-    signal axi_bram_wr_strb : std_logic_vector(3 downto 0)  := (others => '0');
 
     ---------------------------------------------------------------------------
     -- Config registers
@@ -119,22 +93,55 @@ architecture rtl of conv_test_wrapper is
     signal ddr_wr_data  : std_logic_vector(7 downto 0);
     signal ddr_wr_en    : std_logic;
 
-    -- Done latch
     signal done_latch : std_logic := '0';
-
-    -- Start pulse generation
     signal start_prev : std_logic := '0';
 
     ---------------------------------------------------------------------------
-    -- AXI-Lite state machine signals
+    -- 4 KB BRAM: 1024 words x 32 bits, P_100 inference pattern
+    ---------------------------------------------------------------------------
+    constant BRAM_DEPTH : natural := 1024;
+    type ram_t is array (0 to BRAM_DEPTH-1) of std_logic_vector(31 downto 0);
+    signal ram : ram_t := (others => (others => '0'));
+    attribute ram_style : string;
+    attribute ram_style of ram : signal is "block";
+
+    -- Single-port signals (muxed by ce_busy)
+    signal bram_en    : std_logic;
+    signal bram_we    : std_logic_vector(3 downto 0);
+    signal bram_addr  : unsigned(9 downto 0);
+    signal bram_din   : std_logic_vector(31 downto 0);
+    signal bram_dout  : std_logic_vector(31 downto 0) := (others => '0');
+
+    -- Conv-side byte selection (pipelined to match BRAM read latency)
+    signal conv_byte_sel   : unsigned(1 downto 0);
+    signal conv_byte_sel_d : unsigned(1 downto 0) := "00";
+
+    -- Conv→BRAM combinational signals
+    signal conv_bram_en   : std_logic;
+    signal conv_bram_we   : std_logic_vector(3 downto 0);
+    signal conv_bram_addr : unsigned(9 downto 0);
+    signal conv_bram_din  : std_logic_vector(31 downto 0);
+
+    -- AXI→BRAM combinational signals
+    signal axi_bram_en   : std_logic;
+    signal axi_bram_we   : std_logic_vector(3 downto 0);
+    signal axi_bram_addr : unsigned(9 downto 0);
+    signal axi_bram_din  : std_logic_vector(31 downto 0);
+
+    ---------------------------------------------------------------------------
+    -- AXI-Lite state machines
     ---------------------------------------------------------------------------
     signal axi_awready_r : std_logic := '0';
     signal axi_wready_r  : std_logic := '0';
     signal axi_bvalid_r  : std_logic := '0';
 
+    type rd_state_t is (RD_IDLE, RD_WAIT, RD_VALID);
+    signal rd_state      : rd_state_t := RD_IDLE;
     signal axi_arready_r : std_logic := '0';
     signal axi_rvalid_r  : std_logic := '0';
     signal axi_rdata_r   : std_logic_vector(31 downto 0) := (others => '0');
+    signal rd_is_bram    : std_logic := '0';
+    signal reg_rd_data   : std_logic_vector(31 downto 0) := (others => '0');
 
 begin
 
@@ -182,102 +189,144 @@ begin
             ddr_rd_en       => ddr_rd_en,
             ddr_wr_addr     => ddr_wr_addr,
             ddr_wr_data     => ddr_wr_data,
-            ddr_wr_en       => ddr_wr_en
+            ddr_wr_en       => ddr_wr_en,
+            dbg_state       => open,
+            dbg_oh          => open,
+            dbg_ow          => open,
+            dbg_kh          => open,
+            dbg_kw          => open,
+            dbg_ic          => open,
+            dbg_w_base      => open,
+            dbg_mac_a       => open,
+            dbg_mac_b       => open,
+            dbg_mac_bi      => open,
+            dbg_mac_acc     => open,
+            dbg_mac_vi      => open,
+            dbg_mac_clr     => open,
+            dbg_mac_lb      => open,
+            dbg_pad         => open,
+            dbg_act_addr    => open
         );
 
     ---------------------------------------------------------------------------
-    -- Unified BRAM process: all reads and writes in a single process
-    -- Port A (conv_engine): read with 1-cycle latency, write
-    -- Port B (AXI-Lite): write via axi_bram_wr_* signals
-    --
-    -- ARM and conv_engine never access simultaneously in practice.
-    -- Conv_engine has priority if they ever overlap.
+    -- Conv→BRAM adapter
+    -- The conv sees an 8-bit byte-addressed interface. Map it onto the 32-bit
+    -- word-addressed BRAM: extract word addr = byte_addr[11:2], byte lane =
+    -- byte_addr[1:0]. For writes, set one byte-enable and replicate the byte
+    -- across all 4 lanes (the BE selects which sticks). For reads, delay the
+    -- byte selector by 1 cycle to match BRAM read latency, then mux.
+    ---------------------------------------------------------------------------
+    conv_byte_sel <= ddr_rd_addr(1 downto 0) when ddr_wr_en = '0'
+                     else ddr_wr_addr(1 downto 0);
+
+    conv_bram_en   <= ddr_rd_en or ddr_wr_en;
+    conv_bram_addr <= ddr_wr_addr(11 downto 2) when ddr_wr_en = '1'
+                      else ddr_rd_addr(11 downto 2);
+    conv_bram_din  <= ddr_wr_data & ddr_wr_data & ddr_wr_data & ddr_wr_data;
+
+    conv_bram_we   <= "0001" when (ddr_wr_en = '1' and ddr_wr_addr(1 downto 0) = "00") else
+                      "0010" when (ddr_wr_en = '1' and ddr_wr_addr(1 downto 0) = "01") else
+                      "0100" when (ddr_wr_en = '1' and ddr_wr_addr(1 downto 0) = "10") else
+                      "1000" when (ddr_wr_en = '1' and ddr_wr_addr(1 downto 0) = "11") else
+                      "0000";
+
+    ---------------------------------------------------------------------------
+    -- Port mux: conv owns the BRAM when busy, AXI owns it otherwise
+    ---------------------------------------------------------------------------
+    bram_en   <= conv_bram_en   when ce_busy = '1' else axi_bram_en;
+    bram_we   <= conv_bram_we   when ce_busy = '1' else axi_bram_we;
+    bram_addr <= conv_bram_addr when ce_busy = '1' else axi_bram_addr;
+    bram_din  <= conv_bram_din  when ce_busy = '1' else axi_bram_din;
+
+    ---------------------------------------------------------------------------
+    -- Single BRAM process (P_100 inference pattern)
+    -- Sync read + byte-write-enables. Vivado infers this as RAMB36E1 with
+    -- the ram_style="block" attribute forcing block RAM.
     ---------------------------------------------------------------------------
     p_bram : process(clk)
     begin
         if rising_edge(clk) then
-            -- Conv_engine read (1-cycle latency)
+            if bram_en = '1' then
+                if bram_we(0) = '1' then
+                    ram(to_integer(bram_addr))(7 downto 0)   <= bram_din(7 downto 0);
+                end if;
+                if bram_we(1) = '1' then
+                    ram(to_integer(bram_addr))(15 downto 8)  <= bram_din(15 downto 8);
+                end if;
+                if bram_we(2) = '1' then
+                    ram(to_integer(bram_addr))(23 downto 16) <= bram_din(23 downto 16);
+                end if;
+                if bram_we(3) = '1' then
+                    ram(to_integer(bram_addr))(31 downto 24) <= bram_din(31 downto 24);
+                end if;
+                bram_dout <= ram(to_integer(bram_addr));
+            end if;
+        end if;
+    end process;
+
+    ---------------------------------------------------------------------------
+    -- Conv read path: delay the byte selector 1 cycle to match BRAM latency
+    -- then mux the word output down to a byte.
+    ---------------------------------------------------------------------------
+    p_conv_rd_pipe : process(clk)
+    begin
+        if rising_edge(clk) then
             if ddr_rd_en = '1' then
-                bram_rd_data_a <= bram(to_integer(ddr_rd_addr(11 downto 0)));
-            end if;
-
-            -- Conv_engine write (priority)
-            if ddr_wr_en = '1' then
-                bram(to_integer(ddr_wr_addr(11 downto 0))) <= ddr_wr_data;
-
-            -- AXI-Lite write (only when conv_engine is not writing)
-            elsif axi_bram_wr_en = '1' then
-                if axi_bram_wr_strb(0) = '1' then
-                    bram(to_integer(axi_bram_wr_addr))     <= axi_bram_wr_data(7 downto 0);
-                end if;
-                if axi_bram_wr_strb(1) = '1' then
-                    bram(to_integer(axi_bram_wr_addr + 1)) <= axi_bram_wr_data(15 downto 8);
-                end if;
-                if axi_bram_wr_strb(2) = '1' then
-                    bram(to_integer(axi_bram_wr_addr + 2)) <= axi_bram_wr_data(23 downto 16);
-                end if;
-                if axi_bram_wr_strb(3) = '1' then
-                    bram(to_integer(axi_bram_wr_addr + 3)) <= axi_bram_wr_data(31 downto 24);
-                end if;
+                conv_byte_sel_d <= conv_byte_sel;
             end if;
         end if;
     end process;
 
-    ddr_rd_data <= bram_rd_data_a;
+    with conv_byte_sel_d select
+        ddr_rd_data <= bram_dout(7 downto 0)   when "00",
+                       bram_dout(15 downto 8)  when "01",
+                       bram_dout(23 downto 16) when "10",
+                       bram_dout(31 downto 24) when others;
 
     ---------------------------------------------------------------------------
-    -- Start pulse: detect rising edge of reg_start
+    -- AXI-Lite → BRAM combinational driver (only used while conv is idle)
     ---------------------------------------------------------------------------
-    p_start : process(clk)
-    begin
-        if rising_edge(clk) then
-            if rst_n = '0' then
-                start_prev <= '0';
-                ce_start   <= '0';
-            else
-                ce_start   <= reg_start and not start_prev;
-                start_prev <= reg_start;
-            end if;
-        end if;
-    end process;
+    axi_bram_en <= '1' when (s_axi_awvalid = '1' and s_axi_wvalid = '1'
+                              and axi_awready_r = '0' and axi_bvalid_r = '0'
+                              and unsigned(s_axi_awaddr) >= x"1000"
+                              and unsigned(s_axi_awaddr) <= x"1FFF")
+                        or (s_axi_arvalid = '1' and rd_state = RD_IDLE
+                              and axi_rvalid_r = '0'
+                              and unsigned(s_axi_araddr) >= x"1000"
+                              and unsigned(s_axi_araddr) <= x"1FFF")
+                   else '0';
+
+    axi_bram_we <= s_axi_wstrb when (s_axi_awvalid = '1' and s_axi_wvalid = '1'
+                                     and axi_awready_r = '0' and axi_bvalid_r = '0'
+                                     and unsigned(s_axi_awaddr) >= x"1000"
+                                     and unsigned(s_axi_awaddr) <= x"1FFF")
+                   else (others => '0');
+
+    axi_bram_addr <= unsigned(s_axi_awaddr(11 downto 2))
+                     when (s_axi_awvalid = '1' and s_axi_wvalid = '1'
+                           and axi_awready_r = '0' and axi_bvalid_r = '0'
+                           and unsigned(s_axi_awaddr) >= x"1000"
+                           and unsigned(s_axi_awaddr) <= x"1FFF")
+                     else unsigned(s_axi_araddr(11 downto 2));
+
+    axi_bram_din <= s_axi_wdata;
 
     ---------------------------------------------------------------------------
-    -- Done latch: set by conv_engine done pulse, cleared by ARM write 0 to ctrl
-    ---------------------------------------------------------------------------
-    p_done : process(clk)
-    begin
-        if rising_edge(clk) then
-            if rst_n = '0' then
-                done_latch <= '0';
-            elsif ce_done = '1' then
-                done_latch <= '1';
-            elsif reg_start = '0' then
-                -- Don't clear here automatically; let ARM read it
-                null;
-            end if;
-        end if;
-    end process;
-
-    ---------------------------------------------------------------------------
-    -- AXI-Lite Write Channel
+    -- AXI-Lite Write Channel (register writes; BRAM writes go via axi_bram_*)
     ---------------------------------------------------------------------------
     p_axi_wr : process(clk)
         variable v_addr : unsigned(14 downto 0);
     begin
         if rising_edge(clk) then
             if rst_n = '0' then
-                axi_awready_r   <= '0';
-                axi_wready_r    <= '0';
-                axi_bvalid_r    <= '0';
-                reg_start        <= '0';
-                axi_bram_wr_en  <= '0';
+                axi_awready_r <= '0';
+                axi_wready_r  <= '0';
+                axi_bvalid_r  <= '0';
+                reg_start     <= '0';
             else
-                -- Default: deassert
-                axi_awready_r  <= '0';
-                axi_wready_r   <= '0';
-                axi_bram_wr_en <= '0';
+                axi_awready_r <= '0';
+                axi_wready_r  <= '0';
 
-                -- Accept write address + data together
                 if s_axi_awvalid = '1' and s_axi_wvalid = '1'
                    and axi_awready_r = '0' and axi_bvalid_r = '0' then
                     axi_awready_r <= '1';
@@ -285,15 +334,7 @@ begin
 
                     v_addr := unsigned(s_axi_awaddr);
 
-                    -- BRAM region: 0x1000-0x1FFF
-                    if v_addr >= x"1000" and v_addr <= x"1FFF" then
-                        axi_bram_wr_en   <= '1';
-                        axi_bram_wr_addr <= v_addr(11 downto 0);
-                        axi_bram_wr_data <= s_axi_wdata;
-                        axi_bram_wr_strb <= s_axi_wstrb;
-
-                    -- Register region: 0x00-0x3F
-                    else
+                    if v_addr < x"1000" then
                         case to_integer(v_addr(7 downto 0)) is
                             when 16#00# => reg_start        <= s_axi_wdata(0);
                             when 16#04# => reg_c_in         <= s_axi_wdata;
@@ -317,7 +358,6 @@ begin
                     axi_bvalid_r <= '1';
                 end if;
 
-                -- Write response handshake
                 if axi_bvalid_r = '1' and s_axi_bready = '1' then
                     axi_bvalid_r <= '0';
                 end if;
@@ -326,64 +366,98 @@ begin
     end process;
 
     ---------------------------------------------------------------------------
-    -- AXI-Lite Read Channel
+    -- AXI-Lite Read Channel (1-cycle pipeline to match BRAM latency)
     ---------------------------------------------------------------------------
     p_axi_rd : process(clk)
-        variable v_addr     : unsigned(14 downto 0);
-        variable v_bram_idx : unsigned(11 downto 0);
+        variable v_addr : unsigned(14 downto 0);
     begin
         if rising_edge(clk) then
             if rst_n = '0' then
+                rd_state      <= RD_IDLE;
                 axi_arready_r <= '0';
                 axi_rvalid_r  <= '0';
                 axi_rdata_r   <= (others => '0');
+                rd_is_bram    <= '0';
             else
                 axi_arready_r <= '0';
 
-                -- Accept read address
-                if s_axi_arvalid = '1' and axi_arready_r = '0' and axi_rvalid_r = '0' then
-                    axi_arready_r <= '1';
+                case rd_state is
+                    when RD_IDLE =>
+                        v_addr := unsigned(s_axi_araddr);
+                        if s_axi_arvalid = '1' and axi_rvalid_r = '0' then
+                            axi_arready_r <= '1';
 
-                    v_addr := unsigned(s_axi_araddr);
+                            if v_addr >= x"1000" and v_addr <= x"1FFF" then
+                                rd_is_bram <= '1';
+                            else
+                                rd_is_bram <= '0';
+                                case to_integer(v_addr(7 downto 0)) is
+                                    when 16#00# =>
+                                        reg_rd_data <= (31 downto 3 => '0')
+                                                     & ce_busy & done_latch & reg_start;
+                                    when 16#04# => reg_rd_data <= reg_c_in;
+                                    when 16#08# => reg_rd_data <= reg_c_out;
+                                    when 16#0C# => reg_rd_data <= reg_h_in;
+                                    when 16#10# => reg_rd_data <= reg_w_in;
+                                    when 16#14# => reg_rd_data <= reg_ksp;
+                                    when 16#18# => reg_rd_data <= reg_x_zp;
+                                    when 16#1C# => reg_rd_data <= reg_w_zp;
+                                    when 16#20# => reg_rd_data <= reg_M0;
+                                    when 16#24# => reg_rd_data <= reg_n_shift;
+                                    when 16#28# => reg_rd_data <= reg_y_zp;
+                                    when 16#2C# => reg_rd_data <= reg_addr_input;
+                                    when 16#30# => reg_rd_data <= reg_addr_weights;
+                                    when 16#34# => reg_rd_data <= reg_addr_bias;
+                                    when 16#38# => reg_rd_data <= reg_addr_output;
+                                    when others => reg_rd_data <= (others => '0');
+                                end case;
+                            end if;
 
-                    -- BRAM region: 0x1000-0x1FFF
-                    if v_addr >= x"1000" and v_addr <= x"1FFF" then
-                        v_bram_idx := v_addr(11 downto 0);
-                        axi_rdata_r <= bram(to_integer(v_bram_idx + 3))
-                                     & bram(to_integer(v_bram_idx + 2))
-                                     & bram(to_integer(v_bram_idx + 1))
-                                     & bram(to_integer(v_bram_idx));
-                    -- Register region
-                    else
-                        case to_integer(v_addr(7 downto 0)) is
-                            when 16#00# =>
-                                axi_rdata_r <= (31 downto 3 => '0')
-                                             & ce_busy & done_latch & reg_start;
-                            when 16#04# => axi_rdata_r <= reg_c_in;
-                            when 16#08# => axi_rdata_r <= reg_c_out;
-                            when 16#0C# => axi_rdata_r <= reg_h_in;
-                            when 16#10# => axi_rdata_r <= reg_w_in;
-                            when 16#14# => axi_rdata_r <= reg_ksp;
-                            when 16#18# => axi_rdata_r <= reg_x_zp;
-                            when 16#1C# => axi_rdata_r <= reg_w_zp;
-                            when 16#20# => axi_rdata_r <= reg_M0;
-                            when 16#24# => axi_rdata_r <= reg_n_shift;
-                            when 16#28# => axi_rdata_r <= reg_y_zp;
-                            when 16#2C# => axi_rdata_r <= reg_addr_input;
-                            when 16#30# => axi_rdata_r <= reg_addr_weights;
-                            when 16#34# => axi_rdata_r <= reg_addr_bias;
-                            when 16#38# => axi_rdata_r <= reg_addr_output;
-                            when others => axi_rdata_r <= (others => '0');
-                        end case;
-                    end if;
+                            rd_state <= RD_WAIT;
+                        end if;
 
-                    axi_rvalid_r <= '1';
-                end if;
+                    when RD_WAIT =>
+                        if rd_is_bram = '1' then
+                            axi_rdata_r <= bram_dout;
+                        else
+                            axi_rdata_r <= reg_rd_data;
+                        end if;
+                        axi_rvalid_r <= '1';
+                        rd_state     <= RD_VALID;
 
-                -- Read data handshake
-                if axi_rvalid_r = '1' and s_axi_rready = '1' then
-                    axi_rvalid_r <= '0';
-                end if;
+                    when RD_VALID =>
+                        if s_axi_rready = '1' then
+                            axi_rvalid_r <= '0';
+                            rd_state     <= RD_IDLE;
+                        end if;
+                end case;
+            end if;
+        end if;
+    end process;
+
+    ---------------------------------------------------------------------------
+    -- Start pulse + done latch
+    ---------------------------------------------------------------------------
+    p_start : process(clk)
+    begin
+        if rising_edge(clk) then
+            if rst_n = '0' then
+                start_prev <= '0';
+                ce_start   <= '0';
+            else
+                ce_start   <= reg_start and not start_prev;
+                start_prev <= reg_start;
+            end if;
+        end if;
+    end process;
+
+    p_done : process(clk)
+    begin
+        if rising_edge(clk) then
+            if rst_n = '0' then
+                done_latch <= '0';
+            elsif ce_done = '1' then
+                done_latch <= '1';
             end if;
         end if;
     end process;

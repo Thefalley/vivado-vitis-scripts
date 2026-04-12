@@ -91,20 +91,26 @@ architecture rtl of mac_unit is
     -- Forzar uso de DSP48E1 para la multiplicacion
     attribute use_dsp : string;
 
+    -- CRITICAL: impedir que phys_opt mueva registros dentro/fuera del DSP.
+    -- Sin esto, Vivado hace "DSP Register push" (288 regs para 32 MACs)
+    -- que desincroniza product_r con s1_valid, corrompiendo la acumulacion.
+    attribute dont_touch : string;
+
     ---------------------------------------------------------------------------
     -- REGISTROS DE ETAPA 1 (entre la entrada y la multiplicacion)
-    --
-    -- Estos registros se actualizan en el flanco de subida del reloj.
-    -- Guardan el resultado de la multiplicacion y las señales de control
-    -- para que la etapa 2 las use en el ciclo siguiente.
     ---------------------------------------------------------------------------
-    signal product_r    : signed(16 downto 0);  -- resultado: 9 bits × 8 bits = 17 bits
+    signal product_r    : signed(16 downto 0);
     attribute use_dsp of product_r : signal is "yes";
+    attribute dont_touch of product_r : signal is "true";
                                                  -- rango: -32640 a 32385
-    signal s1_valid     : std_logic;             -- valid_in retrasado 1 ciclo
-    signal s1_bias      : std_logic;             -- load_bias retrasado 1 ciclo
-    signal s1_clear     : std_logic;             -- clear retrasado 1 ciclo
-    signal s1_bias_val  : signed(31 downto 0);   -- bias_in retrasado 1 ciclo
+    signal s1_valid     : std_logic;
+    signal s1_bias      : std_logic;
+    signal s1_clear     : std_logic;
+    signal s1_bias_val  : signed(31 downto 0);
+    attribute dont_touch of s1_valid    : signal is "true";
+    attribute dont_touch of s1_bias     : signal is "true";
+    attribute dont_touch of s1_clear    : signal is "true";
+    attribute dont_touch of s1_bias_val : signal is "true";
 
     ---------------------------------------------------------------------------
     -- REGISTROS DE ETAPA 2 (el acumulador y su valid)
