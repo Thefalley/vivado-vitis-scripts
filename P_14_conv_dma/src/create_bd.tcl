@@ -1,20 +1,18 @@
 # ==============================================================
-# create_bd.tcl - Block Design: Zynq PS + AXI DMA + conv_test_wrapper
+# create_bd.tcl - Block Design: Zynq PS + AXI DMA + conv_stream_wrapper
 # ZedBoard (xc7z020clg484-1)
 #
 # Arquitectura:
-#   Zynq PS --M_AXI_GP0--> AXI Interconnect --> { DMA ctrl, conv_wrapper ctrl }
+#   Zynq PS --M_AXI_GP0--> AXI Interconnect --> { DMA ctrl, conv_stream_wrapper ctrl }
 #   AXI DMA --M_AXI_MM2S/S2MM--> AXI Interconnect --> Zynq PS (S_AXI_HP0) --> DDR
-#   DMA streams loopback (placeholder — no AXI-Stream en wrapper todavia)
+#   DMA M_AXIS_MM2S --> conv_stream_wrapper s_axis (LOAD data into BRAM)
+#   conv_stream_wrapper m_axis --> DMA S_AXIS_S2MM  (DRAIN results)
 #
-# Fase 1 (este archivo): infraestructura DMA lista, datos via AXI-Lite
-#   - ARM carga BRAM via AXI-Lite (igual que P_13)
-#   - ARM configura y ejecuta conv_engine via AXI-Lite
-#   - DMA presente pero en loopback (listo para fase 2)
-#
-# Fase 2 (futuro): conv_dma_wrapper con AXI-Stream ports
-#   - DMA MM2S -> wrapper BRAM (carga datos a throughput maximo)
-#   - wrapper BRAM -> DMA S2MM (drena resultados)
+# Flow:
+#   1. ARM configures conv via AXI-Lite registers
+#   2. ARM issues LOAD command; DMA MM2S streams data -> wrapper BRAM
+#   3. ARM issues START command; conv_engine_v2 processes
+#   4. ARM issues DRAIN command; wrapper BRAM -> DMA S2MM -> DDR
 # ==============================================================
 
 create_bd_design "conv_dma_bd"
@@ -22,18 +20,18 @@ create_bd_design "conv_dma_bd"
 set proj_dir [get_property DIRECTORY [current_project]]
 set src_dir [file normalize [file join $proj_dir ../src]]
 
-# --- VHDL sources (reuse from P_13) ---
+# --- VHDL sources (reuse from P_13 + local conv_stream_wrapper) ---
 read_vhdl [file join $src_dir ../../P_13_conv_test/src/mac_unit.vhd]
 read_vhdl [file join $src_dir ../../P_13_conv_test/src/mac_array.vhd]
 read_vhdl [file join $src_dir ../../P_13_conv_test/src/mul_s32x32_pipe.vhd]
 read_vhdl [file join $src_dir ../../P_13_conv_test/src/requantize.vhd]
 read_vhdl [file join $src_dir ../../P_13_conv_test/src/conv_engine.vhd]
 read_vhdl [file join $src_dir ../../P_13_conv_test/src/conv_engine_v2.vhd]
-read_vhdl [file join $src_dir ../../P_13_conv_test/src/conv_test_wrapper.vhd]
+read_vhdl [file join $src_dir conv_stream_wrapper.vhd]
 update_compile_order -fileset sources_1
 
 # ==============================================================
-# 1. Zynq Processing System (ZedBoard, DDR3, GP0 + HP0, FCLK0=90MHz)
+# 1. Zynq Processing System (ZedBoard, DDR3, GP0 + HP0, FCLK0=100MHz)
 # ==============================================================
 set zynq [create_bd_cell -type ip -vlnv xilinx.com:ip:processing_system7:5.5 ps7]
 if {[catch {set_property -dict [list CONFIG.preset {ZedBoard}] $zynq}]} {
@@ -69,9 +67,9 @@ set_property -dict [list \
 ] $dma
 
 # ==============================================================
-# 3. conv_test_wrapper (module reference — reuses P_13 wrapper as-is)
+# 3. conv_stream_wrapper (module reference)
 # ==============================================================
-create_bd_cell -type module -reference conv_test_wrapper conv_test_wrapper_0
+create_bd_cell -type module -reference conv_stream_wrapper conv_stream_wrapper_0
 
 # ==============================================================
 # 4. AXI Interconnects
@@ -100,14 +98,14 @@ set_property -dict [list CONFIG.NUM_PORTS {2}] $concat
 # CONNECTIONS
 # ==============================================================
 
-# --- Clocks: everything on FCLK_CLK0 (90 MHz) ---
+# --- Clocks: everything on FCLK_CLK0 (100 MHz) ---
 connect_bd_net [get_bd_pins ps7/FCLK_CLK0] \
     [get_bd_pins ps7/M_AXI_GP0_ACLK] \
     [get_bd_pins ps7/S_AXI_HP0_ACLK] \
     [get_bd_pins axi_dma_0/s_axi_lite_aclk] \
     [get_bd_pins axi_dma_0/m_axi_mm2s_aclk] \
     [get_bd_pins axi_dma_0/m_axi_s2mm_aclk] \
-    [get_bd_pins conv_test_wrapper_0/s_axi_aclk] \
+    [get_bd_pins conv_stream_wrapper_0/clk] \
     [get_bd_pins axi_ic_gp0/ACLK] \
     [get_bd_pins axi_ic_gp0/S00_ACLK] \
     [get_bd_pins axi_ic_gp0/M00_ACLK] \
@@ -134,7 +132,7 @@ connect_bd_net [get_bd_pins proc_sys_reset_0/interconnect_aresetn] \
 
 connect_bd_net [get_bd_pins proc_sys_reset_0/peripheral_aresetn] \
     [get_bd_pins axi_dma_0/axi_resetn] \
-    [get_bd_pins conv_test_wrapper_0/s_axi_aresetn]
+    [get_bd_pins conv_stream_wrapper_0/rst_n]
 
 # --- AXI GP0 path: PS -> IC -> {DMA ctrl, wrapper ctrl} ---
 connect_bd_intf_net [get_bd_intf_pins ps7/M_AXI_GP0] \
@@ -144,9 +142,9 @@ connect_bd_intf_net [get_bd_intf_pins ps7/M_AXI_GP0] \
 connect_bd_intf_net [get_bd_intf_pins axi_ic_gp0/M00_AXI] \
     [get_bd_intf_pins axi_dma_0/S_AXI_LITE]
 
-# M01 -> conv_test_wrapper s_axi (BRAM + config registers)
+# M01 -> conv_stream_wrapper s_axi (config registers)
 connect_bd_intf_net [get_bd_intf_pins axi_ic_gp0/M01_AXI] \
-    [get_bd_intf_pins conv_test_wrapper_0/s_axi]
+    [get_bd_intf_pins conv_stream_wrapper_0/s_axi]
 
 # --- AXI HP0 path: DMA -> IC -> DDR ---
 connect_bd_intf_net [get_bd_intf_pins axi_dma_0/M_AXI_MM2S] \
@@ -156,9 +154,12 @@ connect_bd_intf_net [get_bd_intf_pins axi_dma_0/M_AXI_S2MM] \
 connect_bd_intf_net [get_bd_intf_pins axi_ic_hp0/M00_AXI] \
     [get_bd_intf_pins ps7/S_AXI_HP0]
 
-# --- DMA Stream Loopback (Fase 1: MM2S -> S2MM directo) ---
-# En Fase 2 esto se reemplaza por: MM2S -> wrapper -> S2MM
+# --- DMA Stream -> conv_stream_wrapper -> DMA ---
+# MM2S -> wrapper s_axis (input data from DDR to BRAM)
 connect_bd_intf_net [get_bd_intf_pins axi_dma_0/M_AXIS_MM2S] \
+    [get_bd_intf_pins conv_stream_wrapper_0/s_axis]
+# wrapper m_axis -> S2MM (output data from BRAM to DDR)
+connect_bd_intf_net [get_bd_intf_pins conv_stream_wrapper_0/m_axis] \
     [get_bd_intf_pins axi_dma_0/S_AXIS_S2MM]
 
 # --- Interrupts: DMA mm2s + s2mm -> concat -> PS IRQ_F2P ---
@@ -190,9 +191,10 @@ set_property top conv_dma_bd_wrapper [current_fileset]
 update_compile_order -fileset sources_1
 
 puts "OK: Block Design 'conv_dma_bd'"
-puts "  - Zynq PS (90 MHz, DDR, GP0 + HP0, IRQ)"
-puts "  - AXI DMA (simple mode, MM2S + S2MM, loopback)"
-puts "  - conv_test_wrapper (AXI-Lite, reused from P_13)"
+puts "  - Zynq PS (100 MHz, DDR, GP0 + HP0, IRQ)"
+puts "  - AXI DMA (simple mode, MM2S + S2MM)"
+puts "  - conv_stream_wrapper (AXI-Lite config + AXI-Stream data)"
 puts "  - GP0: 2 slaves (DMA ctrl @ M00, wrapper @ M01)"
 puts "  - HP0: 2 masters (DMA MM2S + S2MM) -> DDR"
-puts "  - Fase 1: datos via AXI-Lite, DMA en loopback"
+puts "  - DMA MM2S -> wrapper s_axis -> BRAM"
+puts "  - BRAM -> wrapper m_axis -> DMA S2MM"

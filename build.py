@@ -127,7 +127,7 @@ def cmd_create(project_dir: Path, cfg: dict):
     if cfg["is_bd"]:
         # Block Design project
         bd_tcl = cfg["sources"][0]
-        args = [str(project_dir), cfg["name"], cfg["part"], bd_tcl]
+        args = [str(project_dir), cfg["name"], cfg["part"], bd_tcl, cfg["top"]]
         run_vivado(TCL_DIR / "create_bd_project.tcl", args)
     else:
         # RTL project

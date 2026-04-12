@@ -24,19 +24,19 @@ while {$elapsed < $timeout} {
     after 2000
     set elapsed [expr {$elapsed + 2}]
     stop
-    set magic [lindex [mrd -value 0x01200000 1] 0]
+    set magic [lindex [mrd -value 0x10200000 1] 0]
     con
     if {$magic == 0xDEAD1234} { break }
 }
 after 500
 stop
-set res [mrd -value 0x01200000 3]
+set res [mrd -value 0x10200000 3]
 set total  [lindex $res 1]
 set errors [lindex $res 2]
 puts "\n========================================="
-puts "  P_14 Conv+DMA Test -- RESULTADO JTAG"
+puts "  P_14 Conv DMA Stream Test -- RESULTADO JTAG"
 puts "========================================="
 puts "  Total: $total tests"
 puts "  Errors: $errors"
-if {$errors == 0} { puts "  >>> ALL PASSED -- Conv + DMA OK <<<" } else { puts "  >>> FAILED <<<" }
+if {$errors == 0} { puts "  >>> ALL PASSED -- Conv DMA Stream OK <<<" } else { puts "  >>> FAILED <<<" }
 puts "========================================="
