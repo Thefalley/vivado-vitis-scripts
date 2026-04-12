@@ -104,7 +104,8 @@ architecture rtl of conv_engine is
         BIAS_LOAD,
         -- MAC loop (0 multiplicaciones — solo sumas e incrementos)
         MAC_PAD_REG,    -- padding check + act_addr (sumas), init wload
-        MAC_WLOAD,      -- 1 peso/ciclo del weight_buf (32 ciclos)
+        MAC_WLOAD,      -- presentar addr a weight BRAM (1 ciclo latencia)
+        MAC_WLOAD_CAP,  -- capturar dato de weight BRAM → mac_b
         MAC_EMIT, MAC_WAIT_DDR, MAC_CAPTURE, MAC_FIRE,
         -- MAC drain
         MAC_DONE_WAIT, MAC_DONE_WAIT2,
@@ -145,7 +146,7 @@ architecture rtl of conv_engine is
     -- act_addr_r = act_pixel_base + act_ic_offset + act_kh_offset + kw
     signal ih_base_r      : signed(10 downto 0);   -- oh*stride - pad
     signal iw_base_r      : signed(10 downto 0);   -- ow*stride - pad
-    signal temp_ihb_w     : unsigned(19 downto 0);  -- |ih_base| × cfg_w_in
+    signal temp_ihb_w     : signed(20 downto 0);    -- ih_base × w_in (SIGNED para pad negativo)
     signal temp_oh_w      : unsigned(19 downto 0);  -- oh × w_out (para RQ)
     signal act_pixel_base : unsigned(24 downto 0);
     signal act_ic_offset  : unsigned(24 downto 0);
@@ -166,12 +167,19 @@ architecture rtl of conv_engine is
     signal rq_ch        : unsigned(9 downto 0);
     signal rq_wr_addr_r : unsigned(24 downto 0);
 
-    -- Buffers
-    type weight_mem_t is array(0 to WB_SIZE-1) of signed(7 downto 0);
-    signal weight_buf : weight_mem_t;
-    -- Forzar BRAM (sin esto Vivado lo implementa como Distributed RAM = 6144 LUTs)
+    -- Weight buffer: BRAM (patron bram_sp de P_101, verificado en HW)
+    -- Reemplaza el antiguo LUTRAM (6144 LUTs) que fallaba con patrones sparse.
+    -- Single-port: una address muxeada entre write (WL_CAPTURE) y read (MAC_WLOAD).
+    -- Latencia de lectura: 1 ciclo → MAC_WLOAD necesita MAC_WLOAD_CAP para capturar.
+    type weight_mem_t is array(0 to WB_SIZE-1) of std_logic_vector(7 downto 0);
+    signal wb_ram : weight_mem_t := (others => (others => '0'));
     attribute ram_style : string;
-    attribute ram_style of weight_buf : signal is "block";
+    attribute ram_style of wb_ram : signal is "block";
+
+    signal wb_addr : unsigned(14 downto 0) := (others => '0');
+    signal wb_we   : std_logic := '0';
+    signal wb_din  : std_logic_vector(7 downto 0) := (others => '0');
+    signal wb_dout : signed(7 downto 0) := (others => '0');
 
     signal bias_buf   : bias_array_t;
 
@@ -194,6 +202,19 @@ begin
     kw_size    <= to_unsigned(1, 10) when cfg_ksize = "00" else to_unsigned(3, 10);
     pad_val    <= to_unsigned(1, 10) when cfg_pad = '1'    else to_unsigned(0, 10);
     stride_val <= to_unsigned(2, 10) when cfg_stride = '1' else to_unsigned(1, 10);
+
+    ---------------------------------------------------------------------------
+    -- Weight buffer BRAM (patron bram_sp de P_101, 1 ciclo latencia)
+    ---------------------------------------------------------------------------
+    p_wb_bram : process(clk)
+    begin
+        if rising_edge(clk) then
+            if wb_we = '1' then
+                wb_ram(to_integer(wb_addr)) <= wb_din;
+            end if;
+            wb_dout <= signed(wb_ram(to_integer(wb_addr)));
+        end if;
+    end process;
 
     u_mac : entity work.mac_array
         port map (clk=>clk, rst_n=>rst_n, a_in=>mac_a, b_in=>mac_b,
@@ -257,10 +278,12 @@ begin
                 act_ic_offset <= (others=>'0'); act_kh_offset <= (others=>'0');
                 act_addr_r <= (others=>'0'); w_base_idx_r <= (others=>'0');
                 wload_cnt <= (others=>'0'); wload_addr_r <= (others=>'0');
+                wb_addr <= (others=>'0'); wb_we <= '0'; wb_din <= (others=>'0');
             else
                 ddr_rd_en <= '0'; ddr_wr_en <= '0';
                 mac_vi <= '0'; mac_lb <= '0'; mac_clr <= '0';
                 rq_vi <= '0'; done <= '0';
+                wb_we <= '0';  -- default: no weight BRAM write
 
                 case state is
 
@@ -348,9 +371,12 @@ begin
                     state <= WL_CAPTURE;
 
                 when WL_CAPTURE =>
-                    weight_buf(to_integer(w_idx)) <= signed(ddr_rd_data);
-                    w_idx <= w_idx + 1;
-                    state <= WL_EMIT;
+                    -- Write to weight BRAM via wb_we/wb_addr/wb_din
+                    wb_we   <= '1';
+                    wb_addr <= w_idx(14 downto 0);
+                    wb_din  <= ddr_rd_data;
+                    w_idx   <= w_idx + 1;
+                    state   <= WL_EMIT;
 
                 ---------------------------------------------------------------
                 -- CARGAR BIAS (contador incremental, 0 mults)
@@ -373,7 +399,7 @@ begin
                     bias_addr_r    <= bias_addr_r + 1;
                     if bias_byte_idx = "11" then
                         bias_buf(to_integer(bias_word_idx)) <=
-                            signed(ddr_rd_data & bias_shift_reg(31 downto 8));
+                            signed(std_logic_vector'(ddr_rd_data & bias_shift_reg(31 downto 8)));
                         bias_byte_idx <= (others => '0');
                         bias_word_idx <= bias_word_idx + 1;
                     else
@@ -423,7 +449,10 @@ begin
                 -- Sumas (path independiente): rq_wr_addr_r = base + temp_oh_w + ow
                 when INIT_PIXEL_2 =>
                     -- 1 mult: ih_base × w_in (para la base de activacion)
-                    temp_ihb_w <= resize(unsigned(ih_base_r(9 downto 0)) * cfg_w_in, 20);
+                    -- FIX: signed multiply para ih_base negativo (pad)
+                    -- Antes: unsigned(ih_base(9:0)) * w_in → overflow cuando ih_base<0
+                    -- Ahora: signed * signed → resultado correcto para ih_base=-1
+                    temp_ihb_w <= resize(ih_base_r * signed('0' & std_logic_vector(cfg_w_in)), 21);
 
                     -- Sumas en path independiente: base de escritura RQ
                     rq_wr_addr_r <= cfg_addr_output
@@ -434,9 +463,10 @@ begin
                 -- INIT_PIXEL_3: ensamblar act_pixel_base (sumas) + reset offsets
                 when INIT_PIXEL_3 =>
                     -- Base de activacion para este pixel (kh=0, kw=0, ic=0)
+                    -- FIX: signed→unsigned conversion lets 25-bit wrap handle negative offsets
                     act_pixel_base <= cfg_addr_input
-                        + resize(temp_ihb_w, 25)
-                        + resize(unsigned(iw_base_r(9 downto 0)), 25);
+                        + unsigned(std_logic_vector(resize(temp_ihb_w, 25)))
+                        + unsigned(std_logic_vector(resize(iw_base_r, 25)));
 
                     -- Reset contadores incrementales
                     act_ic_offset  <= (others => '0');
@@ -477,17 +507,28 @@ begin
                     -- Iniciar carga secuencial de pesos
                     wload_cnt    <= (others => '0');
                     wload_addr_r <= w_base_idx_r;
+                    wb_addr      <= w_base_idx_r(14 downto 0);  -- pre-present to BRAM
                     state        <= MAC_WLOAD;
 
-                -- MAC_WLOAD: 1 peso por ciclo del weight_buf (32 ciclos)
-                -- Usa 1 BRAM read port. Solo 1 suma por ciclo (incremental).
+                -- MAC_WLOAD: presentar addr del peso a la BRAM (1 ciclo latencia)
                 when MAC_WLOAD =>
-                    mac_b(to_integer(wload_cnt)) <= weight_buf(to_integer(wload_addr_r));
+                    wb_addr <= wload_addr_r(14 downto 0);
+                    wb_we   <= '0';
+                    state   <= MAC_WLOAD_CAP;
+
+                -- MAC_WLOAD_CAP: capturar dato de la BRAM → mac_b
+                -- CRITICAL: pre-present NEXT address to BRAM so it's ready
+                -- when MAC_WLOAD re-enters (1-cycle pipeline alignment)
+                when MAC_WLOAD_CAP =>
+                    mac_b(to_integer(wload_cnt)) <= wb_dout;
                     wload_addr_r <= wload_addr_r + w_stride_per_filter;
+                    wb_addr      <= resize(wload_addr_r + w_stride_per_filter, 15);
                     wload_cnt    <= wload_cnt + 1;
 
                     if wload_cnt = to_unsigned(N_MAC - 1, 6) then
                         state <= MAC_EMIT;
+                    else
+                        state <= MAC_WLOAD;
                     end if;
 
                 -- MAC_EMIT: emitir lectura DDR de activacion
