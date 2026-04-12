@@ -45,6 +45,7 @@
 #define REG_ADDR_WEIGHTS   0x30
 #define REG_ADDR_BIAS      0x34
 #define REG_ADDR_OUTPUT    0x38
+#define REG_IC_TILE_SIZE   0x3C
 #define REG_BRAM_BASE      0x1000
 
 /* BRAM internal addresses (what conv_engine sees) */
@@ -297,6 +298,7 @@ int main(void)
     write_reg(REG_ADDR_WEIGHTS, BRAM_WEIGHTS_ADDR);
     write_reg(REG_ADDR_BIAS,    BRAM_BIAS_ADDR);
     write_reg(REG_ADDR_OUTPUT,  BRAM_OUTPUT_ADDR);
+    write_reg(REG_IC_TILE_SIZE, C_IN);  /* ic_tile = c_in = no tiling */
 
     /* ---- Step 6: Start conv_engine ---- */
     xil_printf("Starting conv_engine...\r\n");

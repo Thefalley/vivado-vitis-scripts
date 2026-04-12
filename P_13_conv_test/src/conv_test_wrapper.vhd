@@ -81,6 +81,7 @@ architecture rtl of conv_test_wrapper is
     signal reg_addr_weights: std_logic_vector(31 downto 0) := (others => '0');
     signal reg_addr_bias   : std_logic_vector(31 downto 0) := (others => '0');
     signal reg_addr_output : std_logic_vector(31 downto 0) := (others => '0');
+    signal reg_ic_tile_size: std_logic_vector(31 downto 0) := (others => '0');
 
     -- conv_engine signals
     signal ce_start     : std_logic := '0';
@@ -161,7 +162,7 @@ begin
     ---------------------------------------------------------------------------
     -- conv_engine instance
     ---------------------------------------------------------------------------
-    u_conv : entity work.conv_engine
+    u_conv : entity work.conv_engine_v2
         port map (
             clk             => clk,
             rst_n           => rst_n,
@@ -181,6 +182,7 @@ begin
             cfg_addr_weights=> unsigned(reg_addr_weights(24 downto 0)),
             cfg_addr_bias   => unsigned(reg_addr_bias(24 downto 0)),
             cfg_addr_output => unsigned(reg_addr_output(24 downto 0)),
+            cfg_ic_tile_size=> unsigned(reg_ic_tile_size(9 downto 0)),
             start           => ce_start,
             done            => ce_done,
             busy            => ce_busy,
@@ -196,6 +198,8 @@ begin
             dbg_kh          => open,
             dbg_kw          => open,
             dbg_ic          => open,
+            dbg_oc_tile_base=> open,
+            dbg_ic_tile_base=> open,
             dbg_w_base      => open,
             dbg_mac_a       => open,
             dbg_mac_b       => open,
@@ -351,6 +355,7 @@ begin
                             when 16#30# => reg_addr_weights <= s_axi_wdata;
                             when 16#34# => reg_addr_bias    <= s_axi_wdata;
                             when 16#38# => reg_addr_output  <= s_axi_wdata;
+                            when 16#3C# => reg_ic_tile_size <= s_axi_wdata;
                             when others => null;
                         end case;
                     end if;
@@ -409,6 +414,7 @@ begin
                                     when 16#30# => reg_rd_data <= reg_addr_weights;
                                     when 16#34# => reg_rd_data <= reg_addr_bias;
                                     when 16#38# => reg_rd_data <= reg_addr_output;
+                                    when 16#3C# => reg_rd_data <= reg_ic_tile_size;
                                     when others => reg_rd_data <= (others => '0');
                                 end case;
                             end if;
