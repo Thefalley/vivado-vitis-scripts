@@ -1,12 +1,11 @@
 /*
- * irq_test.c - Test de interrupciones PL -> PS en ZedBoard
+ * irq_test.c - Test de interrupciones PL -> PS en ZedBoard (16 registros)
  *
- * Configura la FSM irq_top via AXI-Lite, arranca el conteo,
- * y verifica que la interrupcion llega correctamente al GIC del ARM.
- *
- * TEST 1: threshold=100, condition=100 -> IRQ debe disparar
- * TEST 2: threshold=100, condition=50  -> IRQ NO debe disparar
- * TEST 3: re-arranque -> segundo IRQ, irq_count=2
+ * TEST 1: threshold=100, condition=100, mask=1 -> IRQ
+ * TEST 2: threshold=100, condition=50 -> NO IRQ
+ * TEST 3: prescaler=9, threshold=10 -> IRQ (cuenta cada 10 clocks)
+ * TEST 4: scratch R/W
+ * TEST 5: VERSION read-only
  */
 
 #include "xscugic.h"
@@ -15,171 +14,156 @@
 #include "xil_io.h"
 #include "xparameters.h"
 
-/* ---- Base address (from Vivado address map) ---- */
-/* Try auto-generated parameter first, fallback to typical GP0 addr */
 #ifdef XPAR_IRQ_TOP_0_S_AXI_BASEADDR
 #define IRQ_BASE  XPAR_IRQ_TOP_0_S_AXI_BASEADDR
 #else
 #define IRQ_BASE  0x40000000
 #endif
 
-/* Register offsets */
+/* Register offsets (16 registers) */
 #define REG_CTRL       0x00
 #define REG_THRESHOLD  0x04
 #define REG_CONDITION  0x08
 #define REG_STATUS     0x0C
 #define REG_COUNT      0x10
 #define REG_IRQ_COUNT  0x14
+#define REG_PRESCALER  0x18
+#define REG_SCRATCH0   0x1C
+#define REG_SCRATCH1   0x20
+#define REG_SCRATCH2   0x24
+#define REG_SCRATCH3   0x28
+#define REG_VERSION    0x2C
 
-/* Zynq PL interrupt: IRQ_F2P[0] = SPI ID 61 */
+/* CTRL bits: bit0=start, bit1=irq_clear, bit2=irq_mask */
+#define CTRL_START     0x01
+#define CTRL_CLR       0x02
+#define CTRL_MASK      0x04
+#define CTRL_START_MASK (CTRL_START | CTRL_MASK)  /* 0x05 */
+
 #define PL_IRQ_ID      61
-
-/* GIC */
 #define INTC_DEVICE_ID XPAR_SCUGIC_SINGLE_DEVICE_ID
 
-/* ---- Globals ---- */
 static XScuGic Intc;
 static volatile u32 g_irq_count = 0;
 
-/* ---- Helpers ---- */
-static inline void reg_write(u32 offset, u32 val) {
-    Xil_Out32(IRQ_BASE + offset, val);
-}
-static inline u32 reg_read(u32 offset) {
-    return Xil_In32(IRQ_BASE + offset);
-}
+static inline void wreg(u32 off, u32 val) { Xil_Out32(IRQ_BASE + off, val); }
+static inline u32  rreg(u32 off)          { return Xil_In32(IRQ_BASE + off); }
 
-/* ---- ISR ---- */
-static void IrqHandler(void *CallbackRef)
+static void IrqHandler(void *cb)
 {
-    u32 status   = reg_read(REG_STATUS);
-    u32 count    = reg_read(REG_COUNT);
-    u32 irq_cnt  = reg_read(REG_IRQ_COUNT);
-
-    xil_printf("  [ISR] status=0x%08x count=%d irq_count=%d\r\n",
-               status, count, irq_cnt);
-
-    /* Clear interrupt: write irq_clear bit, then release */
-    reg_write(REG_CTRL, 0x2);
-    reg_write(REG_CTRL, 0x0);
-
+    (void)cb;
+    wreg(REG_CTRL, CTRL_CLR);
+    wreg(REG_CTRL, 0);
     g_irq_count++;
 }
 
-/* ---- Interrupt setup ---- */
 static int SetupInterrupts(void)
 {
-    XScuGic_Config *cfg;
-    int status;
-
-    cfg = XScuGic_LookupConfig(INTC_DEVICE_ID);
+    XScuGic_Config *cfg = XScuGic_LookupConfig(INTC_DEVICE_ID);
     if (!cfg) return XST_FAILURE;
-
-    status = XScuGic_CfgInitialize(&Intc, cfg, cfg->CpuBaseAddress);
-    if (status != XST_SUCCESS) return status;
-
-    /* High-level sensitive trigger for PL interrupt */
+    int s = XScuGic_CfgInitialize(&Intc, cfg, cfg->CpuBaseAddress);
+    if (s != XST_SUCCESS) return s;
     XScuGic_SetPriorityTriggerType(&Intc, PL_IRQ_ID, 0xA0, 0x1);
-
-    status = XScuGic_Connect(&Intc, PL_IRQ_ID,
-                             (Xil_InterruptHandler)IrqHandler, NULL);
-    if (status != XST_SUCCESS) return status;
-
+    s = XScuGic_Connect(&Intc, PL_IRQ_ID, (Xil_InterruptHandler)IrqHandler, NULL);
+    if (s != XST_SUCCESS) return s;
     XScuGic_Enable(&Intc, PL_IRQ_ID);
-
-    /* ARM exception table */
     Xil_ExceptionInit();
     Xil_ExceptionRegisterHandler(XIL_EXCEPTION_ID_INT,
         (Xil_ExceptionHandler)XScuGic_InterruptHandler, &Intc);
     Xil_ExceptionEnable();
-
     return XST_SUCCESS;
 }
 
-/* ---- Main ---- */
+/* Result markers in DDR for JTAG verification */
+#define DDR_MARKER   0x00100000
+#define DDR_RESULTS  0x00100004  /* 5 words: test1..test5 result (1=pass) */
+
 int main(void)
 {
+    u32 pass;
+
     xil_printf("\r\n==========================================\r\n");
-    xil_printf("  P_200 IRQ Test (ZedBoard)\r\n");
-    xil_printf("  Base addr: 0x%08x\r\n", IRQ_BASE);
+    xil_printf("  P_200 IRQ Test v2 (16 regs)\r\n");
+    xil_printf("  Base: 0x%08x\r\n", IRQ_BASE);
     xil_printf("==========================================\r\n\r\n");
 
-    /* Setup GIC + handler */
     if (SetupInterrupts() != XST_SUCCESS) {
         xil_printf("ERROR: GIC init failed\r\n");
         return -1;
     }
-    xil_printf("GIC configurado, IRQ %d habilitado\r\n\r\n", PL_IRQ_ID);
 
-    /* ===== TEST 1: threshold=100, condition=100 -> IRQ ===== */
-    xil_printf("--- TEST 1: threshold=100, condition=100 ---\r\n");
+    /* ===== TEST 1: threshold=100, condition=100, mask=1 ===== */
+    xil_printf("--- TEST 1: IRQ fire (th=100, cond=100) ---\r\n");
     g_irq_count = 0;
+    wreg(REG_PRESCALER, 0);
+    wreg(REG_THRESHOLD, 100);
+    wreg(REG_CONDITION, 100);
+    wreg(REG_CTRL, CTRL_START_MASK);
 
-    reg_write(REG_THRESHOLD, 100);
-    reg_write(REG_CONDITION, 100);
-    reg_write(REG_CTRL, 0x1);  /* start */
-
-    /* Wait for ISR (at 100 MHz, 100 cycles = 1 us) */
     for (volatile u32 i = 0; i < 100000 && g_irq_count == 0; i++);
+    pass = (g_irq_count >= 1);
+    xil_printf("  %s (irq=%d)\r\n\r\n", pass ? "PASS" : "FAIL", g_irq_count);
+    Xil_Out32(DDR_RESULTS + 0, pass);
 
-    if (g_irq_count >= 1) {
-        xil_printf("  PASS: IRQ recibido (%d veces)\r\n\r\n", g_irq_count);
-    } else {
-        xil_printf("  FAIL: IRQ no llego\r\n\r\n");
-    }
-
-    /* ===== TEST 2: threshold=100, condition=50 -> NO IRQ ===== */
-    xil_printf("--- TEST 2: threshold=100, condition=50 (no IRQ) ---\r\n");
+    /* ===== TEST 2: condition=50 -> no IRQ ===== */
+    xil_printf("--- TEST 2: no IRQ (cond=50) ---\r\n");
     g_irq_count = 0;
-
-    reg_write(REG_THRESHOLD, 100);
-    reg_write(REG_CONDITION, 50);
-    reg_write(REG_CTRL, 0x1);  /* start */
-
-    /* Wait a while */
+    wreg(REG_CONDITION, 50);
+    wreg(REG_CTRL, CTRL_START_MASK);
     for (volatile u32 i = 0; i < 500000; i++);
+    wreg(REG_CTRL, 0);
+    pass = (g_irq_count == 0);
+    xil_printf("  %s (irq=%d)\r\n\r\n", pass ? "PASS" : "FAIL", g_irq_count);
+    Xil_Out32(DDR_RESULTS + 4, pass);
 
-    /* Stop FSM */
-    reg_write(REG_CTRL, 0x0);
-
-    if (g_irq_count == 0) {
-        xil_printf("  PASS: no IRQ (correcto)\r\n\r\n");
-    } else {
-        xil_printf("  FAIL: IRQ disparo cuando no debia (%d)\r\n\r\n", g_irq_count);
-    }
-
-    /* ===== TEST 3: condition=100 otra vez -> 2do IRQ ===== */
-    xil_printf("--- TEST 3: restart, condition=100 ---\r\n");
+    /* ===== TEST 3: prescaler=9, threshold=10 ===== */
+    xil_printf("--- TEST 3: prescaler=9 (th=10, 100 real clocks) ---\r\n");
     g_irq_count = 0;
+    wreg(REG_PRESCALER, 9);
+    wreg(REG_THRESHOLD, 10);
+    wreg(REG_CONDITION, 10);
+    wreg(REG_CTRL, CTRL_START_MASK);
+    for (volatile u32 i = 0; i < 200000 && g_irq_count == 0; i++);
+    pass = (g_irq_count >= 1);
+    xil_printf("  %s (irq=%d, count=%d)\r\n\r\n", pass ? "PASS" : "FAIL",
+               g_irq_count, rreg(REG_COUNT));
+    Xil_Out32(DDR_RESULTS + 8, pass);
+    wreg(REG_CTRL, CTRL_CLR);
+    wreg(REG_CTRL, 0);
+    wreg(REG_PRESCALER, 0);
 
-    reg_write(REG_CONDITION, 100);
-    reg_write(REG_CTRL, 0x1);
+    /* ===== TEST 4: scratch R/W ===== */
+    xil_printf("--- TEST 4: scratch registers ---\r\n");
+    wreg(REG_SCRATCH0, 0xDEADBEEF);
+    wreg(REG_SCRATCH1, 0xCAFEBABE);
+    wreg(REG_SCRATCH2, 0x12345678);
+    wreg(REG_SCRATCH3, 0xA5A5A5A5);
+    pass = (rreg(REG_SCRATCH0) == 0xDEADBEEF) &&
+           (rreg(REG_SCRATCH1) == 0xCAFEBABE) &&
+           (rreg(REG_SCRATCH2) == 0x12345678) &&
+           (rreg(REG_SCRATCH3) == 0xA5A5A5A5);
+    xil_printf("  S0=0x%08x S1=0x%08x S2=0x%08x S3=0x%08x\r\n",
+               rreg(REG_SCRATCH0), rreg(REG_SCRATCH1),
+               rreg(REG_SCRATCH2), rreg(REG_SCRATCH3));
+    xil_printf("  %s\r\n\r\n", pass ? "PASS" : "FAIL");
+    Xil_Out32(DDR_RESULTS + 12, pass);
 
-    for (volatile u32 i = 0; i < 100000 && g_irq_count == 0; i++);
+    /* ===== TEST 5: VERSION ===== */
+    xil_printf("--- TEST 5: VERSION register ---\r\n");
+    u32 ver = rreg(REG_VERSION);
+    pass = (ver == 0x20000001);
+    xil_printf("  VERSION = 0x%08x  %s\r\n\r\n", ver, pass ? "PASS" : "FAIL");
+    Xil_Out32(DDR_RESULTS + 16, pass);
 
-    /* Read HW irq_count register */
-    u32 hw_irq_cnt = reg_read(REG_IRQ_COUNT);
-
-    if (g_irq_count >= 1) {
-        xil_printf("  PASS: 2do IRQ recibido (HW irq_count=%d)\r\n\r\n", hw_irq_cnt);
-    } else {
-        xil_printf("  FAIL: 2do IRQ no llego\r\n\r\n");
-    }
-
-    /* Stop */
-    reg_write(REG_CTRL, 0x0);
-
-    /* ===== Summary ===== */
+    /* Summary */
+    u32 hw_irq = rreg(REG_IRQ_COUNT);
     xil_printf("==========================================\r\n");
-    xil_printf("  HW registers finales:\r\n");
-    xil_printf("    STATUS    = 0x%08x\r\n", reg_read(REG_STATUS));
-    xil_printf("    COUNT     = %d\r\n",     reg_read(REG_COUNT));
-    xil_printf("    IRQ_COUNT = %d\r\n",     reg_read(REG_IRQ_COUNT));
+    xil_printf("  HW IRQ_COUNT = %d\r\n", hw_irq);
+    xil_printf("  VERSION      = 0x%08x\r\n", ver);
     xil_printf("==========================================\r\n");
     xil_printf("  DONE\r\n");
 
-    /* Marker for JTAG verification: write 0xDEAD at known DDR address */
-    Xil_Out32(0x00100000, 0xDEADBEEF);
+    Xil_Out32(DDR_MARKER, 0xDEADBEEF);
 
     while (1);
     return 0;

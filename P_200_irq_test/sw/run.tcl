@@ -119,16 +119,39 @@ catch {
     set status_r  [lindex [mrd -force -value [expr {$irq_base + 0x0C}] 1] 0]
     set count     [lindex [mrd -force -value [expr {$irq_base + 0x10}] 1] 0]
     set irq_count [lindex [mrd -force -value [expr {$irq_base + 0x14}] 1] 0]
+    set prescaler [lindex [mrd -force -value [expr {$irq_base + 0x18}] 1] 0]
+    set scratch0  [lindex [mrd -force -value [expr {$irq_base + 0x1C}] 1] 0]
+    set scratch1  [lindex [mrd -force -value [expr {$irq_base + 0x20}] 1] 0]
+    set version   [lindex [mrd -force -value [expr {$irq_base + 0x2C}] 1] 0]
     set ddr_mark  [lindex [mrd -force -value 0x00100000 1] 0]
 
+    # C test results from DDR
+    set t1 [lindex [mrd -force -value 0x00100004 1] 0]
+    set t2 [lindex [mrd -force -value 0x00100008 1] 0]
+    set t3 [lindex [mrd -force -value 0x0010000C 1] 0]
+    set t4 [lindex [mrd -force -value 0x00100010 1] 0]
+    set t5 [lindex [mrd -force -value 0x00100014 1] 0]
+
     puts ""
+    puts "  --- HW Registers ---"
     puts "  CTRL       = [format 0x%08X $ctrl]"
     puts "  THRESHOLD  = $threshold"
     puts "  CONDITION  = $condition"
     puts "  STATUS     = [format 0x%08X $status_r]"
     puts "  COUNT      = $count"
     puts "  IRQ_COUNT  = $irq_count"
+    puts "  PRESCALER  = $prescaler"
+    puts "  SCRATCH0   = [format 0x%08X $scratch0]"
+    puts "  SCRATCH1   = [format 0x%08X $scratch1]"
+    puts "  VERSION    = [format 0x%08X $version]"
     puts "  DDR marker = [format 0x%08X $ddr_mark]"
+
+    puts "\n  --- C Test Results (DDR) ---"
+    puts "  T1 IRQ fire:     [expr {$t1 ? "PASS" : "FAIL"}]"
+    puts "  T2 no IRQ:       [expr {$t2 ? "PASS" : "FAIL"}]"
+    puts "  T3 prescaler:    [expr {$t3 ? "PASS" : "FAIL"}]"
+    puts "  T4 scratch R/W:  [expr {$t4 ? "PASS" : "FAIL"}]"
+    puts "  T5 VERSION:      [expr {$t5 ? "PASS" : "FAIL"}]"
 
     puts "\n========================================="
     set errors 0
@@ -140,26 +163,21 @@ catch {
         incr errors
     }
 
-    if {$irq_count >= 2} {
-        puts "  IRQ_COUNT >= 2:       OK ($irq_count interrupciones)"
-    } elseif {$irq_count == 1} {
-        puts "  IRQ_COUNT = 1:        FAIL"
-        incr errors
-    } else {
-        puts "  IRQ_COUNT = 0:        FAIL"
-        incr errors
-    }
+    set total_pass [expr {$t1 + $t2 + $t3 + $t4 + $t5}]
+    puts "  Tests C pasados:     $total_pass / 5"
+    if {$total_pass < 5} { incr errors }
 
-    if {$status_r == 0} {
-        puts "  STATUS = IDLE:        OK"
+    if {$version == 0x20000001} {
+        puts "  VERSION:              OK (0x20000001)"
     } else {
-        puts "  STATUS = [format 0x%X $status_r]:  INFO"
+        puts "  VERSION:              FAIL"
+        incr errors
     }
 
     puts "========================================="
-    if {$errors == 0 && $irq_count >= 2} {
+    if {$errors == 0} {
         puts "  RESULTADO: PASS"
-        puts "  Interrupciones PL->PS VERIFICADAS!"
+        puts "  16 registros + IRQ + prescaler VERIFICADOS!"
     } else {
         puts "  RESULTADO: FAIL ($errors errores)"
     }
