@@ -1,14 +1,10 @@
 library ieee;
 use ieee.std_logic_1164.all;
 
--- irq_top: Top-level wrapper
---   Conecta axi_lite_cfg (registros) con irq_fsm (maquina de estados)
---   Expone interfaz AXI-Lite + salida de interrupcion
-
 entity irq_top is
     generic (
         C_S_AXI_DATA_WIDTH : integer := 32;
-        C_S_AXI_ADDR_WIDTH : integer := 5
+        C_S_AXI_ADDR_WIDTH : integer := 6
     );
     port (
         irq_out        : out std_logic;
@@ -42,6 +38,7 @@ architecture rtl of irq_top is
     signal ctrl_s      : std_logic_vector(31 downto 0);
     signal threshold_s : std_logic_vector(31 downto 0);
     signal condition_s : std_logic_vector(31 downto 0);
+    signal prescaler_s : std_logic_vector(31 downto 0);
     signal status_s    : std_logic_vector(31 downto 0);
     signal count_s     : std_logic_vector(31 downto 0);
     signal irq_count_s : std_logic_vector(31 downto 0);
@@ -57,6 +54,7 @@ begin
             ctrl_out      => ctrl_s,
             threshold_out => threshold_s,
             condition_out => condition_s,
+            prescaler_out => prescaler_s,
             status_in     => status_s,
             count_in      => count_s,
             irq_count_in  => irq_count_s,
@@ -90,6 +88,7 @@ begin
             ctrl      => ctrl_s,
             threshold => threshold_s,
             condition => condition_s,
+            prescaler => prescaler_s,
             status    => status_s,
             count_out => count_s,
             irq_count => irq_count_s,
