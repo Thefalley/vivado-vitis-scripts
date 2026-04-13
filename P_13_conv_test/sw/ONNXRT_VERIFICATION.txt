@@ -1,0 +1,124 @@
+ONNX Runtime Verification
+=========================
+
+Date: 2026-04-11
+onnxruntime version: 1.24.4
+onnx version: 1.20.1
+
+Method:
+  Built a standalone ONNX sub-model containing a single QLinearConv
+  node with the exact same weights, bias, scales, and zero-points
+  as the first QLinearConv in yolov4_int8_qop.onnx.
+  Input: 8x8x3 gradient pattern (same as gen_crop_data.py), NCHW int8.
+  Ran inference with onnxruntime CPUExecutionProvider.
+  Compared output byte-by-byte against:
+    (a) Python manual arithmetic from gen_crop_data.py (M0=656954014, n_shift=37)
+    (b) Float64 reference (dequant -> float conv -> requant)
+
+Result: PERFECT MATCH
+
+Details:
+  Bytes compared: 2048
+  onnxruntime vs Python: 0 mismatches, max|diff| = 0
+  Float-ref vs onnxruntime: 0 mismatches
+  Float-ref vs Python: 0 mismatches
+
+Conclusion:
+  The expected values in conv_crop_test.c are 100% correct.
+  onnxruntime's QLinearConv produces byte-identical output.
+  The HW test result (2048/2048 pass on ZedBoard) is fully validated.
+
+
+--- Full comparison log ---
+
+=== Quantization Parameters (from ONNX model) ===
+  x_scale = 0.003921568859368563
+  x_zp    = -128
+  w_scale = 0.3085734248161316
+  w_zp    = 0
+  y_scale = 0.2531589865684509
+  y_zp    = -17
+  weights shape = (32, 3, 3, 3)
+  bias shape    = (32,)
+
+=== Input (NCHW int8) ===
+  Shape: (1, 3, 8, 8), dtype: int8
+  Range: [-128, 124]
+
+=== Sub-model built and validated (opset 13, QLinearConv) ===
+
+=== Running onnxruntime (v1.24.4) QLinearConv ===
+  Input: X, shape=[1, 3, 8, 8], type=tensor(int8)
+  Output shape: (1, 32, 8, 8), dtype: int8
+  Output range: [-128, 93]
+
+=== Python requantization ===
+  M_exact = 0.004779968311575046
+  M0=656954014, n_shift=37
+  Approx M = 0.004779969560331665
+  Python output range: [-128, 93]
+
+============================================================
+COMPARISON: onnxruntime vs Python (gen_crop_data.py)
+============================================================
+  Total bytes: 2048
+  Exact matches: 2048
+  Mismatches: 0
+  Max |diff|: 0
+
+============================================================
+PIXEL (0,0) -- all 32 output channels
+============================================================
+   ch    ort     py  match
+    0     -6     -6  OK
+    1    -10    -10  OK
+    2    -10    -10  OK
+    3    -16    -16  OK
+    4     -6     -6  OK
+    5     -9     -9  OK
+    6    -11    -11  OK
+    7    -20    -20  OK
+    8    -11    -11  OK
+    9    -21    -21  OK
+   10    -29    -29  OK
+   11    -23    -23  OK
+   12      8      8  OK
+   13     -6     -6  OK
+   14     -8     -8  OK
+   15    -13    -13  OK
+   16    -19    -19  OK
+   17     13     13  OK
+   18     -6     -6  OK
+   19     -5     -5  OK
+   20    -11    -11  OK
+   21    -13    -13  OK
+   22    -10    -10  OK
+   23    -17    -17  OK
+   24    -48    -48  OK
+   25    -19    -19  OK
+   26    -62    -62  OK
+   27     -8     -8  OK
+   28    -59    -59  OK
+   29     -5     -5  OK
+   30     12     12  OK
+   31    -14    -14  OK
+
+============================================================
+CHANNEL 0 -- all 64 pixels (8x8)
+============================================================
+  Mismatches in ch0: 0 of 64
+
+============================================================
+FLOAT REFERENCE (dequant -> conv -> quant)
+============================================================
+  Float-ref vs onnxruntime: 0 mismatches, max|diff|=0
+  Float-ref vs Python:      0 mismatches, max|diff|=0
+
+============================================================
+FINAL VERDICT
+============================================================
+  Result: PERFECT MATCH
+  onnxruntime QLinearConv output == Python expected values
+  All 2048 bytes are byte-for-byte identical.
+  Conclusion: gen_crop_data.py expected values are 100% correct.
+  The conv_crop_test.c test (2048/2048 pass) is fully validated.
