@@ -1,0 +1,214 @@
+AUDIT REPORT -- YOLOv4 Conv Engine HW Verification
+==================================================
+Date: 2026-04-13
+Auditor: Independent verification agent (Claude Opus 4.6)
+
+This report audits the conv_engine_v2 hardware verification results
+for the YOLOv4 int8 model running on a ZedBoard (Zynq-7020).
+The audit was conducted while tests were still running. At the time
+of this report, 21 unique layers have been tested (batch still in
+progress for the remaining 89).
+
+
+METHODOLOGY
+-----------
+
+Expected values source: PYTHON MANUAL (NOT onnxruntime)
+  gen_layer_tests.py uses hand-coded Python (nested for-loops) to compute
+  expected output. It does NOT import or use onnxruntime.
+  The formula is:
+    acc = bias[oc]
+    for each (kh, kw, ic): acc += (x[ic,ih,iw] - x_zp) * (w[oc,ic,kh,kw] - w_zp)
+    result = clamp( ((acc * M0) + 2^(n-1)) >> n + y_zp, -128, 127 )
+  This formula was verified to match the VHDL requantize.vhd pipeline
+  (etapas 1-8: multiply, round, shift, add y_zp, saturate).
+  Python's >> operator on negative integers is arithmetic (sign-extending),
+  matching VHDL's shift_right on signed types.
+
+  VERDICT: The expected-value formula is HW-exact. It replicates the
+  exact integer arithmetic of the VHDL, not a floating-point approximation.
+  This is GOOD -- the test genuinely checks bit-exact matching.
+
+Weights and bias source: REAL ONNX MODEL
+  Verified that gen_layer_tests.py loads:
+    C:/project/vitis-ai/workspace/models/custom/yolov4_int8_qop.onnx (64 MB)
+  Weights, biases, scales, and zero points are extracted from the actual
+  QLinearConv nodes. Spot-checked:
+    - Layer 0 weights (OHWI): .c file matches ONNX model exactly
+    - Layer 50 weights (OHWI): .c file matches ONNX model exactly
+    - Layer 0 bias[0]: .c=1623, ONNX=1623 (match)
+  Weight layout transform OIHW->OHWI is correct (numpy transpose (0,2,3,1)).
+
+  VERDICT: Weights and biases are REAL, not invented.
+
+Input data source: SYNTHETIC (deterministic pattern)
+  gen_layer_tests.py gen_input() generates inputs using:
+    val = ((c * 37 + r * 17 + col * 7 + c * r * 3) % 256) - 128
+  This produces the SAME pattern for all layers with the same c_in_test/crop
+  (confirmed: layers 014, 050, 100 all start with -128, -121, -114, ...).
+  NO real image data from the model's actual inference is used.
+
+  VERDICT: Inputs are synthetic. Not from a real image or from onnxruntime
+  inference of a prior layer. This is acceptable for verifying arithmetic
+  correctness but does NOT prove the HW produces correct inference results
+  on real data.
+
+Tiling tested: NO
+  All 110 test .c files set IC_TILE_SIZE = C_IN (the full test c_in).
+  The conv_engine_v2 ic_tile feature (IC_TILE_ADV state machine) is
+  NEVER exercised. If there is a bug in the ic_tile accumulation logic
+  (e.g., failing to preserve partial sums across tiles), these tests
+  would NOT catch it.
+
+  VERDICT: IC tiling is UNTESTED. This is the single biggest gap.
+
+Configs covered: ALL 3 types present
+  - 3x3 stride=1 pad=1: layers 0, 5, 14, 25, 90, 100 (6 tested)
+  - 3x3 stride=2 pad=1: layers 1, 8, 60 (3 tested, +15* see note)
+  - 1x1 stride=1 no-pad: layers 2, 3, 10, 15, 16, 20, 30, 40, 50, 70, 80, 109 (12 tested)
+
+
+FINDINGS
+--------
+
+Total unique layers with HW results: 21 / 110
+  PASS: 21
+  FAIL: 0
+  HUNG/TIMEOUT: 0
+  SKIPPED (no result): 89 (batch still running)
+
+All 21 tested layers passed BIT-EXACT (every output byte matches expected).
+
+Layers tested span the full model range:
+  First layer: 000 (c_in=3, 3x3 s=1)
+  Last layer:  109 (c_in=1024, 1x1)
+  Middle layers: 014, 016, 020, 025, 030, 040, 050, 060, 070, 080, 090, 100
+
+Original c_in values of tested layers span: 3, 32, 64, 128, 256, 512, 1024
+Original c_out values of tested layers span: 32, 64, 128, 255, 256, 512, 1024
+
+Gaps in layer numbering (layers not yet tested):
+  4, 6, 7, 9, 11, 12, 13, 17-19, 21-24, 26-29, 31-39, 41-49, 51-59,
+  61-69, 71-79, 81-89, 91-99, 101-108
+  NOTE: run_all_remaining.sh DONE list includes 4,6,7,9,11,12,13 as
+  "already tested," but they do NOT appear in layer_test_results.txt.
+  Their results may have been lost during the DAP error/board reset.
+
+
+CONCERNS
+--------
+
+1. CRITICAL: IC tiling is never tested.
+   The conv_engine_v2 supports ic_tile_size < c_in for processing large
+   channels in tiles. All 110 test files set ic_tile_size = c_in_test.
+   In production, layers like c_in=512 with a 32KB weight buffer would
+   use ic_tile_size ~113 and require multiple tile passes. The
+   accumulate-across-tiles logic (IC_TILE_ADV state, preserving MAC
+   partial sums) is completely unverified by these tests.
+
+2. SIGNIFICANT: Test dimensions are much smaller than real layers.
+   Due to the 4 KB BRAM constraint, all tests use tiny subsets:
+     - c_in_test: 3, 5, 9, or 20 (original layers have 3-2048)
+     - c_out_test: always 32 (original layers have 32-1024)
+     - crop: always 8x8 (original feature maps are up to 416x416)
+   Only 4 distinct test configurations exist:
+     66 layers: c_in=20, c_out=32, crop=8x8->8x8  (1x1 conv)
+     36 layers: c_in=5,  c_out=32, crop=8x8->8x8   (3x3 s=1)
+      7 layers: c_in=9,  c_out=32, crop=8x8->4x4   (3x3 s=2)
+      1 layer:  c_in=3,  c_out=32, crop=8x8->8x8   (layer 0)
+   This means most layers are effectively testing the SAME hardware
+   configuration with only different weights/quant parameters.
+
+3. MODERATE: Synthetic inputs produce unnatural activation patterns.
+   The deterministic formula ((c*37 + r*17 + col*7 + c*r*3) % 256) - 128
+   covers the full int8 range but does not represent real activation
+   statistics from YOLOv4 inference. Combined with the truncated c_in,
+   the accumulator values during the test differ significantly from
+   production values.
+
+4. MODERATE: Bias mismatch with truncated c_in.
+   The bias values come from the real ONNX model, calibrated for the FULL
+   c_in accumulation. With c_in_test << c_in (e.g., 5 vs 256), the
+   conv accumulator sum is ~50x smaller, making the bias dominate.
+   This exercises a different numerical range than production.
+
+5. MINOR: Asymmetric padding not tested.
+   The ONNX model uses asymmetric padding [1,1,0,0] for stride=2 layers.
+   The conv_engine_v2 only supports symmetric padding (cfg_pad = 0 or 1).
+   The tests use symmetric padding, which is self-consistent (expected
+   values also use symmetric padding), but this means the engine cannot
+   correctly handle stride=2 edge cases from the real model without
+   software workarounds.
+
+6. MINOR: Layer 015 description error in results file.
+   The manual section (line 21) describes layer 015 as "3x3 s=2" but
+   the actual .c file shows it is "1x1 s=1 p=0 c_in=20 c_out=32".
+   The ONNX model confirms layer 15 is c_in=64, c_out=64, k=1x1, s=1.
+   This is a documentation error, not a test error.
+
+7. MINOR: Missing results for layers 4, 6, 7, 9, 11, 12, 13.
+   The run_all_remaining.sh DONE list marks these as tested, but their
+   results do not appear in layer_test_results.txt. They were likely
+   tested before the DAP error but results were not persisted.
+
+
+SPOT-CHECK VERIFICATION
+-----------------------
+
+Layer 000 (3x3 s=1 p=1, c_in=3):
+  Manually computed oc=0, oh=0, ow=0: acc=1958, requant -> -8. File says -8. MATCH.
+  Manually computed oc=0, oh=0, ow=1: acc -> -11. File says -11. MATCH.
+  Manually computed oc=0, oh=1, ow=0: acc -> -8. File says -8. MATCH.
+
+Layer 001 (3x3 s=2 p=1, c_in=9):
+  Manually computed oc=0, oh=0, ow=0: acc=-2673, requant -> 7. File says 7. MATCH.
+  Manually computed oc=0, oh=0, ow=1: acc=-6500, requant -> -13. File says -13. MATCH.
+
+Layer 050 (1x1 s=1 p=0, c_in=20):
+  Manually computed oc=0, oh=0, ow=0: acc=-11966, requant -> -26. File says -26. MATCH.
+  Manually computed oc=0, oh=0, ow=1: acc -> -26. File says -26. MATCH.
+
+Weight verification against ONNX:
+  Layer 0 weights (first 27 bytes OHWI): .c matches ONNX. CONFIRMED.
+  Layer 50 weights (first 20 bytes OHWI): .c matches ONNX. CONFIRMED.
+  Layer 0 bias[0..7]: .c matches ONNX. CONFIRMED.
+
+All 7 spot-checked pixel values match. All spot-checked weights/biases match.
+The expected values in the .c files are HONEST and correctly computed.
+
+
+CONCLUSION
+----------
+
+WHAT HAS BEEN PROVEN:
+  The conv_engine_v2 hardware correctly implements the QLinearConv
+  computation (convolution + requantization) for small-dimension inputs
+  with ic_tile_size = c_in. The arithmetic (MAC, requantize multiply,
+  round, shift, saturate) is BIT-EXACT across 21 layers using real
+  weights from the YOLOv4 int8 ONNX model. All 3 convolution
+  configurations (3x3 s=1, 3x3 s=2, 1x1 s=1) have been verified.
+  The requantization pipeline (8-stage, 4 DSP48E1) produces correct
+  results. The test infrastructure is honest: expected values are
+  computed with HW-exact integer math, and weights come from the real
+  model.
+
+WHAT HAS NOT BEEN PROVEN:
+  1. IC tiling correctness (ic_tile_size < c_in) -- UNTESTED
+  2. Large feature map processing (only 8x8 crops tested)
+  3. Full c_in channel counts (max tested c_in_test = 20)
+  4. Full c_out counts (always 32, never 64/128/256/512/1024)
+  5. Asymmetric padding for stride=2 layers
+  6. Real-image data producing correct inference results
+  7. OC tiling (oc_tile_base > 0) -- all tests use c_out_test=32=N_MAC
+
+OVERALL ASSESSMENT:
+  The test results are HONEST and NOT inflated. The PASS results
+  genuinely demonstrate bit-exact arithmetic for the tested
+  configurations. However, the tests only verify a SUBSET of the
+  engine's functionality. The most critical untested feature is IC
+  tiling, which will be required for every layer with c_in > ~113
+  (the majority of YOLOv4). Before claiming full HW verification,
+  IC tiling and OC tiling tests are essential.
+
+  Rating: PARTIALLY VERIFIED. Arithmetic is correct. Control logic
+  for multi-tile operation is unverified.
