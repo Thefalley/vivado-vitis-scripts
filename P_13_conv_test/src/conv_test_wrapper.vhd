@@ -18,7 +18,11 @@
 --
 -- Register map (32-bit, offset from base):
 --   0x00: control (bit 0 = start W, bit 1 = done RO, bit 2 = busy RO)
---   0x04-0x38: config registers
+--   0x04-0x3C: config registers
+--   0x40: cfg_pad_top    (2 bits)
+--   0x44: cfg_pad_bottom (2 bits)
+--   0x48: cfg_pad_left   (2 bits)
+--   0x4C: cfg_pad_right  (2 bits)
 --   0x1000-0x1FFF: BRAM access window (4096 bytes, byte-addressed)
 --
 -------------------------------------------------------------------------------
@@ -82,6 +86,14 @@ architecture rtl of conv_test_wrapper is
     signal reg_addr_bias   : std_logic_vector(31 downto 0) := (others => '0');
     signal reg_addr_output : std_logic_vector(31 downto 0) := (others => '0');
     signal reg_ic_tile_size: std_logic_vector(31 downto 0) := (others => '0');
+    signal reg_pad_top     : std_logic_vector(31 downto 0) := (others => '0');
+    signal reg_pad_bottom  : std_logic_vector(31 downto 0) := (others => '0');
+    signal reg_pad_left    : std_logic_vector(31 downto 0) := (others => '0');
+    signal reg_pad_right   : std_logic_vector(31 downto 0) := (others => '0');
+    signal reg_pad_top     : std_logic_vector(31 downto 0) := (others => '0');
+    signal reg_pad_bottom  : std_logic_vector(31 downto 0) := (others => '0');
+    signal reg_pad_left    : std_logic_vector(31 downto 0) := (others => '0');
+    signal reg_pad_right   : std_logic_vector(31 downto 0) := (others => '0');
 
     -- conv_engine signals
     signal ce_start     : std_logic := '0';
@@ -162,7 +174,7 @@ begin
     ---------------------------------------------------------------------------
     -- conv_engine instance
     ---------------------------------------------------------------------------
-    u_conv : entity work.conv_engine_v2
+    u_conv : entity work.conv_engine_v3
         port map (
             clk             => clk,
             rst_n           => rst_n,
@@ -172,7 +184,10 @@ begin
             cfg_w_in        => unsigned(reg_w_in(9 downto 0)),
             cfg_ksize       => unsigned(reg_ksp(1 downto 0)),
             cfg_stride      => reg_ksp(2),
-            cfg_pad         => reg_ksp(3),
+            cfg_pad_top     => unsigned(reg_pad_top(1 downto 0)),
+            cfg_pad_bottom  => unsigned(reg_pad_bottom(1 downto 0)),
+            cfg_pad_left    => unsigned(reg_pad_left(1 downto 0)),
+            cfg_pad_right   => unsigned(reg_pad_right(1 downto 0)),
             cfg_x_zp        => signed(reg_x_zp(8 downto 0)),
             cfg_w_zp        => signed(reg_w_zp(7 downto 0)),
             cfg_M0          => unsigned(reg_M0),
@@ -356,6 +371,10 @@ begin
                             when 16#34# => reg_addr_bias    <= s_axi_wdata;
                             when 16#38# => reg_addr_output  <= s_axi_wdata;
                             when 16#3C# => reg_ic_tile_size <= s_axi_wdata;
+                            when 16#40# => reg_pad_top      <= s_axi_wdata;
+                            when 16#44# => reg_pad_bottom   <= s_axi_wdata;
+                            when 16#48# => reg_pad_left     <= s_axi_wdata;
+                            when 16#4C# => reg_pad_right    <= s_axi_wdata;
                             when others => null;
                         end case;
                     end if;
@@ -415,6 +434,10 @@ begin
                                     when 16#34# => reg_rd_data <= reg_addr_bias;
                                     when 16#38# => reg_rd_data <= reg_addr_output;
                                     when 16#3C# => reg_rd_data <= reg_ic_tile_size;
+                                    when 16#40# => reg_rd_data <= reg_pad_top;
+                                    when 16#44# => reg_rd_data <= reg_pad_bottom;
+                                    when 16#48# => reg_rd_data <= reg_pad_left;
+                                    when 16#4C# => reg_rd_data <= reg_pad_right;
                                     when others => reg_rd_data <= (others => '0');
                                 end case;
                             end if;

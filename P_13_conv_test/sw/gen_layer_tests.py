@@ -4,8 +4,9 @@ gen_layer_tests.py -- Generate per-layer HW test .c files for ALL QLinearConv
 layers in YOLOv4 (yolov4_int8_qop.onnx).
 
 Each .c is self-contained: input data, weights (OIHW->OHWI), bias, expected
-output, plus the register setup for conv_engine_v2 on the ZedBoard BRAM
-wrapper (4 KB BRAM).
+output, plus the register setup for conv_engine_v3 on the ZedBoard BRAM
+wrapper (4 KB BRAM).  Uses REAL asymmetric pads from the ONNX model
+(e.g. stride=2 layers have pads=[1,1,0,0] not [1,1,1,1]).
 
 Strategy for large layers:
   - c_out_test = min(c_out, 32)   (one OC tile)
@@ -30,7 +31,7 @@ import argparse
 # ============================================================================
 ONNX_PATH = "C:/project/vitis-ai/workspace/models/custom/yolov4_int8_qop.onnx"
 BRAM_BUDGET = 4096  # bytes
-N_MAC = 32          # conv_engine_v2 OC tile = 32
+N_MAC = 32          # conv_engine_v3 OC tile = 32
 
 # ============================================================================
 # Load ONNX model
@@ -133,19 +134,20 @@ def compute_m0_nshift(x_scale, w_scale, y_scale):
 # Compute feasible test dimensions (fit in 4 KB BRAM)
 # ============================================================================
 def compute_test_dims(info):
-    """Determine c_out_test, c_in_test, crop_h, crop_w that fit in BRAM."""
+    """Determine c_out_test, c_in_test, crop_h, crop_w that fit in BRAM.
+    Uses the REAL asymmetric pads from the ONNX model."""
     c_out = info["c_out"]
     c_in = info["c_in"]
     kh = info["kh"]
     kw = info["kw"]
     stride_h = info["strides"][0]
+    stride_w = info["strides"][1]
+    pad_top = info["pad_top"]
+    pad_bottom = info["pad_bottom"]
+    pad_left = info["pad_left"]
+    pad_right = info["pad_right"]
 
     c_out_test = min(c_out, N_MAC)  # one OC tile
-
-    # For pad: conv_engine uses cfg_pad which means symmetric pad=1
-    # For stride=2 with pads [1,1,0,0]: the engine uses pad on top/left
-    # For the crop, pad_val = 1 if kh==3, 0 if kh==1
-    pad = 1 if kh == 3 else 0
 
     # Try decreasing crop sizes and c_in values
     best = None
@@ -153,17 +155,14 @@ def compute_test_dims(info):
         if kh == 3 and crop < 3:
             continue
 
-        # Compute output size for this crop
-        if stride_h == 2:
-            # h_out = (h_in + 2*pad - kh) / 2 + 1
-            crop_out = (crop + 2 * pad - kh) // 2 + 1
-        else:
-            crop_out = crop + 2 * pad - kh + 1 if kh > 1 else crop
+        # Compute output size using real asymmetric pads
+        crop_h_out = (crop + pad_top + pad_bottom - kh) // stride_h + 1
+        crop_w_out = (crop + pad_left + pad_right - kw) // stride_w + 1
 
-        if crop_out < 1:
+        if crop_h_out < 1 or crop_w_out < 1:
             continue
 
-        output_bytes = crop_out * crop_out * c_out_test
+        output_bytes = crop_h_out * crop_w_out * c_out_test
 
         # Try full c_in first, then reduce
         for c_in_t in range(c_in, 0, -1):
@@ -178,9 +177,12 @@ def compute_test_dims(info):
                     "c_in_test": c_in_t,
                     "crop_h": crop,
                     "crop_w": crop,
-                    "crop_h_out": crop_out,
-                    "crop_w_out": crop_out,
-                    "pad": pad,
+                    "crop_h_out": crop_h_out,
+                    "crop_w_out": crop_w_out,
+                    "pad_top": pad_top,
+                    "pad_bottom": pad_bottom,
+                    "pad_left": pad_left,
+                    "pad_right": pad_right,
                     "total_bytes": total,
                 }
                 break
@@ -212,22 +214,20 @@ def gen_input(c_in, h, w, x_zp):
 # Compute expected output (HW-exact integer math)
 # ============================================================================
 def compute_expected(inp, weights, bias, x_zp, w_zp, M0, n_shift, y_zp,
-                     stride, pad, c_out_test, c_in_test):
+                     stride, pad_top, pad_bottom, pad_left, pad_right,
+                     c_out_test, c_in_test):
     """
     inp:     [c_in_test, h_in, w_in] int8
     weights: [c_out_test, c_in_test, kh, kw] int8
     bias:    [c_out_test] int32 (or None)
+    pad_top/pad_bottom/pad_left/pad_right: REAL asymmetric pads from ONNX
     Returns: [c_out_test, h_out, w_out] int8
     """
     c_in_t, h_in, w_in = inp.shape
     kh, kw = weights.shape[2], weights.shape[3]
 
-    if stride == 2:
-        h_out = (h_in + 2 * pad - kh) // 2 + 1
-        w_out = (w_in + 2 * pad - kw) // 2 + 1
-    else:
-        h_out = h_in + 2 * pad - kh + 1 if kh > 1 else h_in
-        w_out = w_in + 2 * pad - kw + 1 if kw > 1 else w_in
+    h_out = (h_in + pad_top + pad_bottom - kh) // stride + 1
+    w_out = (w_in + pad_left + pad_right - kw) // stride + 1
 
     output = np.zeros((c_out_test, h_out, w_out), dtype=np.int8)
 
@@ -237,13 +237,13 @@ def compute_expected(inp, weights, bias, x_zp, w_zp, M0, n_shift, y_zp,
                 acc = int(bias[oc]) if bias is not None else 0
                 for kkh in range(kh):
                     for kkw in range(kw):
-                        ih = oh * stride + kkh - pad
-                        iw = ow * stride + kkw - pad
+                        ih = oh * stride + kkh - pad_top
+                        iw = ow * stride + kkw - pad_left
                         for ic in range(c_in_t):
                             if 0 <= ih < h_in and 0 <= iw < w_in:
                                 x_val = int(inp[ic, ih, iw]) - x_zp
                             else:
-                                x_val = 0  # pad with x_zp -> x_zp - x_zp = 0
+                                x_val = 0  # padded -> x_zp - x_zp = 0
                             w_val = int(weights[oc, ic, kkh, kkw]) - w_zp
                             acc += x_val * w_val
 
@@ -299,7 +299,10 @@ def gen_c_file(info, dims, inp, weights_ohwi, bias_test, expected, M0, n_shift):
     crop_w = dims["crop_w"]
     crop_h_out = dims["crop_h_out"]
     crop_w_out = dims["crop_w_out"]
-    pad = dims["pad"]
+    pad_top = dims["pad_top"]
+    pad_bottom = dims["pad_bottom"]
+    pad_left = dims["pad_left"]
+    pad_right = dims["pad_right"]
     kh = info["kh"]
     kw = info["kw"]
     stride = info["strides"][0]
@@ -324,7 +327,8 @@ def gen_c_file(info, dims, inp, weights_ohwi, bias_test, expected, M0, n_shift):
 
     assert out_end <= BRAM_BUDGET, f"Layer {layer_idx}: total {out_end} > {BRAM_BUDGET}"
 
-    # KSP encoding: bits [1:0]=ksize, bit [2]=stride, bit [3]=pad
+    # KSP encoding: bits [1:0]=ksize, bit [2]=stride
+    # Pad is now in separate registers (REG_PAD_TOP/BOTTOM/LEFT/RIGHT)
     if kh == 1:
         ksize_enc = 0  # 1x1
     elif kh == 3:
@@ -332,8 +336,7 @@ def gen_c_file(info, dims, inp, weights_ohwi, bias_test, expected, M0, n_shift):
     else:
         raise ValueError(f"Unsupported kh={kh}")
     stride_enc = 1 if stride == 2 else 0
-    pad_enc = 1 if pad > 0 else 0
-    ksp = (pad_enc << 3) | (stride_enc << 2) | ksize_enc
+    ksp = (stride_enc << 2) | ksize_enc
 
     lines = []
     lines.append(f"/*")
@@ -341,7 +344,7 @@ def gen_c_file(info, dims, inp, weights_ohwi, bias_test, expected, M0, n_shift):
     lines.append(f" * {layer_name}")
     lines.append(f" *")
     lines.append(f" * Original layer: c_in={info['c_in']}, c_out={info['c_out']}, "
-                 f"k={kh}x{kw}, stride={stride}, pad={info['pads']}")
+                 f"k={kh}x{kw}, stride={stride}, pads=[{pad_top},{pad_left},{pad_bottom},{pad_right}]")
     lines.append(f" * Test subset:    c_in={c_in_test}, c_out={c_out_test}, "
                  f"crop={crop_h}x{crop_w} -> {crop_h_out}x{crop_w_out}")
     lines.append(f" *")
@@ -384,6 +387,10 @@ def gen_c_file(info, dims, inp, weights_ohwi, bias_test, expected, M0, n_shift):
     lines.append(f"#define REG_ADDR_BIAS      0x34")
     lines.append(f"#define REG_ADDR_OUTPUT    0x38")
     lines.append(f"#define REG_IC_TILE_SIZE   0x3C")
+    lines.append(f"#define REG_PAD_TOP        0x40")
+    lines.append(f"#define REG_PAD_BOTTOM     0x44")
+    lines.append(f"#define REG_PAD_LEFT       0x48")
+    lines.append(f"#define REG_PAD_RIGHT      0x4C")
     lines.append(f"#define REG_BRAM_BASE      0x1000")
     lines.append(f"")
     lines.append(f"#define BRAM_INPUT_ADDR    0x{inp_start:03X}")
@@ -399,7 +406,10 @@ def gen_c_file(info, dims, inp, weights_ohwi, bias_test, expected, M0, n_shift):
     lines.append(f"#define KW      {kw}")
     lines.append(f"#define KSIZE   {ksize_enc}    /* encoding: 0=1x1, 2=3x3 */")
     lines.append(f"#define STRIDE  {stride_enc}    /* encoding: 0=stride1, 1=stride2 */")
-    lines.append(f"#define PAD     {pad_enc}")
+    lines.append(f"#define PAD_TOP     {pad_top}")
+    lines.append(f"#define PAD_BOTTOM  {pad_bottom}")
+    lines.append(f"#define PAD_LEFT    {pad_left}")
+    lines.append(f"#define PAD_RIGHT   {pad_right}")
     lines.append(f"#define KSP     0x{ksp:02X}")
     lines.append(f"#define H_OUT   {crop_h_out}")
     lines.append(f"#define W_OUT   {crop_w_out}")
@@ -489,9 +499,9 @@ def gen_c_file(info, dims, inp, weights_ohwi, bias_test, expected, M0, n_shift):
     lines.append(f"    Xil_DCacheFlushRange((UINTPTR)res, 64);")
     lines.append(f"")
     lines.append(f'    xil_printf("\\r\\n=== Layer {layer_idx}: {layer_name} ===\\r\\n");')
-    lines.append(f'    xil_printf("  c_in=%d c_out=%d %dx%d->%dx%d k=%dx%d s=%d p=%d\\r\\n",')
+    lines.append(f'    xil_printf("  c_in=%d c_out=%d %dx%d->%dx%d k=%dx%d s=%d pad=[%d,%d,%d,%d]\\r\\n",')
     lines.append(f"               C_IN, C_OUT, H_IN, W_IN, H_OUT, W_OUT, KH, KW,")
-    lines.append(f"               {stride}, {pad_enc});")
+    lines.append(f"               {stride}, PAD_TOP, PAD_BOTTOM, PAD_LEFT, PAD_RIGHT);")
     lines.append(f"")
 
     # Write input
@@ -554,6 +564,10 @@ def gen_c_file(info, dims, inp, weights_ohwi, bias_test, expected, M0, n_shift):
     lines.append(f"    write_reg(REG_ADDR_BIAS,    BRAM_BIAS_ADDR);")
     lines.append(f"    write_reg(REG_ADDR_OUTPUT,  BRAM_OUTPUT_ADDR);")
     lines.append(f"    write_reg(REG_IC_TILE_SIZE, C_IN);")
+    lines.append(f"    write_reg(REG_PAD_TOP,    PAD_TOP);")
+    lines.append(f"    write_reg(REG_PAD_BOTTOM, PAD_BOTTOM);")
+    lines.append(f"    write_reg(REG_PAD_LEFT,   PAD_LEFT);")
+    lines.append(f"    write_reg(REG_PAD_RIGHT,  PAD_RIGHT);")
     lines.append(f"")
 
     # Start
@@ -697,11 +711,12 @@ def main():
         # Generate input
         inp = gen_input(c_in_test, dims["crop_h"], dims["crop_w"], info["x_zp"])
 
-        # Compute expected output
+        # Compute expected output with real asymmetric pads
         stride = info["strides"][0]
-        pad = dims["pad"]
         expected = compute_expected(inp, w_sub, b_sub, info["x_zp"], info["w_zp"],
-                                    M0, n_shift, info["y_zp"], stride, pad,
+                                    M0, n_shift, info["y_zp"], stride,
+                                    dims["pad_top"], dims["pad_bottom"],
+                                    dims["pad_left"], dims["pad_right"],
                                     c_out_test, c_in_test)
 
         print(f"  Expected output shape: {expected.shape}, "

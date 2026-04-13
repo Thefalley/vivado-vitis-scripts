@@ -2,7 +2,7 @@
  * layer_053_test.c -- YOLOv4 QLinearConv layer 53
  * conv2d_52/Conv2D_quant
  *
- * Original layer: c_in=256, c_out=256, k=3x3, stride=1, pad=[1, 1, 1, 1]
+ * Original layer: c_in=256, c_out=256, k=3x3, stride=1, pads=[1,1,1,1]
  * Test subset:    c_in=5, c_out=32, crop=8x8 -> 8x8
  *
  * Quant: x_zp=-97, w_zp=0, y_zp=-43, M0=1816191349u, n_shift=40
@@ -44,6 +44,10 @@
 #define REG_ADDR_BIAS      0x34
 #define REG_ADDR_OUTPUT    0x38
 #define REG_IC_TILE_SIZE   0x3C
+#define REG_PAD_TOP        0x40
+#define REG_PAD_BOTTOM     0x44
+#define REG_PAD_LEFT       0x48
+#define REG_PAD_RIGHT      0x4C
 #define REG_BRAM_BASE      0x1000
 
 #define BRAM_INPUT_ADDR    0x000
@@ -59,8 +63,11 @@
 #define KW      3
 #define KSIZE   2    /* encoding: 0=1x1, 2=3x3 */
 #define STRIDE  0    /* encoding: 0=stride1, 1=stride2 */
-#define PAD     1
-#define KSP     0x0A
+#define PAD_TOP     1
+#define PAD_BOTTOM  1
+#define PAD_LEFT    1
+#define PAD_RIGHT   1
+#define KSP     0x02
 #define H_OUT   8
 #define W_OUT   8
 
@@ -384,9 +391,9 @@ int main(void)
     Xil_DCacheFlushRange((UINTPTR)res, 64);
 
     xil_printf("\r\n=== Layer 53: conv2d_52/Conv2D_quant ===\r\n");
-    xil_printf("  c_in=%d c_out=%d %dx%d->%dx%d k=%dx%d s=%d p=%d\r\n",
+    xil_printf("  c_in=%d c_out=%d %dx%d->%dx%d k=%dx%d s=%d pad=[%d,%d,%d,%d]\r\n",
                C_IN, C_OUT, H_IN, W_IN, H_OUT, W_OUT, KH, KW,
-               1, 1);
+               1, PAD_TOP, PAD_BOTTOM, PAD_LEFT, PAD_RIGHT);
 
     /* Write input to BRAM */
     write_bram_bytes(BRAM_INPUT_ADDR, input_data, INPUT_BYTES);
@@ -419,6 +426,10 @@ int main(void)
     write_reg(REG_ADDR_BIAS,    BRAM_BIAS_ADDR);
     write_reg(REG_ADDR_OUTPUT,  BRAM_OUTPUT_ADDR);
     write_reg(REG_IC_TILE_SIZE, C_IN);
+    write_reg(REG_PAD_TOP,    PAD_TOP);
+    write_reg(REG_PAD_BOTTOM, PAD_BOTTOM);
+    write_reg(REG_PAD_LEFT,   PAD_LEFT);
+    write_reg(REG_PAD_RIGHT,  PAD_RIGHT);
 
     /* Start conv_engine */
     write_reg(REG_CTRL, 1);
