@@ -4,7 +4,7 @@
 
 cd C:/project/vivado/P_13_conv_test
 
-BIT="build/zynq_conv.runs/impl_1/zynq_conv_bd_wrapper.bit"
+BIT="vitis_ws/conv_test/_ide/bitstream/zynq_conv.bit"
 ELF="vitis_ws/conv_test/Debug/conv_test.elf"
 FSBL="vitis_ws/zynq_conv_platform/zynq_fsbl/fsbl.elf"
 XSCT="C:/AMDDesignTools/2025.2/Vitis/bin/xsct.bat"

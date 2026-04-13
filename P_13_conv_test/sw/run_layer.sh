@@ -14,7 +14,7 @@ SPEC="$PROJ/vitis_ws/conv_test/Debug/Xilinx.spec"
 SRC="$PROJ/vitis_ws/conv_test/src/conv_test.c"
 OBJ="$PROJ/vitis_ws/conv_test/Debug/src/conv_test.o"
 ELF="$PROJ/vitis_ws/conv_test/Debug/conv_test.elf"
-BIT="$PROJ/build/zynq_conv.runs/impl_1/zynq_conv_bd_wrapper.bit"
+BIT="$PROJ/vitis_ws/conv_test/_ide/bitstream/zynq_conv.bit"
 FSBL="$PROJ/vitis_ws/zynq_conv_platform/zynq_fsbl/fsbl.elf"
 XSCT="C:/AMDDesignTools/2025.2/Vitis/bin/xsct.bat"
 

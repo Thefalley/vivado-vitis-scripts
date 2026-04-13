@@ -77,11 +77,7 @@ BOARD HUNG (2026-04-13 ~23:10):
   concurrently, competing for the JTAG connection. That script was killed.
   Board needs physical power cycle to continue.
 
-REMAINING (68 layers):
-  27 28 29 31 32 33 34 35 36 37 38 39 41 42 43 44 45 46 47 48 49
-  57 58 59 61 62 63 64 65 66 67 68 69 71 72 73 74 75 76 77 78 79
-  81 82 83 84 85 86 87 88 89 91 92 93 94 95 96 97 98 99
-  101 102 103 104 105 106 107 108
+CONTINUED TESTING (2026-04-11, board power-cycled):
   Layer 027: PASS 2048/2048
   Layer 028: PASS 2048/2048
   Layer 029: PASS 2048/2048
@@ -92,3 +88,36 @@ REMAINING (68 layers):
   Layer 035: PASS 2048/2048
   Layer 036: PASS 2048/2048
   Layer 037: PASS 2048/2048
+  Layer 038: FAIL (Errors=507/512)    *** stride=2 asym-pad
+  Layer 039: PASS 2048/2048
+  Layer 041: PASS 2048/2048
+  Layer 042: PASS 2048/2048
+  Layer 043: FAIL (Errors=1994/2048)  *** 3x3 s=1 p=1
+  Layer 044: PASS 2048/2048
+  Layer 045: FAIL (Errors=2027/2048)  *** 3x3 s=1 p=1
+  Layer 046: PASS 2048/2048
+  Layer 047: FAIL (Errors=2014/2048)  *** 3x3 s=1 p=1
+  Layer 048: PASS 2048/2048
+  Layer 049: FAIL (Errors=2020/2048)  *** 3x3 s=1 p=1
+  Layer 057: FAIL (Errors=2015/2048)  *** 3x3 s=1 p=1
+  Layer 069: PASS 2048/2048
+  Layer 072: PASS 2048/2048
+
+SUBTOTAL: 62/110 tested, 56 PASS, 6 FAIL
+
+BUG NOTE - 6 FAILing layers:
+  All FAIL layers are 3x3 convolutions (mostly c_in=256->256, one 256->512).
+  Pattern: 038(s=2,asym-pad), 043,045,047,049,057 (all s=1,p=1).
+  Interleaved layers 039,041,042,044,046,048 PASS but are 1x1 conv (different).
+  Earlier 3x3 layers 051,053,055 (same c_in=256,3x3,s=1,p=1) DO PASS.
+  Not config-dependent: data/quant-value-dependent bug. Needs investigation.
+
+BOARD HUNG (2026-04-11):
+  DAP error (AHB AP transaction error, status 0x30000021) after ~25 consecutive
+  XSCT sessions. Recovery via JTAG/software reset unsuccessful.
+  Board needs physical power cycle to continue.
+
+REMAINING (44 layers, need board power cycle):
+  58 59 61 62 63 64 65 66 67 68 71 73 74 75 76 77 78 79
+  81 82 83 84 85 86 87 88 89 91 92 93 94 95 96 97 98 99
+  101 102 103 104 105 106 107 108
