@@ -1,0 +1,29 @@
+Layer 109: conv2d_109/BiasAdd_quant
+
+Original layer:
+  c_in=1024, c_out=255, h=13, w=13
+  kernel=1x1, stride=1, pads=[0, 0, 0, 0], group=1
+
+Test subset:
+  c_in=20, c_out=32, crop=8x8 -> 8x8
+  pad=0, ic_tile_size=20
+
+Quantization:
+  x_scale=0.05858986452, x_zp=-105
+  w_scale=0.009767839685, w_zp=0
+  y_scale=0.1735357791, y_zp=67
+  M0=1813016756, n_shift=39
+
+BRAM layout (4096 bytes total, fits=True):
+  Input:   0x000 - 0x4FF  (1280 bytes)
+  Weights: 0x500 - 0x77F  (640 bytes)
+  Bias:    0x780 - 0x7FF  (128 bytes)
+  Output:  0x800 - 0xFFF  (2048 bytes)
+
+Binary files:
+  input.bin           1280 bytes  INT8  CHW [20,8,8]
+  weights_ohwi.bin    640 bytes  INT8  OHWI [32,1,1,20]
+  bias.bin            128 bytes  INT32 LE [32]
+  expected_output.bin 2048 bytes  INT8  CHW [32,8,8]
+
+Expected output range: [2, 95]

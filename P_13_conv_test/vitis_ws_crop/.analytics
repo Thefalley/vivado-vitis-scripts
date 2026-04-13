@@ -1,0 +1,4 @@
+timestamp=[2026-04-12 22:03:58], mode=PLATFORM_REPOSITORY_INIT, duration=0:00:14.244, duration_ms=14244, data={}
+timestamp=[2026-04-12 22:04:45], mode=APP_CREATION, duration=0:00:12.799, duration_ms=12799, data={name=conv_crop_test, project_type=sdk, os=standalone, processor=cortex-a9, runtime=C/C++, platform=zynq_conv_platform, application_type=application}
+timestamp=[2026-04-12 22:04:56], mode=PLATFORM_GENERATION, duration=0:00:11.124, duration_ms=11124, data={name=zynq_conv_platform}
+timestamp=[2026-04-12 22:04:58], mode=BUILD, duration=0:00:01.490, duration_ms=1490, data={name=conv_crop_test, configuration=Debug, clean_build=false}

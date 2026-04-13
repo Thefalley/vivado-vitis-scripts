@@ -59,20 +59,18 @@ COVERAGE BY CONFIGURATION:
 
 ALL configurations bit-exact on hardware.
 
-BOARD HUNG (DAP error) after layer 23:
-  Layers 24,26-36+ entered DAP error state (targets 4 connection failure).
-  Board requires physical power cycle to continue testing.
-
-REMAINING (76 layers, need board reset):
-  24 26 27 28 29 31 32 33 34 35 36 37 38 39
-  41 42 43 44 45 46 47 48 49 51 52 53 54 55
-  56 57 58 59 61 62 63 64 65 66 67 68 69 71
-  72 73 74 75 76 77 78 79 81 82 83 84 85 86
-  87 88 89 91 92 93 94 95 96 97 98 99 101
-  102 103 104 105 106 107 108
-
-  To continue after board power cycle:
-    cd C:/project/vivado/P_13_conv_test
-    bash sw/run_all_remaining.sh
-    (Update DONE list in script first to include all passed layers)
-  Layer 041 (c_in=512, c_out=256, k=1x1, stride=1, pad=[0, 0, 0, 0]): TIMEOUT
+CONTINUED TESTING (board reset 2026-04-11):
+  Previous session had DAP errors -- board was power-cycled.
+  Now testing remaining 76 layers with kill+delay between each test.
+  Layer 052 (c_in=256, c_out=256, k=1x1, stride=1, pad=[0, 0, 0, 0]): PASS 2048/2048
+  Layer 053 (c_in=256, c_out=256, k=3x3, stride=1, pad=[1, 1, 1, 1]): PASS 2048/2048
+  Layer 054 (c_in=256, c_out=256, k=1x1, stride=1, pad=[0, 0, 0, 0]): PASS 2048/2048
+  Layer 055 (c_in=256, c_out=256, k=3x3, stride=1, pad=[1, 1, 1, 1]): PASS 2048/2048
+  Layer 056 (c_in=256, c_out=256, k=1x1, stride=1, pad=[0, 0, 0, 0]): PASS 2048/2048
+  Layer 024: PASS 2048/2048
+  Layer 057 (c_in=256, c_out=256, k=3x3, stride=1, pad=[1, 1, 1, 1]): TIMEOUT
+  Layer 026: PASS 2048/2048
+  Layer 027: BUILD_FAIL
+  - Run "vitis -s <script>" for script mode.
+  - Run "vitis -s <script>" for script mode.
+  Layer 058 (c_in=256, c_out=256, k=1x1, stride=1, pad=[0, 0, 0, 0]): TIMEOUT

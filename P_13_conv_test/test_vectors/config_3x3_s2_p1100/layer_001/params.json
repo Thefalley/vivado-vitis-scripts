@@ -1,0 +1,55 @@
+{
+    "layer_name": "conv2d_1/Conv2D_quant",
+    "layer_index": 1,
+    "original": {
+        "c_in": 32,
+        "c_out": 64,
+        "h_in": 416,
+        "w_in": 416
+    },
+    "test": {
+        "c_in": 9,
+        "c_out": 32,
+        "h_in": 8,
+        "w_in": 8,
+        "h_out": 4,
+        "w_out": 4
+    },
+    "kernel": {
+        "kh": 3,
+        "kw": 3,
+        "stride": 2,
+        "pad": 1,
+        "pads": [
+            1,
+            1,
+            0,
+            0
+        ],
+        "ksp": 14
+    },
+    "quant": {
+        "x_zp": -110,
+        "w_zp": 0,
+        "y_zp": 20,
+        "x_scale": 0.15415377914905548,
+        "w_scale": 0.008101901970803738,
+        "y_scale": 0.24754491448402405,
+        "M0": 1386842004,
+        "n_shift": 38
+    },
+    "bram": {
+        "addr_input": "0x000",
+        "addr_weights": "0x240",
+        "addr_bias": "0xC60",
+        "addr_output": "0xCE0"
+    },
+    "sizes": {
+        "input_bytes": 576,
+        "weight_bytes": 2592,
+        "bias_bytes": 128,
+        "output_bytes": 512,
+        "total_bytes": 3808
+    },
+    "ic_tile_size": 9
+}

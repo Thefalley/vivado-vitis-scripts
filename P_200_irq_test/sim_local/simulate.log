@@ -1,0 +1,55 @@
+#-----------------------------------------------------------
+# xsim v2025.2 (64-bit)
+# SW Build 6299465 on Fri Nov 14 19:35:11 GMT 2025
+# IP Build 6300035 on Fri Nov 14 10:48:45 MST 2025
+# SharedData Build 6298862 on Thu Nov 13 04:50:51 MST 2025
+# Start of session at: Sun Apr 12 12:28:44 2026
+# Process ID         : 10172
+# Current directory  : C:/project/vivado/P_200_irq_test/sim_local
+# Command line       : xsim.exe -log simulate.log -mode tcl -source {xsim.dir/irq_sim/xsim_script.tcl}
+# Log file           : C:/project/vivado/P_200_irq_test/sim_local/simulate.log
+# Journal file       : C:/project/vivado/P_200_irq_test/sim_local\xsim.jou
+# Running On         : DESKTOP-6J3HG3R
+# Platform           : Windows Server 2016 or Windows 10
+# Operating System   : 19045
+# Processor Detail   : Intel(R) Core(TM) i5-10300H CPU @ 2.50GHz
+# CPU Frequency      : 2496 MHz
+# CPU Physical cores : 4
+# CPU Logical cores  : 8
+# Host memory        : 16940 MB
+# Swap memory        : 21474 MB
+# Total Virtual      : 38415 MB
+# Available Virtual  : 15191 MB
+#-----------------------------------------------------------
+source xsim.dir/irq_sim/xsim_script.tcl
+# xsim {irq_sim} -wdb {tb_irq_top.wdb} -autoloadwcfg -runall
+Time resolution is 1 ps
+run -all
+Note: === TEST 1: threshold=10, condition=10 (IRQ expected) ===
+Time: 125 ns  Iteration: 0  Process: /tb_irq_top/stim  File: C:/project/vivado/P_200_irq_test/sim/tb_irq_top.vhd
+Note: OK: IRQ fired
+Time: 345 ns  Iteration: 2  Process: /tb_irq_top/stim  File: C:/project/vivado/P_200_irq_test/sim/tb_irq_top.vhd
+Note:   STATUS    = 51
+Time: 385 ns  Iteration: 0  Process: /tb_irq_top/stim  File: C:/project/vivado/P_200_irq_test/sim/tb_irq_top.vhd
+Note:   COUNT     = 10
+Time: 425 ns  Iteration: 0  Process: /tb_irq_top/stim  File: C:/project/vivado/P_200_irq_test/sim/tb_irq_top.vhd
+Note:   IRQ_COUNT = 1
+Time: 465 ns  Iteration: 0  Process: /tb_irq_top/stim  File: C:/project/vivado/P_200_irq_test/sim/tb_irq_top.vhd
+Note: OK: IRQ cleared
+Time: 535 ns  Iteration: 0  Process: /tb_irq_top/stim  File: C:/project/vivado/P_200_irq_test/sim/tb_irq_top.vhd
+Note: === TEST 2: threshold=10, condition=5 (no IRQ expected) ===
+Time: 625 ns  Iteration: 0  Process: /tb_irq_top/stim  File: C:/project/vivado/P_200_irq_test/sim/tb_irq_top.vhd
+Note: OK: no IRQ (correct)
+Time: 945 ns  Iteration: 0  Process: /tb_irq_top/stim  File: C:/project/vivado/P_200_irq_test/sim/tb_irq_top.vhd
+Note:   STATUS    = 17
+Time: 985 ns  Iteration: 0  Process: /tb_irq_top/stim  File: C:/project/vivado/P_200_irq_test/sim/tb_irq_top.vhd
+Note: === TEST 3: restart with condition=10 (second IRQ) ===
+Time: 1075 ns  Iteration: 0  Process: /tb_irq_top/stim  File: C:/project/vivado/P_200_irq_test/sim/tb_irq_top.vhd
+Note: OK: second IRQ fired
+Time: 1255 ns  Iteration: 2  Process: /tb_irq_top/stim  File: C:/project/vivado/P_200_irq_test/sim/tb_irq_top.vhd
+Note:   IRQ_COUNT = 2
+Time: 1295 ns  Iteration: 0  Process: /tb_irq_top/stim  File: C:/project/vivado/P_200_irq_test/sim/tb_irq_top.vhd
+Note: ========== ALL TESTS PASSED ==========
+Time: 1455 ns  Iteration: 0  Process: /tb_irq_top/stim  File: C:/project/vivado/P_200_irq_test/sim/tb_irq_top.vhd
+Note: Simulation complete
+Time: 1555 ns  Iteration: 0  Process: /tb_irq_top/stim  File: C:/project/vivado/P_200_irq_test/sim/tb_irq_top.vhd

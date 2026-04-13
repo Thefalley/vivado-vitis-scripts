@@ -1,0 +1,29 @@
+Layer 0: conv2d/Conv2D_quant
+
+Original layer:
+  c_in=3, c_out=32, h=416, w=416
+  kernel=3x3, stride=1, pads=[1, 1, 1, 1], group=1
+
+Test subset:
+  c_in=3, c_out=32, crop=8x8 -> 8x8
+  pad=1, ic_tile_size=3
+
+Quantization:
+  x_scale=0.003921568859, x_zp=-128
+  w_scale=0.3085734248, w_zp=0
+  y_scale=0.2531589866, y_zp=-17
+  M0=1313907685, n_shift=38
+
+BRAM layout (3232 bytes total, fits=True):
+  Input:   0x000 - 0x0BF  (192 bytes)
+  Weights: 0x0C0 - 0x41F  (864 bytes)
+  Bias:    0x420 - 0x49F  (128 bytes)
+  Output:  0x4A0 - 0xC9F  (2048 bytes)
+
+Binary files:
+  input.bin           192 bytes  INT8  CHW [3,8,8]
+  weights_ohwi.bin    864 bytes  INT8  OHWI [32,3,3,3]
+  bias.bin            128 bytes  INT32 LE [32]
+  expected_output.bin 2048 bytes  INT8  CHW [32,8,8]
+
+Expected output range: [-128, 82]

@@ -1,0 +1,62 @@
+22:29:36 DEBUG : Logs will be stored at 'C:/project/vivado/P_13_conv_test/vitis_ws_layer/IDE.log'.
+22:29:44 INFO  : Registering command handlers for Vitis TCF services
+22:29:54 INFO  : Result from executing command 'getProjects': zynq_conv_platform
+22:30:02 INFO  : Platform repository initialization has completed.
+22:30:02 INFO  : Result from executing command 'getPlatforms': vek385_base|C:/AMDDesignTools/2025.2/Vitis/base_platforms/vek385_base/vek385_base.xpfm;vrk160_base|C:/AMDDesignTools/2025.2/Vitis/base_platforms/vrk160_base/vrk160_base.xpfm;xilinx_kv260_base_202520_1|C:/AMDDesignTools/2025.2/Vitis/base_platforms/xilinx_kv260_base_202520_1/xilinx_kv260_base_202520_1.xpfm;xilinx_vck190_base_202520_1|C:/AMDDesignTools/2025.2/Vitis/base_platforms/xilinx_vck190_base_202520_1/xilinx_vck190_base_202520_1.xpfm;xilinx_vck190_base_dfx_202520_1|C:/AMDDesignTools/2025.2/Vitis/base_platforms/xilinx_vck190_base_dfx_202520_1/xilinx_vck190_base_dfx_202520_1.xpfm;xilinx_vek280_base_202520_1|C:/AMDDesignTools/2025.2/Vitis/base_platforms/xilinx_vek280_base_202520_1/xilinx_vek280_base_202520_1.xpfm;xilinx_vmk180_base_202520_1|C:/AMDDesignTools/2025.2/Vitis/base_platforms/xilinx_vmk180_base_202520_1/xilinx_vmk180_base_202520_1.xpfm
+22:30:49 INFO  : Result from executing command 'getProjects': zynq_conv_platform
+22:30:49 INFO  : Result from executing command 'getPlatforms': vek385_base|C:/AMDDesignTools/2025.2/Vitis/base_platforms/vek385_base/vek385_base.xpfm;vrk160_base|C:/AMDDesignTools/2025.2/Vitis/base_platforms/vrk160_base/vrk160_base.xpfm;xilinx_kv260_base_202520_1|C:/AMDDesignTools/2025.2/Vitis/base_platforms/xilinx_kv260_base_202520_1/xilinx_kv260_base_202520_1.xpfm;xilinx_vck190_base_202520_1|C:/AMDDesignTools/2025.2/Vitis/base_platforms/xilinx_vck190_base_202520_1/xilinx_vck190_base_202520_1.xpfm;xilinx_vck190_base_dfx_202520_1|C:/AMDDesignTools/2025.2/Vitis/base_platforms/xilinx_vck190_base_dfx_202520_1/xilinx_vck190_base_dfx_202520_1.xpfm;xilinx_vek280_base_202520_1|C:/AMDDesignTools/2025.2/Vitis/base_platforms/xilinx_vek280_base_202520_1/xilinx_vek280_base_202520_1.xpfm;xilinx_vmk180_base_202520_1|C:/AMDDesignTools/2025.2/Vitis/base_platforms/xilinx_vmk180_base_202520_1/xilinx_vmk180_base_202520_1.xpfm;zynq_conv_platform|C:/project/vivado/P_13_conv_test/vitis_ws_layer/zynq_conv_platform/export/zynq_conv_platform/zynq_conv_platform.xpfm
+22:30:51 INFO  : Result from executing command 'reportPlatform': {zynq_conv_platform={standalone_domain={Os=standalone, DomainName=standalone_domain, CpuType=cortex-a9, CpuInstance=ps7_cortexa9_0}}}
+22:30:51 INFO  : Result from executing command 'reportPlatform': {zynq_conv_platform={standalone_domain={Os=standalone, DomainName=standalone_domain, CpuType=cortex-a9, CpuInstance=ps7_cortexa9_0}}}
+22:30:51 INFO  : Result from executing command 'reportPlatform': {zynq_conv_platform={standalone_domain={Os=standalone, DomainName=standalone_domain, CpuType=cortex-a9, CpuInstance=ps7_cortexa9_0}}}
+22:30:57 INFO  : plnx-install-location is set to ''
+22:30:59 INFO  : Successfully done query RDI_DATADIR 
+22:31:44 INFO  : Checking for BSP changes to sync application flags for project 'layer_test'...
+22:31:47 ERROR : xsct server communication channel has closed unexpectedly.
+java.net.SocketException: Connection reset
+	at sun.nio.ch.NioSocketImpl.implRead(NioSocketImpl.java:318) ~[?:?]
+	at sun.nio.ch.NioSocketImpl.read(NioSocketImpl.java:346) ~[?:?]
+	at sun.nio.ch.NioSocketImpl$1.read(NioSocketImpl.java:796) ~[?:?]
+	at java.net.Socket$SocketInputStream.read(Socket.java:1099) ~[?:?]
+	at java.io.BufferedInputStream.read1(BufferedInputStream.java:345) ~[?:?]
+	at java.io.BufferedInputStream.implRead(BufferedInputStream.java:420) ~[?:?]
+	at java.io.BufferedInputStream.read(BufferedInputStream.java:399) ~[?:?]
+	at java.io.FilterInputStream.read(FilterInputStream.java:95) ~[?:?]
+	at org.eclipse.tcf.core.ChannelTCP.get(ChannelTCP.java:186) ~[org.eclipse.tcf.core_1.7.0.202511071507.jar:?]
+	at org.eclipse.tcf.core.StreamChannel.read(StreamChannel.java:85) ~[org.eclipse.tcf.core_1.7.0.202511071507.jar:?]
+	at org.eclipse.tcf.core.AbstractChannel$1.run(AbstractChannel.java:329) ~[org.eclipse.tcf.core_1.7.0.202511071507.jar:?]
+22:33:25 DEBUG : Logs will be stored at 'C:/project/vivado/P_13_conv_test/vitis_ws_layer/IDE.log'.
+22:33:35 INFO  : Registering command handlers for Vitis TCF services
+22:33:36 INFO  : plnx-install-location is set to ''
+22:33:53 INFO  : Platform repository initialization has completed.
+22:34:28 INFO  : Checking for BSP changes to sync application flags for project 'layer_test'...
+22:34:33 ERROR : xsct server communication channel has closed unexpectedly.
+java.net.SocketException: Connection reset
+	at sun.nio.ch.NioSocketImpl.implRead(NioSocketImpl.java:318) ~[?:?]
+	at sun.nio.ch.NioSocketImpl.read(NioSocketImpl.java:346) ~[?:?]
+	at sun.nio.ch.NioSocketImpl$1.read(NioSocketImpl.java:796) ~[?:?]
+	at java.net.Socket$SocketInputStream.read(Socket.java:1099) ~[?:?]
+	at java.io.BufferedInputStream.read1(BufferedInputStream.java:345) ~[?:?]
+	at java.io.BufferedInputStream.implRead(BufferedInputStream.java:420) ~[?:?]
+	at java.io.BufferedInputStream.read(BufferedInputStream.java:399) ~[?:?]
+	at java.io.FilterInputStream.read(FilterInputStream.java:95) ~[?:?]
+	at org.eclipse.tcf.core.ChannelTCP.get(ChannelTCP.java:186) ~[org.eclipse.tcf.core_1.7.0.202511071507.jar:?]
+	at org.eclipse.tcf.core.StreamChannel.read(StreamChannel.java:85) ~[org.eclipse.tcf.core_1.7.0.202511071507.jar:?]
+	at org.eclipse.tcf.core.AbstractChannel$1.run(AbstractChannel.java:329) ~[org.eclipse.tcf.core_1.7.0.202511071507.jar:?]
+22:35:27 DEBUG : Logs will be stored at 'C:/project/vivado/P_13_conv_test/vitis_ws_layer/IDE.log'.
+22:35:28 INFO  : Registering command handlers for Vitis TCF services
+22:35:30 INFO  : plnx-install-location is set to ''
+22:35:39 INFO  : Platform repository initialization has completed.
+22:35:57 INFO  : Checking for BSP changes to sync application flags for project 'layer_test'...
+22:36:07 ERROR : xsct server communication channel has closed unexpectedly.
+java.net.SocketException: Connection reset
+	at sun.nio.ch.NioSocketImpl.implRead(NioSocketImpl.java:318) ~[?:?]
+	at sun.nio.ch.NioSocketImpl.read(NioSocketImpl.java:346) ~[?:?]
+	at sun.nio.ch.NioSocketImpl$1.read(NioSocketImpl.java:796) ~[?:?]
+	at java.net.Socket$SocketInputStream.read(Socket.java:1099) ~[?:?]
+	at java.io.BufferedInputStream.read1(BufferedInputStream.java:345) ~[?:?]
+	at java.io.BufferedInputStream.implRead(BufferedInputStream.java:420) ~[?:?]
+	at java.io.BufferedInputStream.read(BufferedInputStream.java:399) ~[?:?]
+	at java.io.FilterInputStream.read(FilterInputStream.java:95) ~[?:?]
+	at org.eclipse.tcf.core.ChannelTCP.get(ChannelTCP.java:186) ~[org.eclipse.tcf.core_1.7.0.202511071507.jar:?]
+	at org.eclipse.tcf.core.StreamChannel.read(StreamChannel.java:85) ~[org.eclipse.tcf.core_1.7.0.202511071507.jar:?]
+	at org.eclipse.tcf.core.AbstractChannel$1.run(AbstractChannel.java:329) ~[org.eclipse.tcf.core_1.7.0.202511071507.jar:?]

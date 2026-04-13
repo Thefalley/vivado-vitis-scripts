@@ -1,0 +1,438 @@
+=== Starting batch run at Mon, Apr 13, 2026  7:56:52 AM ===
+
+===== LAYER 014 =====
+Config: c_in=64, c_out=64, k=3x3, stride=1, pad=[1, 1, 1, 1]
+Subset:    c_in=5, c_out=32, crop=8x8 -> 8x8
+Build: 6 finished
+  PASS: Total=2048 Errors=0
+
+===== LAYER 016 =====
+Config: c_in=128, c_out=128, k=1x1, stride=1, pad=[0, 0, 0, 0]
+Subset:    c_in=20, c_out=32, crop=8x8 -> 8x8
+Build: 6 finished
+  PASS: Total=2048 Errors=0
+
+===== LAYER 020 =====
+Config: c_in=128, c_out=128, k=1x1, stride=1, pad=[0, 0, 0, 0]
+Subset:    c_in=20, c_out=32, crop=8x8 -> 8x8
+Build: 6 finished
+  PASS: Total=2048 Errors=0
+
+===== LAYER 025 =====
+Config: c_in=128, c_out=128, k=3x3, stride=1, pad=[1, 1, 1, 1]
+Subset:    c_in=5, c_out=32, crop=8x8 -> 8x8
+Build: 6 finished
+  PASS: Total=2048 Errors=0
+
+===== LAYER 030 =====
+Config: c_in=128, c_out=128, k=1x1, stride=1, pad=[0, 0, 0, 0]
+Subset:    c_in=20, c_out=32, crop=8x8 -> 8x8
+Build: 6 finished
+  PASS: Total=2048 Errors=0
+
+===== LAYER 040 =====
+Config: c_in=512, c_out=256, k=1x1, stride=1, pad=[0, 0, 0, 0]
+Subset:    c_in=20, c_out=32, crop=8x8 -> 8x8
+Build: 6 finished
+  PASS: Total=2048 Errors=0
+
+===== LAYER 050 =====
+Config: c_in=256, c_out=256, k=1x1, stride=1, pad=[0, 0, 0, 0]
+Subset:    c_in=20, c_out=32, crop=8x8 -> 8x8
+Build: 6 finished
+  PASS: Total=2048 Errors=0
+
+===== LAYER 060 =====
+Config: c_in=512, c_out=1024, k=3x3, stride=2, pad=[1, 1, 0, 0]
+Subset:    c_in=9, c_out=32, crop=8x8 -> 4x4
+Build: 6 finished
+  PASS: Total=512 Errors=0
+
+===== LAYER 070 =====
+Config: c_in=512, c_out=512, k=1x1, stride=1, pad=[0, 0, 0, 0]
+Subset:    c_in=20, c_out=32, crop=8x8 -> 8x8
+Build: 6 finished
+  PASS: Total=2048 Errors=0
+
+===== LAYER 080 =====
+Config: c_in=512, c_out=256, k=1x1, stride=1, pad=[0, 0, 0, 0]
+Subset:    c_in=20, c_out=32, crop=8x8 -> 8x8
+Build: 6 finished
+  PASS: Total=2048 Errors=0
+
+===== LAYER 090 =====
+Config: c_in=128, c_out=256, k=3x3, stride=1, pad=[1, 1, 1, 1]
+Subset:    c_in=5, c_out=32, crop=8x8 -> 8x8
+Build: 6 finished
+  PASS: Total=2048 Errors=0
+
+===== LAYER 100 =====
+Config: c_in=256, c_out=512, k=3x3, stride=1, pad=[1, 1, 1, 1]
+Subset:    c_in=5, c_out=32, crop=8x8 -> 8x8
+Build: 6 finished
+  PASS: Total=2048 Errors=0
+
+===== LAYER 109 =====
+Config: c_in=1024, c_out=255, k=1x1, stride=1, pad=[0, 0, 0, 0]
+Subset:    c_in=20, c_out=32, crop=8x8 -> 8x8
+Build: 6 finished
+  PASS: Total=2048 Errors=0
+
+===== LAYER 017 =====
+Config: c_in=128, c_out=256, k=3x3, stride=2, pad=[1, 1, 0, 0]
+Subset:    c_in=9, c_out=32, crop=8x8 -> 4x4
+Build: 6 finished
+  PASS: Total=512 Errors=0
+
+===== LAYER 018 =====
+Config: c_in=256, c_out=128, k=1x1, stride=1, pad=[0, 0, 0, 0]
+Subset:    c_in=20, c_out=32, crop=8x8 -> 8x8
+Build: 6 finished
+  PASS: Total=2048 Errors=0
+
+===== LAYER 019 =====
+Config: c_in=256, c_out=128, k=1x1, stride=1, pad=[0, 0, 0, 0]
+Subset:    c_in=20, c_out=32, crop=8x8 -> 8x8
+Build: 6 finished
+  PASS: Total=2048 Errors=0
+
+===== LAYER 021 =====
+Config: c_in=128, c_out=128, k=3x3, stride=1, pad=[1, 1, 1, 1]
+Subset:    c_in=5, c_out=32, crop=8x8 -> 8x8
+Build: 6 finished
+  PASS: Total=2048 Errors=0
+
+===== LAYER 022 =====
+Config: c_in=128, c_out=128, k=1x1, stride=1, pad=[0, 0, 0, 0]
+Subset:    c_in=20, c_out=32, crop=8x8 -> 8x8
+Build: 6 finished
+  PASS: Total=2048 Errors=0
+
+===== LAYER 023 =====
+Config: c_in=128, c_out=128, k=3x3, stride=1, pad=[1, 1, 1, 1]
+Subset:    c_in=5, c_out=32, crop=8x8 -> 8x8
+Build: 6 finished
+  PASS: Total=2048 Errors=0
+
+===== LAYER 024 =====
+Config: c_in=128, c_out=128, k=1x1, stride=1, pad=[0, 0, 0, 0]
+Subset:    c_in=20, c_out=32, crop=8x8 -> 8x8
+Build: 6 finished
+  JTAG ERROR - retrying after 10s...
+"::tcf::send_command $chan XilinxReset reset $fmt e [list $ctx $type $arg]"
+    (procedure "rst" line 317)
+    invoked from within
+"rst -processor"
+    (file "sw/run_idx.tcl" line 11)
+  NO RESULT (timeout?)
+"tid2ctx $chan [lindex $args 0]"
+    (procedure "targets" line 30)
+    invoked from within
+"targets 4"
+    (file "sw/run_idx.tcl" line 7)
+
+===== LAYER 026 =====
+Config: c_in=128, c_out=128, k=1x1, stride=1, pad=[0, 0, 0, 0]
+Subset:    c_in=20, c_out=32, crop=8x8 -> 8x8
+Build: 6 finished
+  NO RESULT (timeout?)
+"tid2ctx $chan [lindex $args 0]"
+    (procedure "targets" line 30)
+    invoked from within
+"targets 4"
+    (file "sw/run_idx.tcl" line 7)
+
+===== LAYER 027 =====
+Config: c_in=128, c_out=128, k=3x3, stride=1, pad=[1, 1, 1, 1]
+Subset:    c_in=5, c_out=32, crop=8x8 -> 8x8
+Build: 6 finished
+  NO RESULT (timeout?)
+"tid2ctx $chan [lindex $args 0]"
+    (procedure "targets" line 30)
+    invoked from within
+"targets 4"
+    (file "sw/run_idx.tcl" line 7)
+
+===== LAYER 028 =====
+Config: c_in=128, c_out=128, k=1x1, stride=1, pad=[0, 0, 0, 0]
+Subset:    c_in=20, c_out=32, crop=8x8 -> 8x8
+Build: 6 finished
+  NO RESULT (timeout?)
+"tid2ctx $chan [lindex $args 0]"
+    (procedure "targets" line 30)
+    invoked from within
+"targets 4"
+    (file "sw/run_idx.tcl" line 7)
+
+===== LAYER 029 =====
+Config: c_in=128, c_out=128, k=3x3, stride=1, pad=[1, 1, 1, 1]
+Subset:    c_in=5, c_out=32, crop=8x8 -> 8x8
+Build: 6 finished
+  NO RESULT (timeout?)
+"tid2ctx $chan [lindex $args 0]"
+    (procedure "targets" line 30)
+    invoked from within
+"targets 4"
+    (file "sw/run_idx.tcl" line 7)
+
+===== LAYER 031 =====
+Config: c_in=128, c_out=128, k=3x3, stride=1, pad=[1, 1, 1, 1]
+Subset:    c_in=5, c_out=32, crop=8x8 -> 8x8
+Build: 6 finished
+  NO RESULT (timeout?)
+"tid2ctx $chan [lindex $args 0]"
+    (procedure "targets" line 30)
+    invoked from within
+"targets 4"
+    (file "sw/run_idx.tcl" line 7)
+
+===== LAYER 032 =====
+Config: c_in=128, c_out=128, k=1x1, stride=1, pad=[0, 0, 0, 0]
+Subset:    c_in=20, c_out=32, crop=8x8 -> 8x8
+Build: 6 finished
+  NO RESULT (timeout?)
+"tid2ctx $chan [lindex $args 0]"
+    (procedure "targets" line 30)
+    invoked from within
+"targets 4"
+    (file "sw/run_idx.tcl" line 7)
+
+===== LAYER 033 =====
+Config: c_in=128, c_out=128, k=3x3, stride=1, pad=[1, 1, 1, 1]
+Subset:    c_in=5, c_out=32, crop=8x8 -> 8x8
+Build: 6 finished
+  NO RESULT (timeout?)
+"tid2ctx $chan [lindex $args 0]"
+    (procedure "targets" line 30)
+    invoked from within
+"targets 4"
+    (file "sw/run_idx.tcl" line 7)
+
+===== LAYER 034 =====
+Config: c_in=128, c_out=128, k=1x1, stride=1, pad=[0, 0, 0, 0]
+Subset:    c_in=20, c_out=32, crop=8x8 -> 8x8
+Build: 6 finished
+  NO RESULT (timeout?)
+"tid2ctx $chan [lindex $args 0]"
+    (procedure "targets" line 30)
+    invoked from within
+"targets 4"
+    (file "sw/run_idx.tcl" line 7)
+
+===== LAYER 035 =====
+Config: c_in=128, c_out=128, k=3x3, stride=1, pad=[1, 1, 1, 1]
+Subset:    c_in=5, c_out=32, crop=8x8 -> 8x8
+Build: 6 finished
+  NO RESULT (timeout?)
+"tid2ctx $chan [lindex $args 0]"
+    (procedure "targets" line 30)
+    invoked from within
+"targets 4"
+    (file "sw/run_idx.tcl" line 7)
+
+===== LAYER 036 =====
+Config: c_in=128, c_out=128, k=1x1, stride=1, pad=[0, 0, 0, 0]
+Subset:    c_in=20, c_out=32, crop=8x8 -> 8x8
+Build: 6 finished
+  NO RESULT (timeout?)
+"tid2ctx $chan [lindex $args 0]"
+    (procedure "targets" line 30)
+    invoked from within
+"targets 4"
+    (file "sw/run_idx.tcl" line 7)
+
+===== LAYER 037 =====
+Config: c_in=256, c_out=256, k=1x1, stride=1, pad=[0, 0, 0, 0]
+Subset:    c_in=20, c_out=32, crop=8x8 -> 8x8
+Build: 6 finished
+  NO RESULT (timeout?)
+"tid2ctx $chan [lindex $args 0]"
+    (procedure "targets" line 30)
+    invoked from within
+"targets 4"
+    (file "sw/run_idx.tcl" line 7)
+
+===== LAYER 038 =====
+Config: c_in=256, c_out=512, k=3x3, stride=2, pad=[1, 1, 0, 0]
+Subset:    c_in=9, c_out=32, crop=8x8 -> 4x4
+Build: 6 finished
+  NO RESULT (timeout?)
+"tid2ctx $chan [lindex $args 0]"
+    (procedure "targets" line 30)
+    invoked from within
+"targets 4"
+    (file "sw/run_idx.tcl" line 7)
+
+===== LAYER 039 =====
+Config: c_in=256, c_out=128, k=1x1, stride=1, pad=[0, 0, 0, 0]
+Subset:    c_in=20, c_out=32, crop=8x8 -> 8x8
+Build: 6 finished
+  NO RESULT (timeout?)
+"tid2ctx $chan [lindex $args 0]"
+    (procedure "targets" line 30)
+    invoked from within
+"targets 4"
+    (file "sw/run_idx.tcl" line 7)
+
+===== LAYER 041 =====
+Config: c_in=512, c_out=256, k=1x1, stride=1, pad=[0, 0, 0, 0]
+Subset:    c_in=20, c_out=32, crop=8x8 -> 8x8
+Build: 6 finished
+  NO RESULT (timeout?)
+"tid2ctx $chan [lindex $args 0]"
+    (procedure "targets" line 30)
+    invoked from within
+"targets 4"
+    (file "sw/run_idx.tcl" line 7)
+
+===== LAYER 042 =====
+Config: c_in=256, c_out=256, k=1x1, stride=1, pad=[0, 0, 0, 0]
+Subset:    c_in=20, c_out=32, crop=8x8 -> 8x8
+Build: 6 finished
+  NO RESULT (timeout?)
+"tid2ctx $chan [lindex $args 0]"
+    (procedure "targets" line 30)
+    invoked from within
+"targets 4"
+    (file "sw/run_idx.tcl" line 7)
+
+===== LAYER 043 =====
+Config: c_in=256, c_out=256, k=3x3, stride=1, pad=[1, 1, 1, 1]
+Subset:    c_in=5, c_out=32, crop=8x8 -> 8x8
+Build: 0 finished
+BUILD FAILED
+Reading the platform  : "zynq_conv_platform"
+INFO: [Hsi 55-2053] elapsed time for repository (C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw) loading 1 seconds
+Building the zynq_fsbl application.
+Building the BSP Library for domain  - standalone_domain on processor ps7_cortexa9_0
+Failed to build  the bsp sources for domain - standalone_domain
+
+===== LAYER 044 =====
+Config: c_in=256, c_out=256, k=1x1, stride=1, pad=[0, 0, 0, 0]
+Subset:    c_in=20, c_out=32, crop=8x8 -> 8x8
+Build: 6 finished
+  NO RESULT (timeout?)
+"tid2ctx $chan [lindex $args 0]"
+    (procedure "targets" line 30)
+    invoked from within
+"targets 4"
+    (file "sw/run_idx.tcl" line 7)
+
+===== LAYER 045 =====
+Config: c_in=256, c_out=256, k=3x3, stride=1, pad=[1, 1, 1, 1]
+Subset:    c_in=5, c_out=32, crop=8x8 -> 8x8
+Build: 6 finished
+  NO RESULT (timeout?)
+"tid2ctx $chan [lindex $args 0]"
+    (procedure "targets" line 30)
+    invoked from within
+"targets 4"
+    (file "sw/run_idx.tcl" line 7)
+
+===== LAYER 046 =====
+Config: c_in=256, c_out=256, k=1x1, stride=1, pad=[0, 0, 0, 0]
+Subset:    c_in=20, c_out=32, crop=8x8 -> 8x8
+Build: 6 finished
+  NO RESULT (timeout?)
+"tid2ctx $chan [lindex $args 0]"
+    (procedure "targets" line 30)
+    invoked from within
+"targets 4"
+    (file "sw/run_idx.tcl" line 7)
+
+===== LAYER 047 =====
+Config: c_in=256, c_out=256, k=3x3, stride=1, pad=[1, 1, 1, 1]
+Subset:    c_in=5, c_out=32, crop=8x8 -> 8x8
+Build: 6 finished
+  NO RESULT (timeout?)
+"tid2ctx $chan [lindex $args 0]"
+    (procedure "targets" line 30)
+    invoked from within
+"targets 4"
+    (file "sw/run_idx.tcl" line 7)
+
+===== LAYER 048 =====
+Config: c_in=256, c_out=256, k=1x1, stride=1, pad=[0, 0, 0, 0]
+Subset:    c_in=20, c_out=32, crop=8x8 -> 8x8
+Build: 6 finished
+  NO RESULT (timeout?)
+"tid2ctx $chan [lindex $args 0]"
+    (procedure "targets" line 30)
+    invoked from within
+"targets 4"
+    (file "sw/run_idx.tcl" line 7)
+
+===== LAYER 049 =====
+Config: c_in=256, c_out=256, k=3x3, stride=1, pad=[1, 1, 1, 1]
+Subset:    c_in=5, c_out=32, crop=8x8 -> 8x8
+Build: 6 finished
+  NO RESULT (timeout?)
+"tid2ctx $chan [lindex $args 0]"
+    (procedure "targets" line 30)
+    invoked from within
+"targets 4"
+    (file "sw/run_idx.tcl" line 7)
+
+===== LAYER 051 =====
+Config: c_in=256, c_out=256, k=3x3, stride=1, pad=[1, 1, 1, 1]
+Subset:    c_in=5, c_out=32, crop=8x8 -> 8x8
+Build: 6 finished
+  PASS: Total=2048 Errors=0
+
+===== LAYER 052 =====
+Config: c_in=256, c_out=256, k=1x1, stride=1, pad=[0, 0, 0, 0]
+Subset:    c_in=20, c_out=32, crop=8x8 -> 8x8
+Build: 6 finished
+  PASS: Total=2048 Errors=0
+
+===== LAYER 053 =====
+Config: c_in=256, c_out=256, k=3x3, stride=1, pad=[1, 1, 1, 1]
+Subset:    c_in=5, c_out=32, crop=8x8 -> 8x8
+Build: 6 finished
+  PASS: Total=2048 Errors=0
+
+===== LAYER 054 =====
+Config: c_in=256, c_out=256, k=1x1, stride=1, pad=[0, 0, 0, 0]
+Subset:    c_in=20, c_out=32, crop=8x8 -> 8x8
+Build: 6 finished
+  PASS: Total=2048 Errors=0
+
+===== LAYER 055 =====
+Config: c_in=256, c_out=256, k=3x3, stride=1, pad=[1, 1, 1, 1]
+Subset:    c_in=5, c_out=32, crop=8x8 -> 8x8
+Build: 6 finished
+  PASS: Total=2048 Errors=0
+
+===== LAYER 056 =====
+Config: c_in=256, c_out=256, k=1x1, stride=1, pad=[0, 0, 0, 0]
+Subset:    c_in=20, c_out=32, crop=8x8 -> 8x8
+Build: 6 finished
+  PASS: Total=2048 Errors=0
+
+===== LAYER 057 =====
+Config: c_in=256, c_out=256, k=3x3, stride=1, pad=[1, 1, 1, 1]
+Subset:    c_in=5, c_out=32, crop=8x8 -> 8x8
+Build: 6 finished
+  NO RESULT (timeout?)
+"::tcf::send_command $chan XilinxReset reset $fmt e [list $ctx $type $arg]"
+    (procedure "rst" line 317)
+    invoked from within
+"rst -processor"
+    (file "sw/run_idx.tcl" line 11)
+
+===== LAYER 058 =====
+Config: c_in=256, c_out=256, k=1x1, stride=1, pad=[0, 0, 0, 0]
+Subset:    c_in=20, c_out=32, crop=8x8 -> 8x8
+Build: 6 finished
+  JTAG ERROR - retrying after 10s...
+"::tcf::send_command $chan XilinxReset reset $fmt e [list $ctx $type $arg]"
+    (procedure "rst" line 317)
+    invoked from within
+"rst -processor"
+    (file "sw/run_idx.tcl" line 11)
+  NO RESULT (timeout?)
+"tid2ctx $chan [lindex $args 0]"
+    (procedure "targets" line 30)
+    invoked from within
+"targets 4"
+    (file "sw/run_idx.tcl" line 7)
