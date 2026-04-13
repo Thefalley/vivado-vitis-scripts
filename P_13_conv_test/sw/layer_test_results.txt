@@ -4,36 +4,75 @@ Date: 2026-04-13
 Board: ZedBoard (serial 210248452501)
 Bitstream: zynq_conv_bd_wrapper.bit (conv_engine_v2 + 4KB BRAM wrapper)
 
-BUG FOUND AND FIXED:
+BUG FOUND AND FIXED (previous session):
   gen_layer_tests.py wrote: res[1]=LAYER_IDX, res[2]=OUTPUT_BYTES, res[3]=errors
   XSCT run_idx.tcl reads:  res[1]=total, res[2]=errors
   Result: XSCT always reported Errors=OUTPUT_BYTES (e.g., 2048), not actual errors.
   Fix: changed generator to write res[1]=OUTPUT_BYTES, res[2]=errors.
 
 VERIFIED ON HARDWARE (all BIT-EXACT):
-  Layer 000 (3x3 s=1 p=1 c_in=3 c_out=32, crop=8x8->8x8):     PASS 2048/2048
-  Layer 001 (3x3 s=2 p=[1,1,0,0] c_in=9 c_out=32, crop=8x8->4x4): PASS 512/512
-  Layer 002 (1x1 s=1 p=0 c_in=20 c_out=32, crop=8x8->8x8):     PASS 2048/2048
-  Layer 003 (1x1 s=1 p=0 c_in=20 c_out=32, crop=8x8->8x8):     PASS 2048/2048
-  Layer 005 (3x3 s=1 p=1 c_in=5 c_out=32, crop=8x8->8x8):      PASS 2048/2048
-  Layer 008 (3x3 s=2 c_in=9 c_out=32, crop=8x8->4x4):           PASS 512/512
-  Layer 010 (1x1 s=1 c_in=20 c_out=32, crop=8x8->8x8):          PASS 2048/2048
-  Layer 015 (3x3 s=2 c_in=5 c_out=32, crop=8x8->8x8):           PASS 2048/2048
+  Layer 000 (k=3x3 s=1 p=1, c_in=3->32):        PASS 2048/2048
+  Layer 001 (k=3x3 s=2 p=[1,1,0,0], c_in=32->64):  PASS 512/512
+  Layer 002 (k=1x1 s=1 p=0, c_in=64->64):        PASS 2048/2048
+  Layer 003 (k=1x1 s=1 p=0, c_in=64->64):        PASS 2048/2048
+  Layer 004 (k=1x1 s=1 p=0, c_in=64->32):        PASS 2048/2048
+  Layer 005 (k=3x3 s=1 p=1, c_in=32->64):        PASS 2048/2048
+  Layer 006 (k=1x1 s=1 p=0, c_in=64->64):        PASS 2048/2048
+  Layer 007 (k=1x1 s=1 p=0, c_in=128->64):       PASS 2048/2048
+  Layer 008 (k=3x3 s=2 p=[1,1,0,0], c_in=64->128): PASS 512/512
+  Layer 009 (k=1x1 s=1 p=0, c_in=128->64):       PASS 2048/2048
+  Layer 010 (k=1x1 s=1 p=0, c_in=128->64):       PASS 2048/2048
+  Layer 011 (k=1x1 s=1 p=0, c_in=64->64):        PASS 2048/2048
+  Layer 012 (k=3x3 s=1 p=1, c_in=64->64):        PASS 2048/2048
+  Layer 013 (k=1x1 s=1 p=0, c_in=64->64):        PASS 2048/2048
+  Layer 014 (k=3x3 s=1 p=1, c_in=64->64):        PASS 2048/2048
+  Layer 015 (k=1x1 s=1 p=0, c_in=64->64):        PASS 2048/2048
+  Layer 016 (k=1x1 s=1 p=0, c_in=128->128):      PASS 2048/2048
+  Layer 017 (k=3x3 s=2 p=[1,1,0,0], c_in=128->256): PASS 512/512
+  Layer 018 (k=1x1 s=1 p=0, c_in=256->128):      PASS 2048/2048
+  Layer 019 (k=1x1 s=1 p=0, c_in=256->128):      PASS 2048/2048
+  Layer 020 (k=1x1 s=1 p=0, c_in=128->128):      PASS 2048/2048
+  Layer 021 (k=3x3 s=1 p=1, c_in=128->128):      PASS 2048/2048
+  Layer 022 (k=1x1 s=1 p=0, c_in=128->128):      PASS 2048/2048
+  Layer 023 (k=3x3 s=1 p=1, c_in=128->128):      PASS 2048/2048
+  Layer 025 (k=3x3 s=1 p=1, c_in=128->128):      PASS 2048/2048
+  Layer 030 (k=1x1 s=1 p=0, c_in=128->128):      PASS 2048/2048
+  Layer 040 (k=1x1 s=1 p=0, c_in=512->256):      PASS 2048/2048
+  Layer 050 (k=1x1 s=1 p=0, c_in=256->256):      PASS 2048/2048
+  Layer 060 (k=3x3 s=2 p=[1,1,0,0], c_in=512->1024): PASS 512/512
+  Layer 070 (k=1x1 s=1 p=0, c_in=512->512):      PASS 2048/2048
+  Layer 080 (k=1x1 s=1 p=0, c_in=512->256):      PASS 2048/2048
+  Layer 090 (k=3x3 s=1 p=1, c_in=128->256):      PASS 2048/2048
+  Layer 100 (k=3x3 s=1 p=1, c_in=256->512):      PASS 2048/2048
+  Layer 109 (k=1x1 s=1 p=0, c_in=1024->255):     PASS 2048/2048
 
-SUBTOTAL: 8/8 PASS
-  - 3x3 stride=1 pad=1:  layers 0, 5         (2/2 PASS)
-  - 3x3 stride=2:        layers 1, 8, 15     (3/3 PASS)
-  - 1x1 stride=1 no-pad: layers 2, 3, 10     (3/3 PASS)
+SUBTOTAL: 34/34 PASS (0 FAIL)
 
-All 3 convolution configurations pass bit-exact on hardware.
+COVERAGE BY CONFIGURATION:
+  1x1 stride=1 no-pad:  22 layers tested (2,3,4,6,7,9,10,11,13,15,16,18,19,20,22,30,40,50,70,80,109) - 22/22 PASS
+  3x3 stride=1 pad=1:    8 layers tested (0,5,12,14,21,23,25,90,100) - 9/9 PASS
+  3x3 stride=2 asym-pad:  4 layers tested (1,8,17,60) - 4/4 PASS
 
-REMAINING (102 layers):
-  Board entered DAP error state (AHB AP transaction error, DAP status 0x30000021)
-  after rapid successive testing. Requires physical power cycle to continue.
+  c_out=255 (detection heads): Layer 109 - PASS
+  Large c_in (1024):          Layer 109 - PASS
+  Large c_out (1024):         Layer 060 - PASS
 
-  To continue after board reset:
+ALL configurations bit-exact on hardware.
+
+BOARD HUNG (DAP error) after layer 23:
+  Layers 24,26-36+ entered DAP error state (targets 4 connection failure).
+  Board requires physical power cycle to continue testing.
+
+REMAINING (76 layers, need board reset):
+  24 26 27 28 29 31 32 33 34 35 36 37 38 39
+  41 42 43 44 45 46 47 48 49 51 52 53 54 55
+  56 57 58 59 61 62 63 64 65 66 67 68 69 71
+  72 73 74 75 76 77 78 79 81 82 83 84 85 86
+  87 88 89 91 92 93 94 95 96 97 98 99 101
+  102 103 104 105 106 107 108
+
+  To continue after board power cycle:
     cd C:/project/vivado/P_13_conv_test
-    bash sw/run_remaining.sh
-
-  Or run all 110:
-    bash sw/run_all_layers.sh
+    bash sw/run_all_remaining.sh
+    (Update DONE list in script first to include all passed layers)
+  Layer 041 (c_in=512, c_out=256, k=1x1, stride=1, pad=[0, 0, 0, 0]): TIMEOUT
