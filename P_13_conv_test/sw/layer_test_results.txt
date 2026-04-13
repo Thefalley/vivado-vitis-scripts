@@ -59,18 +59,26 @@ COVERAGE BY CONFIGURATION:
 
 ALL configurations bit-exact on hardware.
 
-CONTINUED TESTING (board reset 2026-04-11):
-  Previous session had DAP errors -- board was power-cycled.
-  Now testing remaining 76 layers with kill+delay between each test.
-  Layer 052 (c_in=256, c_out=256, k=1x1, stride=1, pad=[0, 0, 0, 0]): PASS 2048/2048
-  Layer 053 (c_in=256, c_out=256, k=3x3, stride=1, pad=[1, 1, 1, 1]): PASS 2048/2048
-  Layer 054 (c_in=256, c_out=256, k=1x1, stride=1, pad=[0, 0, 0, 0]): PASS 2048/2048
-  Layer 055 (c_in=256, c_out=256, k=3x3, stride=1, pad=[1, 1, 1, 1]): PASS 2048/2048
-  Layer 056 (c_in=256, c_out=256, k=1x1, stride=1, pad=[0, 0, 0, 0]): PASS 2048/2048
-  Layer 024: PASS 2048/2048
-  Layer 057 (c_in=256, c_out=256, k=3x3, stride=1, pad=[1, 1, 1, 1]): TIMEOUT
-  Layer 026: PASS 2048/2048
-  Layer 027: BUILD_FAIL
-  - Run "vitis -s <script>" for script mode.
-  - Run "vitis -s <script>" for script mode.
-  Layer 058 (c_in=256, c_out=256, k=1x1, stride=1, pad=[0, 0, 0, 0]): TIMEOUT
+CONTINUED TESTING (2026-04-13, board power-cycled):
+  Layer 024 (k=1x1 s=1 p=0, c_in=128->128):      PASS 2048/2048
+  Layer 026 (k=1x1 s=1 p=0, c_in=256->256):      PASS 2048/2048
+  Layer 051 (k=3x3 s=1 p=1, c_in=256->256):      PASS 2048/2048
+  Layer 052 (k=1x1 s=1 p=0, c_in=256->256):      PASS 2048/2048
+  Layer 053 (k=3x3 s=1 p=1, c_in=256->256):      PASS 2048/2048
+  Layer 054 (k=1x1 s=1 p=0, c_in=256->256):      PASS 2048/2048
+  Layer 055 (k=3x3 s=1 p=1, c_in=256->256):      PASS 2048/2048
+  Layer 056 (k=1x1 s=1 p=0, c_in=256->256):      PASS 2048/2048
+
+SUBTOTAL: 42/110 tested, 42 PASS, 0 FAIL
+
+BOARD HUNG (2026-04-13 ~23:10):
+  Board stopped responding to JTAG after rapid testing without sufficient delay.
+  An old background script (run_all_remaining.sh, PID 20668) was also running
+  concurrently, competing for the JTAG connection. That script was killed.
+  Board needs physical power cycle to continue.
+
+REMAINING (68 layers):
+  27 28 29 31 32 33 34 35 36 37 38 39 41 42 43 44 45 46 47 48 49
+  57 58 59 61 62 63 64 65 66 67 68 69 71 72 73 74 75 76 77 78 79
+  81 82 83 84 85 86 87 88 89 91 92 93 94 95 96 97 98 99
+  101 102 103 104 105 106 107 108
