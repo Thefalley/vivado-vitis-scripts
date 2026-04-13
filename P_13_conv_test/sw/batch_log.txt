@@ -436,3 +436,51 @@ Build: 6 finished
     invoked from within
 "targets 4"
     (file "sw/run_idx.tcl" line 7)
+
+===== LAYER 059 =====
+Config: c_in=512, c_out=512, k=1x1, stride=1, pad=[0, 0, 0, 0]
+Subset:    c_in=20, c_out=32, crop=8x8 -> 8x8
+Build: 6 finished
+  NO RESULT (timeout?)
+"tid2ctx $chan [lindex $args 0]"
+    (procedure "targets" line 30)
+    invoked from within
+"targets 4"
+    (file "sw/run_idx.tcl" line 7)
+
+===== LAYER 061 =====
+Config: c_in=512, c_out=256, k=1x1, stride=1, pad=[0, 0, 0, 0]
+Subset:    c_in=20, c_out=32, crop=8x8 -> 8x8
+Build: 6 finished
+  NO RESULT (timeout?)
+"tid2ctx $chan [lindex $args 0]"
+    (procedure "targets" line 30)
+    invoked from within
+"targets 4"
+    (file "sw/run_idx.tcl" line 7)
+
+===== LAYER 062 =====
+Config: c_in=1024, c_out=512, k=1x1, stride=1, pad=[0, 0, 0, 0]
+Subset:    c_in=20, c_out=32, crop=8x8 -> 8x8
+Build: 6 finished
+  NO RESULT (timeout?)
+"tid2ctx $chan [lindex $args 0]"
+    (procedure "targets" line 30)
+    invoked from within
+"targets 4"
+    (file "sw/run_idx.tcl" line 7)
+
+===== LAYER 063 =====
+Config: c_in=1024, c_out=512, k=1x1, stride=1, pad=[0, 0, 0, 0]
+Subset:    c_in=20, c_out=32, crop=8x8 -> 8x8
+Build: 6 finished
+  NO RESULT (timeout?)
+"tid2ctx $chan [lindex $args 0]"
+    (procedure "targets" line 30)
+    invoked from within
+"targets 4"
+    (file "sw/run_idx.tcl" line 7)
+
+===== LAYER 064 =====
+Config: c_in=512, c_out=512, k=1x1, stride=1, pad=[0, 0, 0, 0]
+Subset:    c_in=20, c_out=32, crop=8x8 -> 8x8

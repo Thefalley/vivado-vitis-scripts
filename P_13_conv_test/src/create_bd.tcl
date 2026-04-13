@@ -11,6 +11,7 @@ read_vhdl [file join $src_dir mul_s32x32_pipe.vhd]
 read_vhdl [file join $src_dir requantize.vhd]
 read_vhdl [file join $src_dir conv_engine.vhd]
 read_vhdl [file join $src_dir conv_engine_v2.vhd]
+read_vhdl [file join $src_dir conv_engine_v3.vhd]
 read_vhdl [file join $src_dir conv_test_wrapper.vhd]
 update_compile_order -fileset sources_1
 

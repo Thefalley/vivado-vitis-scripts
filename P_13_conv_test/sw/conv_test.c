@@ -48,6 +48,10 @@
 #define REG_ADDR_BIAS      0x34
 #define REG_ADDR_OUTPUT    0x38
 #define REG_IC_TILE_SIZE   0x3C
+#define REG_PAD_TOP        0x40
+#define REG_PAD_BOTTOM     0x44
+#define REG_PAD_LEFT       0x48
+#define REG_PAD_RIGHT      0x4C
 #define REG_BRAM_BASE      0x1000
 
 /* BRAM internal addresses (what conv_engine sees) */
@@ -287,8 +291,13 @@ int main(void)
     write_reg(REG_C_OUT, C_OUT);
     write_reg(REG_H_IN,  H_IN);
     write_reg(REG_W_IN,  W_IN);
-    /* ksize in bits [1:0], stride in bit [2], pad in bit [3] */
-    write_reg(REG_KSP, (PAD << 3) | (STRIDE << 2) | KSIZE);
+    /* ksize in bits [1:0], stride in bit [2] (pad now in separate registers) */
+    write_reg(REG_KSP, (STRIDE << 2) | KSIZE);
+    /* Asymmetric pad registers (symmetric pad=1 for backward compat) */
+    write_reg(REG_PAD_TOP,    PAD);
+    write_reg(REG_PAD_BOTTOM, PAD);
+    write_reg(REG_PAD_LEFT,   PAD);
+    write_reg(REG_PAD_RIGHT,  PAD);
     /* x_zp = -128 -> 9-bit signed: 0x180 */
     write_reg(REG_X_ZP, (u32)(s32)(-128) & 0x1FF);
     write_reg(REG_W_ZP, 0);

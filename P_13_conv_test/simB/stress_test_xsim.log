@@ -1,0 +1,77 @@
+#-----------------------------------------------------------
+# xsim v2025.2 (64-bit)
+# SW Build 6299465 on Fri Nov 14 19:35:11 GMT 2025
+# IP Build 6300035 on Fri Nov 14 10:48:45 MST 2025
+# SharedData Build 6298862 on Thu Nov 13 04:50:51 MST 2025
+# Start of session at: Mon Apr 13 23:31:49 2026
+# Process ID         : 8396
+# Current directory  : C:/project/vivado/P_13_conv_test/simB
+# Command line       : xsim.exe -log stress_test_xsim.log -mode tcl -source {xsim.dir/stress_sim/xsim_script.tcl}
+# Log file           : C:/project/vivado/P_13_conv_test/simB/stress_test_xsim.log
+# Journal file       : C:/project/vivado/P_13_conv_test/simB\xsim.jou
+# Running On         : DESKTOP-6J3HG3R
+# Platform           : Windows Server 2016 or Windows 10
+# Operating System   : 19045
+# Processor Detail   : Intel(R) Core(TM) i5-10300H CPU @ 2.50GHz
+# CPU Frequency      : 2496 MHz
+# CPU Physical cores : 4
+# CPU Logical cores  : 8
+# Host memory        : 16940 MB
+# Swap memory        : 23933 MB
+# Total Virtual      : 40873 MB
+# Available Virtual  : 13155 MB
+#-----------------------------------------------------------
+source xsim.dir/stress_sim/xsim_script.tcl
+# xsim {stress_sim} -autoloadwcfg -runall
+Time resolution is 1 ps
+run -all
+Note: ============ TEST 1: Overflow accumulator ============
+Time: 0 ps  Iteration: 0  Process: /stress_test_tb/p_main  File: C:/project/vivado/P_13_conv_test/simB/stress_test_tb.vhd
+Note: TEST 1: PASS
+Time: 4311025 ns  Iteration: 0  Process: /stress_test_tb/p_main  File: C:/project/vivado/P_13_conv_test/simB/stress_test_tb.vhd
+Note: ============ TEST 2: Negative extremes ============
+Time: 4311025 ns  Iteration: 0  Process: /stress_test_tb/p_main  File: C:/project/vivado/P_13_conv_test/simB/stress_test_tb.vhd
+Note: TEST 2: PASS
+Time: 8622055 ns  Iteration: 0  Process: /stress_test_tb/p_main  File: C:/project/vivado/P_13_conv_test/simB/stress_test_tb.vhd
+Note: ============ TEST 3: x_zp=0 identity ============
+Time: 8622055 ns  Iteration: 0  Process: /stress_test_tb/p_main  File: C:/project/vivado/P_13_conv_test/simB/stress_test_tb.vhd
+Note: TEST 3: PASS
+Time: 8651275 ns  Iteration: 0  Process: /stress_test_tb/p_main  File: C:/project/vivado/P_13_conv_test/simB/stress_test_tb.vhd
+Note: ============ TEST 4: Minimal 1x1x1 ============
+Time: 8651275 ns  Iteration: 0  Process: /stress_test_tb/p_main  File: C:/project/vivado/P_13_conv_test/simB/stress_test_tb.vhd
+Note: TEST 4: PASS
+Time: 8660655 ns  Iteration: 0  Process: /stress_test_tb/p_main  File: C:/project/vivado/P_13_conv_test/simB/stress_test_tb.vhd
+Note: ============ TEST 5: Extreme tiling ic_tile=1 ============
+Time: 8660655 ns  Iteration: 0  Process: /stress_test_tb/p_main  File: C:/project/vivado/P_13_conv_test/simB/stress_test_tb.vhd
+Note: T5 oc0 px0 OK: -10
+Time: 8779155 ns  Iteration: 0  Process: /stress_test_tb/p_main  File: C:/project/vivado/P_13_conv_test/simB/stress_test_tb.vhd
+Note: T5 oc0 px1 OK: -7
+Time: 8779155 ns  Iteration: 0  Process: /stress_test_tb/p_main  File: C:/project/vivado/P_13_conv_test/simB/stress_test_tb.vhd
+Note: TEST 5: PASS
+Time: 8779155 ns  Iteration: 0  Process: /stress_test_tb/p_main  File: C:/project/vivado/P_13_conv_test/simB/stress_test_tb.vhd
+Note: ============ TEST 6: Large 16x16 ============
+Time: 8779155 ns  Iteration: 0  Process: /stress_test_tb/p_main  File: C:/project/vivado/P_13_conv_test/simB/stress_test_tb.vhd
+Note: TEST 6: PASS
+Time: 13432685 ns  Iteration: 0  Process: /stress_test_tb/p_main  File: C:/project/vivado/P_13_conv_test/simB/stress_test_tb.vhd
+Note: ============ TEST 7: Asymmetric pad [1,0,1,0] ============
+Time: 13432685 ns  Iteration: 0  Process: /stress_test_tb/p_main  File: C:/project/vivado/P_13_conv_test/simB/stress_test_tb.vhd
+Note: T7 oc0 px=0 OK: 40
+Time: 13509755 ns  Iteration: 0  Process: /stress_test_tb/p_main  File: C:/project/vivado/P_13_conv_test/simB/stress_test_tb.vhd
+Note: T7 oc0 px=1 OK: 60
+Time: 13509755 ns  Iteration: 0  Process: /stress_test_tb/p_main  File: C:/project/vivado/P_13_conv_test/simB/stress_test_tb.vhd
+Note: T7 oc0 px=2 OK: 60
+Time: 13509755 ns  Iteration: 0  Process: /stress_test_tb/p_main  File: C:/project/vivado/P_13_conv_test/simB/stress_test_tb.vhd
+Note: T7 oc0 px=3 OK: 90
+Time: 13509755 ns  Iteration: 0  Process: /stress_test_tb/p_main  File: C:/project/vivado/P_13_conv_test/simB/stress_test_tb.vhd
+Note: TEST 7: PASS
+Time: 13509755 ns  Iteration: 0  Process: /stress_test_tb/p_main  File: C:/project/vivado/P_13_conv_test/simB/stress_test_tb.vhd
+Note: ====================================================
+Time: 13509755 ns  Iteration: 0  Process: /stress_test_tb/p_main  File: C:/project/vivado/P_13_conv_test/simB/stress_test_tb.vhd
+Note: ALL 7 STRESS TESTS COMPLETE
+Time: 13509755 ns  Iteration: 0  Process: /stress_test_tb/p_main  File: C:/project/vivado/P_13_conv_test/simB/stress_test_tb.vhd
+Note: ====================================================
+Time: 13509755 ns  Iteration: 0  Process: /stress_test_tb/p_main  File: C:/project/vivado/P_13_conv_test/simB/stress_test_tb.vhd
+run: Time (s): cpu = 00:00:01 ; elapsed = 00:00:35 . Memory (MB): peak = 227.191 ; gain = 0.000
+exit
+INFO: xsimkernel Simulation Memory Usage: 10664 KB (Peak: 10664 KB), Simulation CPU Usage: 33952 ms
+INFO: [Common 17-206] Exiting xsim at Mon Apr 13 23:32:26 2026...

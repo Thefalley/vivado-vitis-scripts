@@ -1,0 +1,159 @@
+#-----------------------------------------------------------
+# xsim v2025.2 (64-bit)
+# SW Build 6299465 on Fri Nov 14 19:35:11 GMT 2025
+# IP Build 6300035 on Fri Nov 14 10:48:45 MST 2025
+# SharedData Build 6298862 on Thu Nov 13 04:50:51 MST 2025
+# Start of session at: Mon Apr 13 23:30:41 2026
+# Process ID         : 4948
+# Current directory  : C:/project/vivado/P_13_conv_test/simB
+# Command line       : xsim.exe -log t5_debug_xsim.log -mode tcl -source {xsim.dir/t5_debug_sim/xsim_script.tcl}
+# Log file           : C:/project/vivado/P_13_conv_test/simB/t5_debug_xsim.log
+# Journal file       : C:/project/vivado/P_13_conv_test/simB\xsim.jou
+# Running On         : DESKTOP-6J3HG3R
+# Platform           : Windows Server 2016 or Windows 10
+# Operating System   : 19045
+# Processor Detail   : Intel(R) Core(TM) i5-10300H CPU @ 2.50GHz
+# CPU Frequency      : 2496 MHz
+# CPU Physical cores : 4
+# CPU Logical cores  : 8
+# Host memory        : 16940 MB
+# Swap memory        : 23933 MB
+# Total Virtual      : 40873 MB
+# Available Virtual  : 9896 MB
+#-----------------------------------------------------------
+source xsim.dir/t5_debug_sim/xsim_script.tcl
+# xsim {t5_debug_sim} -autoloadwcfg -runall
+Time resolution is 1 ps
+run -all
+Note: OUTPUT DUMP:
+Time: 118505 ns  Iteration: 0  Process: /stress_t5_debug_tb/p_main  File: C:/project/vivado/P_13_conv_test/simB/stress_t5_debug_tb.vhd
+Note:   oc=0 px=0 val=-10
+Time: 118505 ns  Iteration: 0  Process: /stress_t5_debug_tb/p_main  File: C:/project/vivado/P_13_conv_test/simB/stress_t5_debug_tb.vhd
+Note:   oc=0 px=1 val=-7
+Time: 118505 ns  Iteration: 0  Process: /stress_t5_debug_tb/p_main  File: C:/project/vivado/P_13_conv_test/simB/stress_t5_debug_tb.vhd
+Note:   oc=1 px=0 val=-17
+Time: 118505 ns  Iteration: 0  Process: /stress_t5_debug_tb/p_main  File: C:/project/vivado/P_13_conv_test/simB/stress_t5_debug_tb.vhd
+Note:   oc=1 px=1 val=-17
+Time: 118505 ns  Iteration: 0  Process: /stress_t5_debug_tb/p_main  File: C:/project/vivado/P_13_conv_test/simB/stress_t5_debug_tb.vhd
+Note:   oc=2 px=0 val=-17
+Time: 118505 ns  Iteration: 0  Process: /stress_t5_debug_tb/p_main  File: C:/project/vivado/P_13_conv_test/simB/stress_t5_debug_tb.vhd
+Note:   oc=2 px=1 val=-17
+Time: 118505 ns  Iteration: 0  Process: /stress_t5_debug_tb/p_main  File: C:/project/vivado/P_13_conv_test/simB/stress_t5_debug_tb.vhd
+Note:   oc=3 px=0 val=-17
+Time: 118505 ns  Iteration: 0  Process: /stress_t5_debug_tb/p_main  File: C:/project/vivado/P_13_conv_test/simB/stress_t5_debug_tb.vhd
+Note:   oc=3 px=1 val=-17
+Time: 118505 ns  Iteration: 0  Process: /stress_t5_debug_tb/p_main  File: C:/project/vivado/P_13_conv_test/simB/stress_t5_debug_tb.vhd
+Note:   oc=4 px=0 val=-17
+Time: 118505 ns  Iteration: 0  Process: /stress_t5_debug_tb/p_main  File: C:/project/vivado/P_13_conv_test/simB/stress_t5_debug_tb.vhd
+Note:   oc=4 px=1 val=-17
+Time: 118505 ns  Iteration: 0  Process: /stress_t5_debug_tb/p_main  File: C:/project/vivado/P_13_conv_test/simB/stress_t5_debug_tb.vhd
+Note:   oc=5 px=0 val=-17
+Time: 118505 ns  Iteration: 0  Process: /stress_t5_debug_tb/p_main  File: C:/project/vivado/P_13_conv_test/simB/stress_t5_debug_tb.vhd
+Note:   oc=5 px=1 val=-17
+Time: 118505 ns  Iteration: 0  Process: /stress_t5_debug_tb/p_main  File: C:/project/vivado/P_13_conv_test/simB/stress_t5_debug_tb.vhd
+Note:   oc=6 px=0 val=-17
+Time: 118505 ns  Iteration: 0  Process: /stress_t5_debug_tb/p_main  File: C:/project/vivado/P_13_conv_test/simB/stress_t5_debug_tb.vhd
+Note:   oc=6 px=1 val=-17
+Time: 118505 ns  Iteration: 0  Process: /stress_t5_debug_tb/p_main  File: C:/project/vivado/P_13_conv_test/simB/stress_t5_debug_tb.vhd
+Note:   oc=7 px=0 val=-17
+Time: 118505 ns  Iteration: 0  Process: /stress_t5_debug_tb/p_main  File: C:/project/vivado/P_13_conv_test/simB/stress_t5_debug_tb.vhd
+Note:   oc=7 px=1 val=-17
+Time: 118505 ns  Iteration: 0  Process: /stress_t5_debug_tb/p_main  File: C:/project/vivado/P_13_conv_test/simB/stress_t5_debug_tb.vhd
+Note:   oc=8 px=0 val=-10
+Time: 118505 ns  Iteration: 0  Process: /stress_t5_debug_tb/p_main  File: C:/project/vivado/P_13_conv_test/simB/stress_t5_debug_tb.vhd
+Note:   oc=8 px=1 val=-7
+Time: 118505 ns  Iteration: 0  Process: /stress_t5_debug_tb/p_main  File: C:/project/vivado/P_13_conv_test/simB/stress_t5_debug_tb.vhd
+Note:   oc=9 px=0 val=-17
+Time: 118505 ns  Iteration: 0  Process: /stress_t5_debug_tb/p_main  File: C:/project/vivado/P_13_conv_test/simB/stress_t5_debug_tb.vhd
+Note:   oc=9 px=1 val=-17
+Time: 118505 ns  Iteration: 0  Process: /stress_t5_debug_tb/p_main  File: C:/project/vivado/P_13_conv_test/simB/stress_t5_debug_tb.vhd
+Note:   oc=10 px=0 val=-17
+Time: 118505 ns  Iteration: 0  Process: /stress_t5_debug_tb/p_main  File: C:/project/vivado/P_13_conv_test/simB/stress_t5_debug_tb.vhd
+Note:   oc=10 px=1 val=-17
+Time: 118505 ns  Iteration: 0  Process: /stress_t5_debug_tb/p_main  File: C:/project/vivado/P_13_conv_test/simB/stress_t5_debug_tb.vhd
+Note:   oc=11 px=0 val=-17
+Time: 118505 ns  Iteration: 0  Process: /stress_t5_debug_tb/p_main  File: C:/project/vivado/P_13_conv_test/simB/stress_t5_debug_tb.vhd
+Note:   oc=11 px=1 val=-17
+Time: 118505 ns  Iteration: 0  Process: /stress_t5_debug_tb/p_main  File: C:/project/vivado/P_13_conv_test/simB/stress_t5_debug_tb.vhd
+Note:   oc=12 px=0 val=-17
+Time: 118505 ns  Iteration: 0  Process: /stress_t5_debug_tb/p_main  File: C:/project/vivado/P_13_conv_test/simB/stress_t5_debug_tb.vhd
+Note:   oc=12 px=1 val=-17
+Time: 118505 ns  Iteration: 0  Process: /stress_t5_debug_tb/p_main  File: C:/project/vivado/P_13_conv_test/simB/stress_t5_debug_tb.vhd
+Note:   oc=13 px=0 val=-17
+Time: 118505 ns  Iteration: 0  Process: /stress_t5_debug_tb/p_main  File: C:/project/vivado/P_13_conv_test/simB/stress_t5_debug_tb.vhd
+Note:   oc=13 px=1 val=-17
+Time: 118505 ns  Iteration: 0  Process: /stress_t5_debug_tb/p_main  File: C:/project/vivado/P_13_conv_test/simB/stress_t5_debug_tb.vhd
+Note:   oc=14 px=0 val=-17
+Time: 118505 ns  Iteration: 0  Process: /stress_t5_debug_tb/p_main  File: C:/project/vivado/P_13_conv_test/simB/stress_t5_debug_tb.vhd
+Note:   oc=14 px=1 val=-17
+Time: 118505 ns  Iteration: 0  Process: /stress_t5_debug_tb/p_main  File: C:/project/vivado/P_13_conv_test/simB/stress_t5_debug_tb.vhd
+Note:   oc=15 px=0 val=-17
+Time: 118505 ns  Iteration: 0  Process: /stress_t5_debug_tb/p_main  File: C:/project/vivado/P_13_conv_test/simB/stress_t5_debug_tb.vhd
+Note:   oc=15 px=1 val=-17
+Time: 118505 ns  Iteration: 0  Process: /stress_t5_debug_tb/p_main  File: C:/project/vivado/P_13_conv_test/simB/stress_t5_debug_tb.vhd
+Note:   oc=16 px=0 val=-17
+Time: 118505 ns  Iteration: 0  Process: /stress_t5_debug_tb/p_main  File: C:/project/vivado/P_13_conv_test/simB/stress_t5_debug_tb.vhd
+Note:   oc=16 px=1 val=-42
+Time: 118505 ns  Iteration: 0  Process: /stress_t5_debug_tb/p_main  File: C:/project/vivado/P_13_conv_test/simB/stress_t5_debug_tb.vhd
+Note:   oc=17 px=0 val=-17
+Time: 118505 ns  Iteration: 0  Process: /stress_t5_debug_tb/p_main  File: C:/project/vivado/P_13_conv_test/simB/stress_t5_debug_tb.vhd
+Note:   oc=17 px=1 val=-43
+Time: 118505 ns  Iteration: 0  Process: /stress_t5_debug_tb/p_main  File: C:/project/vivado/P_13_conv_test/simB/stress_t5_debug_tb.vhd
+Note:   oc=18 px=0 val=-17
+Time: 118505 ns  Iteration: 0  Process: /stress_t5_debug_tb/p_main  File: C:/project/vivado/P_13_conv_test/simB/stress_t5_debug_tb.vhd
+Note:   oc=18 px=1 val=-17
+Time: 118505 ns  Iteration: 0  Process: /stress_t5_debug_tb/p_main  File: C:/project/vivado/P_13_conv_test/simB/stress_t5_debug_tb.vhd
+Note:   oc=19 px=0 val=-17
+Time: 118505 ns  Iteration: 0  Process: /stress_t5_debug_tb/p_main  File: C:/project/vivado/P_13_conv_test/simB/stress_t5_debug_tb.vhd
+Note:   oc=19 px=1 val=-17
+Time: 118505 ns  Iteration: 0  Process: /stress_t5_debug_tb/p_main  File: C:/project/vivado/P_13_conv_test/simB/stress_t5_debug_tb.vhd
+Note:   oc=20 px=0 val=-17
+Time: 118505 ns  Iteration: 0  Process: /stress_t5_debug_tb/p_main  File: C:/project/vivado/P_13_conv_test/simB/stress_t5_debug_tb.vhd
+Note:   oc=20 px=1 val=-17
+Time: 118505 ns  Iteration: 0  Process: /stress_t5_debug_tb/p_main  File: C:/project/vivado/P_13_conv_test/simB/stress_t5_debug_tb.vhd
+Note:   oc=21 px=0 val=-17
+Time: 118505 ns  Iteration: 0  Process: /stress_t5_debug_tb/p_main  File: C:/project/vivado/P_13_conv_test/simB/stress_t5_debug_tb.vhd
+Note:   oc=21 px=1 val=-17
+Time: 118505 ns  Iteration: 0  Process: /stress_t5_debug_tb/p_main  File: C:/project/vivado/P_13_conv_test/simB/stress_t5_debug_tb.vhd
+Note:   oc=22 px=0 val=-17
+Time: 118505 ns  Iteration: 0  Process: /stress_t5_debug_tb/p_main  File: C:/project/vivado/P_13_conv_test/simB/stress_t5_debug_tb.vhd
+Note:   oc=22 px=1 val=-17
+Time: 118505 ns  Iteration: 0  Process: /stress_t5_debug_tb/p_main  File: C:/project/vivado/P_13_conv_test/simB/stress_t5_debug_tb.vhd
+Note:   oc=23 px=0 val=-17
+Time: 118505 ns  Iteration: 0  Process: /stress_t5_debug_tb/p_main  File: C:/project/vivado/P_13_conv_test/simB/stress_t5_debug_tb.vhd
+Note:   oc=23 px=1 val=-17
+Time: 118505 ns  Iteration: 0  Process: /stress_t5_debug_tb/p_main  File: C:/project/vivado/P_13_conv_test/simB/stress_t5_debug_tb.vhd
+Note:   oc=24 px=0 val=-17
+Time: 118505 ns  Iteration: 0  Process: /stress_t5_debug_tb/p_main  File: C:/project/vivado/P_13_conv_test/simB/stress_t5_debug_tb.vhd
+Note:   oc=24 px=1 val=-17
+Time: 118505 ns  Iteration: 0  Process: /stress_t5_debug_tb/p_main  File: C:/project/vivado/P_13_conv_test/simB/stress_t5_debug_tb.vhd
+Note:   oc=25 px=0 val=-17
+Time: 118505 ns  Iteration: 0  Process: /stress_t5_debug_tb/p_main  File: C:/project/vivado/P_13_conv_test/simB/stress_t5_debug_tb.vhd
+Note:   oc=25 px=1 val=-17
+Time: 118505 ns  Iteration: 0  Process: /stress_t5_debug_tb/p_main  File: C:/project/vivado/P_13_conv_test/simB/stress_t5_debug_tb.vhd
+Note:   oc=26 px=0 val=-17
+Time: 118505 ns  Iteration: 0  Process: /stress_t5_debug_tb/p_main  File: C:/project/vivado/P_13_conv_test/simB/stress_t5_debug_tb.vhd
+Note:   oc=26 px=1 val=-17
+Time: 118505 ns  Iteration: 0  Process: /stress_t5_debug_tb/p_main  File: C:/project/vivado/P_13_conv_test/simB/stress_t5_debug_tb.vhd
+Note:   oc=27 px=0 val=-17
+Time: 118505 ns  Iteration: 0  Process: /stress_t5_debug_tb/p_main  File: C:/project/vivado/P_13_conv_test/simB/stress_t5_debug_tb.vhd
+Note:   oc=27 px=1 val=-17
+Time: 118505 ns  Iteration: 0  Process: /stress_t5_debug_tb/p_main  File: C:/project/vivado/P_13_conv_test/simB/stress_t5_debug_tb.vhd
+Note:   oc=28 px=0 val=-17
+Time: 118505 ns  Iteration: 0  Process: /stress_t5_debug_tb/p_main  File: C:/project/vivado/P_13_conv_test/simB/stress_t5_debug_tb.vhd
+Note:   oc=28 px=1 val=-17
+Time: 118505 ns  Iteration: 0  Process: /stress_t5_debug_tb/p_main  File: C:/project/vivado/P_13_conv_test/simB/stress_t5_debug_tb.vhd
+Note:   oc=29 px=0 val=-17
+Time: 118505 ns  Iteration: 0  Process: /stress_t5_debug_tb/p_main  File: C:/project/vivado/P_13_conv_test/simB/stress_t5_debug_tb.vhd
+Note:   oc=29 px=1 val=-17
+Time: 118505 ns  Iteration: 0  Process: /stress_t5_debug_tb/p_main  File: C:/project/vivado/P_13_conv_test/simB/stress_t5_debug_tb.vhd
+Note:   oc=30 px=0 val=-17
+Time: 118505 ns  Iteration: 0  Process: /stress_t5_debug_tb/p_main  File: C:/project/vivado/P_13_conv_test/simB/stress_t5_debug_tb.vhd
+Note:   oc=30 px=1 val=-17
+Time: 118505 ns  Iteration: 0  Process: /stress_t5_debug_tb/p_main  File: C:/project/vivado/P_13_conv_test/simB/stress_t5_debug_tb.vhd
+Note:   oc=31 px=0 val=-17
+Time: 118505 ns  Iteration: 0  Process: /stress_t5_debug_tb/p_main  File: C:/project/vivado/P_13_conv_test/simB/stress_t5_debug_tb.vhd
+Note:   oc=31 px=1 val=-17
+Time: 118505 ns  Iteration: 0  Process: /stress_t5_debug_tb/p_main  File: C:/project/vivado/P_13_conv_test/simB/stress_t5_debug_tb.vhd
+exit
+INFO: [Common 17-206] Exiting xsim at Mon Apr 13 23:30:43 2026...

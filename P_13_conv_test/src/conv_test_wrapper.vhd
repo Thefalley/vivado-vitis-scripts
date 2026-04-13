@@ -90,10 +90,6 @@ architecture rtl of conv_test_wrapper is
     signal reg_pad_bottom  : std_logic_vector(31 downto 0) := (others => '0');
     signal reg_pad_left    : std_logic_vector(31 downto 0) := (others => '0');
     signal reg_pad_right   : std_logic_vector(31 downto 0) := (others => '0');
-    signal reg_pad_top     : std_logic_vector(31 downto 0) := (others => '0');
-    signal reg_pad_bottom  : std_logic_vector(31 downto 0) := (others => '0');
-    signal reg_pad_left    : std_logic_vector(31 downto 0) := (others => '0');
-    signal reg_pad_right   : std_logic_vector(31 downto 0) := (others => '0');
 
     -- conv_engine signals
     signal ce_start     : std_logic := '0';
