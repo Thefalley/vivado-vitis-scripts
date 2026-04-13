@@ -4,11 +4,49 @@ set fsbl_file [lindex $argv 2]
 
 connect
 after 2000
-targets 4
+
+# Show all targets for debugging
+puts "Available targets:"
+targets
+
+# Try targets 4 (FPGA on multi-target ZedBoard setup)
+# Fall back to xc7z020 if target 4 doesn't exist
+if {[catch {targets 4}]} {
+    puts "Target 4 not found, looking for xc7z020..."
+    set fpga_id ""
+    foreach t [targets -filter {name =~ "xc7z020*"}] {
+        regexp {^\s*(\d+)} $t -> fpga_id
+        break
+    }
+    if {$fpga_id eq ""} {
+        puts "ERROR: No FPGA target found"
+        exit 1
+    }
+    targets $fpga_id
+}
 fpga $bit_file
-after 1000
-targets 2
-rst -processor
+after 2000
+
+# Show targets again after FPGA programming (ARM should appear)
+puts "Targets after FPGA programming:"
+targets
+
+# Try target 2 for ARM (standard ZedBoard)
+# Fall back to finding ARM core dynamically
+if {[catch {targets 2; rst -processor}]} {
+    puts "Target 2 reset failed, looking for ARM core..."
+    set arm_id ""
+    foreach t [targets -filter {name =~ "*Cortex-A9*#0" || name =~ "*ARM*#0"}] {
+        regexp {^\s*(\d+)} $t -> arm_id
+        break
+    }
+    if {$arm_id eq ""} {
+        puts "ERROR: No ARM target found"
+        exit 1
+    }
+    targets $arm_id
+    rst -processor
+}
 dow $fsbl_file
 con
 after 5000
