@@ -121,3 +121,41 @@ REMAINING (44 layers, need board power cycle):
   58 59 61 62 63 64 65 66 67 68 71 73 74 75 76 77 78 79
   81 82 83 84 85 86 87 88 89 91 92 93 94 95 96 97 98 99
   101 102 103 104 105 106 107 108
+
+RETEST SESSION 2026-04-14 (board power-cycled, single ZedBoard):
+  P_16 DataMover test: PASS (41/41, 0 errors) -- Conv v3 + DataMover S2MM OK
+
+  RETEST of 6 previously-failing layers (JTAG corruption confirmed):
+  Layer 038: PASS 512/512    (was FAIL 507/512 -- JTAG issue, NOT a bug)
+  Layer 043: PASS 2048/2048  (was FAIL 1994/2048 -- JTAG issue, NOT a bug)
+  Layer 045: PASS 2048/2048  (was FAIL 2027/2048 -- JTAG issue, NOT a bug)
+  Layer 047: PASS 2048/2048  (was FAIL 2014/2048 -- JTAG issue, NOT a bug)
+  Layer 049: PASS 2048/2048  (was FAIL 2020/2048 -- JTAG issue, NOT a bug)
+  Layer 057: PASS 2048/2048  (was FAIL 2015/2048 -- JTAG issue, NOT a bug)
+  CONCLUSION: ALL 6 failures were JTAG corruption. ZERO real bugs in conv engine.
+
+  SUBTOTAL after retest: 62/110 tested, 62 PASS, 0 FAIL
+
+  CONTINUED TESTING (remaining 44 layers):
+  Layer 058: PASS 2048/2048
+  Layer 059: PASS 2048/2048
+  Layer 061: PASS 2048/2048
+  Layer 062: PASS 2048/2048
+  Layer 063: PASS 2048/2048
+  Layer 064: PASS 2048/2048
+  Layer 065: PASS 2048/2048
+  Layer 066: PASS 2048/2048
+  Layer 067: PASS 2048/2048
+  Layer 068: PASS 2048/2048
+  Layer 071: PASS 2048/2048
+  Layer 073: PASS 2048/2048
+  Layer 074: PASS 2048/2048
+  Layer 075: PASS 2048/2048
+  Layer 076: PASS 2048/2048
+  Layer 077: PASS 2048/2048
+  Layer 078: PASS 2048/2048
+  Layer 079: PASS 2048/2048
+  Layer 081: PASS 2048/2048
+  Layer 082: PASS 2048/2048
+  Layer 083: PASS 2048/2048
+  Layer 084: PASS 2048/2048
