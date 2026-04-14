@@ -1,0 +1,192 @@
+=== xvhdl : compile RTL ===
+
+==========================================
+  SERVIDOR REMOTO (desktop-16qck7n)
+==========================================
+  Conectar:  ssh -i ~/.ssh/pc-casa jce03@100.73.144.105
+
+  Claude en remoto:
+  claude --dangerously-skip-permissions
+==========================================
+
+INFO: [VRFC 10-163] Analyzing VHDL file "C:/project/vivado/P_13_conv_test/src/mac_unit.vhd" into library work
+INFO: [VRFC 10-3107] analyzing entity 'mac_unit'
+INFO: [VRFC 10-163] Analyzing VHDL file "C:/project/vivado/P_13_conv_test/src/mac_array.vhd" into library work
+INFO: [VRFC 10-3107] analyzing entity 'mac_array'
+INFO: [VRFC 10-163] Analyzing VHDL file "C:/project/vivado/P_13_conv_test/src/mul_s32x32_pipe.vhd" into library work
+INFO: [VRFC 10-3107] analyzing entity 'mul_s32x32_pipe'
+INFO: [VRFC 10-163] Analyzing VHDL file "C:/project/vivado/P_13_conv_test/src/requantize.vhd" into library work
+INFO: [VRFC 10-3107] analyzing entity 'requantize'
+INFO: [VRFC 10-163] Analyzing VHDL file "C:/project/vivado/P_13_conv_test/src/conv_engine_v3.vhd" into library work
+INFO: [VRFC 10-3107] analyzing entity 'conv_engine_v3'
+INFO: [VRFC 10-163] Analyzing VHDL file "C:/project/vivado/P_13_conv_test/simC/partial_tile_bug_tb.vhd" into library work
+INFO: [VRFC 10-3107] analyzing entity 'partial_tile_bug_tb'
+=== xelab ===
+
+==========================================
+  SERVIDOR REMOTO (desktop-16qck7n)
+==========================================
+  Conectar:  ssh -i ~/.ssh/pc-casa jce03@100.73.144.105
+
+  Claude en remoto:
+  claude --dangerously-skip-permissions
+==========================================
+
+Vivado Simulator v2025.2
+Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
+Copyright 2022-2025 Advanced Micro Devices, Inc. All Rights Reserved.
+Running: C:/AMDDesignTools/2025.2/Vivado/bin/unwrapped/win64.o/xelab.exe -debug typical -L work partial_tile_bug_tb -s part_bug_sim 
+Multi-threading is on. Using 6 slave threads.
+Starting static elaboration
+Completed static elaboration
+Starting simulation data flow analysis
+Completed simulation data flow analysis
+Time Resolution for simulation is 1ps
+Compiling package std.standard
+Compiling package std.textio
+Compiling package ieee.std_logic_1164
+Compiling package ieee.numeric_std
+Compiling package ieee.std_logic_textio
+Compiling package work.mac_array_pkg
+Compiling architecture rtl of entity work.mac_unit [mac_unit_default]
+Compiling architecture rtl of entity work.mac_array [mac_array_default]
+Compiling architecture rtl of entity work.mul_s32x32_pipe [mul_s32x32_pipe_default]
+Compiling architecture rtl of entity work.requantize [requantize_default]
+Compiling architecture rtl of entity work.conv_engine_v3 [conv_engine_v3_default]
+Compiling architecture bench of entity work.partial_tile_bug_tb
+
+==========================================
+  SERVIDOR REMOTO (desktop-16qck7n)
+==========================================
+  Conectar:  ssh -i ~/.ssh/pc-casa jce03@100.73.144.105
+
+  Claude en remoto:
+  claude --dangerously-skip-permissions
+==========================================
+
+
+==========================================
+  SERVIDOR REMOTO (desktop-16qck7n)
+==========================================
+  Conectar:  ssh -i ~/.ssh/pc-casa jce03@100.73.144.105
+
+  Claude en remoto:
+  claude --dangerously-skip-permissions
+==========================================
+
+Built simulation snapshot part_bug_sim
+=== xsim : batch run ===
+
+==========================================
+  SERVIDOR REMOTO (desktop-16qck7n)
+==========================================
+  Conectar:  ssh -i ~/.ssh/pc-casa jce03@100.73.144.105
+
+  Claude en remoto:
+  claude --dangerously-skip-permissions
+==========================================
+
+
+****** xsim v2025.2 (64-bit)
+  **** SW Build 6299465 on Fri Nov 14 19:35:11 GMT 2025
+  **** IP Build 6300035 on Fri Nov 14 10:48:45 MST 2025
+  **** SharedData Build 6298862 on Thu Nov 13 04:50:51 MST 2025
+  **** Start of session at: Tue Apr 14 22:40:34 2026
+    ** Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
+    ** Copyright 2022-2025 Advanced Micro Devices, Inc. All Rights Reserved.
+
+source xsim.dir/part_bug_sim/xsim_script.tcl
+# xsim {part_bug_sim} -autoloadwcfg -runall
+Time resolution is 1 ps
+run -all
+Note: ==============================================
+Time: 0 ps  Iteration: 0  Process: /partial_tile_bug_tb/p_main  File: C:/project/vivado/P_13_conv_test/simC/partial_tile_bug_tb.vhd
+Note: partial_tile_bug_tb : c_in=3, ic_tile_size=2
+Time: 0 ps  Iteration: 0  Process: /partial_tile_bug_tb/p_main  File: C:/project/vivado/P_13_conv_test/simC/partial_tile_bug_tb.vhd
+Note:   tile 0 covers ic=0..1 (2 ch), tile 1 covers ic=2 (1 ch)
+Time: 0 ps  Iteration: 0  Process: /partial_tile_bug_tb/p_main  File: C:/project/vivado/P_13_conv_test/simC/partial_tile_bug_tb.vhd
+Note: ==============================================
+Time: 0 ps  Iteration: 0  Process: /partial_tile_bug_tb/p_main  File: C:/project/vivado/P_13_conv_test/simC/partial_tile_bug_tb.vhd
+Note: STARTING conv_engine_v3 (ic_tile_size=2, c_in=3 -> partial last tile)
+Time: 135 ns  Iteration: 0  Process: /partial_tile_bug_tb/p_main  File: C:/project/vivado/P_13_conv_test/simC/partial_tile_bug_tb.vhd
+Note: DONE after 1229 cycles
+Time: 12435 ns  Iteration: 0  Process: /partial_tile_bug_tb/p_main  File: C:/project/vivado/P_13_conv_test/simC/partial_tile_bug_tb.vhd
+Note: ==============================================
+Time: 12735 ns  Iteration: 0  Process: /partial_tile_bug_tb/p_main  File: C:/project/vivado/P_13_conv_test/simC/partial_tile_bug_tb.vhd
+Note: Result (one pixel, oc=0..31):
+Time: 12735 ns  Iteration: 0  Process: /partial_tile_bug_tb/p_main  File: C:/project/vivado/P_13_conv_test/simC/partial_tile_bug_tb.vhd
+Note: oc=0 PASS y=127
+Time: 12735 ns  Iteration: 0  Process: /partial_tile_bug_tb/p_main  File: C:/project/vivado/P_13_conv_test/simC/partial_tile_bug_tb.vhd
+Note: oc=1 PASS y=6
+Time: 12735 ns  Iteration: 0  Process: /partial_tile_bug_tb/p_main  File: C:/project/vivado/P_13_conv_test/simC/partial_tile_bug_tb.vhd
+Note: oc=2 PASS y=3
+Time: 12735 ns  Iteration: 0  Process: /partial_tile_bug_tb/p_main  File: C:/project/vivado/P_13_conv_test/simC/partial_tile_bug_tb.vhd
+Note: oc=3 PASS y=1
+Time: 12735 ns  Iteration: 0  Process: /partial_tile_bug_tb/p_main  File: C:/project/vivado/P_13_conv_test/simC/partial_tile_bug_tb.vhd
+Note: oc=4 PASS y=2
+Time: 12735 ns  Iteration: 0  Process: /partial_tile_bug_tb/p_main  File: C:/project/vivado/P_13_conv_test/simC/partial_tile_bug_tb.vhd
+Note: oc=5 PASS y=0
+Time: 12735 ns  Iteration: 0  Process: /partial_tile_bug_tb/p_main  File: C:/project/vivado/P_13_conv_test/simC/partial_tile_bug_tb.vhd
+Note: oc=6 PASS y=0
+Time: 12735 ns  Iteration: 0  Process: /partial_tile_bug_tb/p_main  File: C:/project/vivado/P_13_conv_test/simC/partial_tile_bug_tb.vhd
+Note: oc=7 PASS y=0
+Time: 12735 ns  Iteration: 0  Process: /partial_tile_bug_tb/p_main  File: C:/project/vivado/P_13_conv_test/simC/partial_tile_bug_tb.vhd
+Note: oc=8 PASS y=0
+Time: 12735 ns  Iteration: 0  Process: /partial_tile_bug_tb/p_main  File: C:/project/vivado/P_13_conv_test/simC/partial_tile_bug_tb.vhd
+Note: oc=9 PASS y=0
+Time: 12735 ns  Iteration: 0  Process: /partial_tile_bug_tb/p_main  File: C:/project/vivado/P_13_conv_test/simC/partial_tile_bug_tb.vhd
+Note: oc=10 PASS y=0
+Time: 12735 ns  Iteration: 0  Process: /partial_tile_bug_tb/p_main  File: C:/project/vivado/P_13_conv_test/simC/partial_tile_bug_tb.vhd
+Note: oc=11 PASS y=0
+Time: 12735 ns  Iteration: 0  Process: /partial_tile_bug_tb/p_main  File: C:/project/vivado/P_13_conv_test/simC/partial_tile_bug_tb.vhd
+Note: oc=12 PASS y=0
+Time: 12735 ns  Iteration: 0  Process: /partial_tile_bug_tb/p_main  File: C:/project/vivado/P_13_conv_test/simC/partial_tile_bug_tb.vhd
+Note: oc=13 PASS y=0
+Time: 12735 ns  Iteration: 0  Process: /partial_tile_bug_tb/p_main  File: C:/project/vivado/P_13_conv_test/simC/partial_tile_bug_tb.vhd
+Note: oc=14 PASS y=0
+Time: 12735 ns  Iteration: 0  Process: /partial_tile_bug_tb/p_main  File: C:/project/vivado/P_13_conv_test/simC/partial_tile_bug_tb.vhd
+Note: oc=15 PASS y=0
+Time: 12735 ns  Iteration: 0  Process: /partial_tile_bug_tb/p_main  File: C:/project/vivado/P_13_conv_test/simC/partial_tile_bug_tb.vhd
+Note: oc=16 PASS y=0
+Time: 12735 ns  Iteration: 0  Process: /partial_tile_bug_tb/p_main  File: C:/project/vivado/P_13_conv_test/simC/partial_tile_bug_tb.vhd
+Note: oc=17 PASS y=0
+Time: 12735 ns  Iteration: 0  Process: /partial_tile_bug_tb/p_main  File: C:/project/vivado/P_13_conv_test/simC/partial_tile_bug_tb.vhd
+Note: oc=18 PASS y=0
+Time: 12735 ns  Iteration: 0  Process: /partial_tile_bug_tb/p_main  File: C:/project/vivado/P_13_conv_test/simC/partial_tile_bug_tb.vhd
+Note: oc=19 PASS y=0
+Time: 12735 ns  Iteration: 0  Process: /partial_tile_bug_tb/p_main  File: C:/project/vivado/P_13_conv_test/simC/partial_tile_bug_tb.vhd
+Note: oc=20 PASS y=0
+Time: 12735 ns  Iteration: 0  Process: /partial_tile_bug_tb/p_main  File: C:/project/vivado/P_13_conv_test/simC/partial_tile_bug_tb.vhd
+Note: oc=21 PASS y=0
+Time: 12735 ns  Iteration: 0  Process: /partial_tile_bug_tb/p_main  File: C:/project/vivado/P_13_conv_test/simC/partial_tile_bug_tb.vhd
+Note: oc=22 PASS y=0
+Time: 12735 ns  Iteration: 0  Process: /partial_tile_bug_tb/p_main  File: C:/project/vivado/P_13_conv_test/simC/partial_tile_bug_tb.vhd
+Note: oc=23 PASS y=0
+Time: 12735 ns  Iteration: 0  Process: /partial_tile_bug_tb/p_main  File: C:/project/vivado/P_13_conv_test/simC/partial_tile_bug_tb.vhd
+Note: oc=24 PASS y=0
+Time: 12735 ns  Iteration: 0  Process: /partial_tile_bug_tb/p_main  File: C:/project/vivado/P_13_conv_test/simC/partial_tile_bug_tb.vhd
+Note: oc=25 PASS y=0
+Time: 12735 ns  Iteration: 0  Process: /partial_tile_bug_tb/p_main  File: C:/project/vivado/P_13_conv_test/simC/partial_tile_bug_tb.vhd
+Note: oc=26 PASS y=0
+Time: 12735 ns  Iteration: 0  Process: /partial_tile_bug_tb/p_main  File: C:/project/vivado/P_13_conv_test/simC/partial_tile_bug_tb.vhd
+Note: oc=27 PASS y=0
+Time: 12735 ns  Iteration: 0  Process: /partial_tile_bug_tb/p_main  File: C:/project/vivado/P_13_conv_test/simC/partial_tile_bug_tb.vhd
+Note: oc=28 PASS y=0
+Time: 12735 ns  Iteration: 0  Process: /partial_tile_bug_tb/p_main  File: C:/project/vivado/P_13_conv_test/simC/partial_tile_bug_tb.vhd
+Note: oc=29 PASS y=0
+Time: 12735 ns  Iteration: 0  Process: /partial_tile_bug_tb/p_main  File: C:/project/vivado/P_13_conv_test/simC/partial_tile_bug_tb.vhd
+Note: oc=30 PASS y=0
+Time: 12735 ns  Iteration: 0  Process: /partial_tile_bug_tb/p_main  File: C:/project/vivado/P_13_conv_test/simC/partial_tile_bug_tb.vhd
+Note: oc=31 PASS y=0
+Time: 12735 ns  Iteration: 0  Process: /partial_tile_bug_tb/p_main  File: C:/project/vivado/P_13_conv_test/simC/partial_tile_bug_tb.vhd
+Note: ==============================================
+Time: 12735 ns  Iteration: 0  Process: /partial_tile_bug_tb/p_main  File: C:/project/vivado/P_13_conv_test/simC/partial_tile_bug_tb.vhd
+Note: partial_tile_bug_tb : ALL PASSED (no bug visible?)
+Time: 12735 ns  Iteration: 0  Process: /partial_tile_bug_tb/p_main  File: C:/project/vivado/P_13_conv_test/simC/partial_tile_bug_tb.vhd
+Note: ==============================================
+Time: 12735 ns  Iteration: 0  Process: /partial_tile_bug_tb/p_main  File: C:/project/vivado/P_13_conv_test/simC/partial_tile_bug_tb.vhd
+exit
+INFO: [Common 17-206] Exiting xsim at Tue Apr 14 22:40:37 2026...
+=== done ===
+-rw-r--r-- 1 rubme 197609  11555 Apr 14 22:40 sim.log
+-rw-r--r-- 1 rubme 197609 134427 Apr 14 22:40 trace.csv

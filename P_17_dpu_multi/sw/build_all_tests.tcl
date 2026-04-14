@@ -29,9 +29,11 @@ if {[catch {platform create -name conv_dm_platform -hw $xsa_path \
 platform generate
 puts "platform generated"
 
-# List all test .c files (layer_NNN_test.c pattern)
-set test_files [glob -nocomplain -directory $tests_dir "layer_*_test.c"]
-set test_files [lsort $test_files]
+# List all test .c files (layer_NNN_test.c + *_test.c pattern)
+set test_files [concat \
+    [glob -nocomplain -directory $tests_dir "layer_*_test.c"] \
+    [glob -nocomplain -directory $tests_dir "*_test.c"]]
+set test_files [lsort -unique $test_files]
 
 puts ""
 puts "Found [llength $test_files] test files:"

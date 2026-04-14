@@ -1,0 +1,49 @@
+#-----------------------------------------------------------
+# xsim v2025.2 (64-bit)
+# SW Build 6299465 on Fri Nov 14 19:35:11 GMT 2025
+# IP Build 6300035 on Fri Nov 14 10:48:45 MST 2025
+# SharedData Build 6298862 on Thu Nov 13 04:50:51 MST 2025
+# Start of session at: Wed Apr 15 00:11:05 2026
+# Process ID         : 16992
+# Current directory  : C:/project/vivado/P_13_conv_test/simC
+# Command line       : xsim.exe -mode tcl -source {xsim.dir/critical_A_sim/xsim_script.tcl}
+# Log file           : C:/project/vivado/P_13_conv_test/simC/xsim.log
+# Journal file       : C:/project/vivado/P_13_conv_test/simC\xsim.jou
+# Running On         : DESKTOP-6J3HG3R
+# Platform           : Windows Server 2016 or Windows 10
+# Operating System   : 19045
+# Processor Detail   : Intel(R) Core(TM) i5-10300H CPU @ 2.50GHz
+# CPU Frequency      : 2496 MHz
+# CPU Physical cores : 4
+# CPU Logical cores  : 8
+# Host memory        : 16940 MB
+# Swap memory        : 23932 MB
+# Total Virtual      : 40873 MB
+# Available Virtual  : 11474 MB
+#-----------------------------------------------------------
+source xsim.dir/critical_A_sim/xsim_script.tcl
+# xsim {critical_A_sim} -autoloadwcfg -runall
+Time resolution is 1 ps
+run -all
+Note: ==============================================
+Time: 0 ps  Iteration: 0  Process: /critical_A_tb/p_main  File: C:/project/vivado/P_13_conv_test/simC/critical_A_tb.vhd
+Note: critical_A_tb : stride-2 asym pad (YOLOv4)
+Time: 0 ps  Iteration: 0  Process: /critical_A_tb/p_main  File: C:/project/vivado/P_13_conv_test/simC/critical_A_tb.vhd
+Note:   c_in=3 c_out=32 8x8 k=3 s=2 pad=[1,0,1,0]
+Time: 0 ps  Iteration: 0  Process: /critical_A_tb/p_main  File: C:/project/vivado/P_13_conv_test/simC/critical_A_tb.vhd
+Note: ==============================================
+Time: 0 ps  Iteration: 0  Process: /critical_A_tb/p_main  File: C:/project/vivado/P_13_conv_test/simC/critical_A_tb.vhd
+Note: STARTING conv_engine_v3 (config A)
+Time: 135 ns  Iteration: 0  Process: /critical_A_tb/p_main  File: C:/project/vivado/P_13_conv_test/simC/critical_A_tb.vhd
+Note: DONE after 76993 cycles
+Time: 770075 ns  Iteration: 0  Process: /critical_A_tb/p_main  File: C:/project/vivado/P_13_conv_test/simC/critical_A_tb.vhd
+Note: Verifying outputs (CHW layout)...
+Time: 770375 ns  Iteration: 0  Process: /critical_A_tb/p_main  File: C:/project/vivado/P_13_conv_test/simC/critical_A_tb.vhd
+Note: ==============================================
+Time: 770375 ns  Iteration: 0  Process: /critical_A_tb/p_main  File: C:/project/vivado/P_13_conv_test/simC/critical_A_tb.vhd
+Note: critical_A_tb : ALL PASSED (512 bytes match)
+Time: 770375 ns  Iteration: 0  Process: /critical_A_tb/p_main  File: C:/project/vivado/P_13_conv_test/simC/critical_A_tb.vhd
+Note: ==============================================
+Time: 770375 ns  Iteration: 0  Process: /critical_A_tb/p_main  File: C:/project/vivado/P_13_conv_test/simC/critical_A_tb.vhd
+exit
+INFO: [Common 17-206] Exiting xsim at Wed Apr 15 00:11:12 2026...
