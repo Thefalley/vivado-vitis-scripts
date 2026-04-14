@@ -119,17 +119,19 @@ Para leaky_relu: 1 byte in → 1 byte out, trivial.
 
 ### LEAKY_RELU
 ```
-0x000: output
-0x200: input activations
-(no pesos, no bias — M0_pos y M0_neg vienen de regs)
+(si BRAM BYPASS: DMA directo al modulo, no hay mapping en BRAM)
+Regs necesarios: x_zp, y_zp, M0_pos, n_pos, M0_neg, n_neg
+                 (dos n DIFERENTES — cada rama tiene su propio shift)
 ```
 
 ### ELEM_ADD (dual input)
 ```
 0x000: output
-0x200: input A activations
-0x800: input B activations
-(no pesos, no bias — M0_a, M0_b vienen de regs)
+0x000..0x7FF: input A (cargado en BRAM via LOAD phase)
+(input B entra via s_axis stream mientras se lee A del BRAM)
+Regs necesarios: a_zp, b_zp, y_zp, M0_a, M0_b, n_shift
+                 (una sola n, el elem_add de P_11 usa shift comun
+                  n = min(n_a, n_b) ya pre-computado desde Python)
 ```
 
 ## Register map tentativo
@@ -140,13 +142,17 @@ Mantenemos los de P_16 (0x00-0x50) y añadimos:
 |---:|---|---|
 | 0x00-0x50 | (igual P_16) | ctrl, n_words, c_in/out, h/w, ksp, x_zp, w_zp, M0, n_shift, y_zp, addr_*, ic_tile_size, pad_* |
 | **0x54** | **layer_type** | **0=CONV, 1=MAXPOOL, 2=LEAKY_RELU, 3=ELEM_ADD** |
-| 0x58 | M0_neg | LeakyRelu: multiplier rama negativa |
-| 0x5C | n_neg | LeakyRelu: shift rama negativa |
-| 0x60 | b_zp | Elem_add: zero-point input B |
-| 0x64 | M0_b | Elem_add: multiplier input B |
-| 0x68 | addr_input_b | Elem_add: offset byte input B en BRAM |
+| 0x58 | M0_neg | LeakyRelu: multiplier rama negativa (M0_pos reusa REG_M0 @ 0x24) |
+| 0x5C | n_neg | LeakyRelu: shift rama negativa (n_pos reusa REG_N_SHIFT @ 0x28) |
+| 0x60 | b_zp | Elem_add: zero-point input B (a_zp reusa REG_X_ZP @ 0x1C) |
+| 0x64 | M0_b | Elem_add: multiplier input B (M0_a reusa REG_M0 @ 0x24) |
 
-Para maxpool no hay regs extra (usa c_in, h_in, w_in, addr_input, addr_output).
+Para maxpool no hay regs extra (usa c_in, h_in, w_in, pool_size implícito 2x2).
+Reuso de regs existentes:
+- `REG_X_ZP (0x1C)` = x_zp para leaky / a_zp para elem_add
+- `REG_M0 (0x24)` = M0_pos para leaky / M0_a para elem_add
+- `REG_N_SHIFT (0x28)` = n_pos para leaky / n_shift común para elem_add
+- `REG_Y_ZP (0x2C)` = y_zp para todas las primitivas
 
 ## Flujo de ejecución
 

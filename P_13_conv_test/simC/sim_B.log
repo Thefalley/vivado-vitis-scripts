@@ -1,0 +1,130 @@
+=== xvhdl : compile RTL + tb ===
+
+==========================================
+  SERVIDOR REMOTO (desktop-16qck7n)
+==========================================
+  Conectar:  ssh -i ~/.ssh/pc-casa jce03@100.73.144.105
+
+  Claude en remoto:
+  claude --dangerously-skip-permissions
+==========================================
+
+INFO: [VRFC 10-163] Analyzing VHDL file "C:/project/vivado/P_13_conv_test/src/mac_unit.vhd" into library work
+INFO: [VRFC 10-3107] analyzing entity 'mac_unit'
+INFO: [VRFC 10-163] Analyzing VHDL file "C:/project/vivado/P_13_conv_test/src/mac_array.vhd" into library work
+INFO: [VRFC 10-3107] analyzing entity 'mac_array'
+INFO: [VRFC 10-163] Analyzing VHDL file "C:/project/vivado/P_13_conv_test/src/mul_s32x32_pipe.vhd" into library work
+INFO: [VRFC 10-3107] analyzing entity 'mul_s32x32_pipe'
+INFO: [VRFC 10-163] Analyzing VHDL file "C:/project/vivado/P_13_conv_test/src/requantize.vhd" into library work
+INFO: [VRFC 10-3107] analyzing entity 'requantize'
+INFO: [VRFC 10-163] Analyzing VHDL file "C:/project/vivado/P_13_conv_test/src/conv_engine_v3.vhd" into library work
+INFO: [VRFC 10-3107] analyzing entity 'conv_engine_v3'
+INFO: [VRFC 10-163] Analyzing VHDL file "C:/project/vivado/P_13_conv_test/simC/critical_B_tb.vhd" into library work
+INFO: [VRFC 10-3107] analyzing entity 'critical_B_tb'
+=== xelab ===
+
+==========================================
+  SERVIDOR REMOTO (desktop-16qck7n)
+==========================================
+  Conectar:  ssh -i ~/.ssh/pc-casa jce03@100.73.144.105
+
+  Claude en remoto:
+  claude --dangerously-skip-permissions
+==========================================
+
+Vivado Simulator v2025.2
+Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
+Copyright 2022-2025 Advanced Micro Devices, Inc. All Rights Reserved.
+Running: C:/AMDDesignTools/2025.2/Vivado/bin/unwrapped/win64.o/xelab.exe -debug typical -L work critical_B_tb -s critical_B_sim 
+Multi-threading is on. Using 6 slave threads.
+Starting static elaboration
+Completed static elaboration
+Starting simulation data flow analysis
+Completed simulation data flow analysis
+Time Resolution for simulation is 1ps
+Compiling package std.standard
+Compiling package std.textio
+Compiling package ieee.std_logic_1164
+Compiling package ieee.numeric_std
+Compiling package ieee.std_logic_textio
+Compiling package work.mac_array_pkg
+Compiling architecture rtl of entity work.mac_unit [mac_unit_default]
+Compiling architecture rtl of entity work.mac_array [mac_array_default]
+Compiling architecture rtl of entity work.mul_s32x32_pipe [mul_s32x32_pipe_default]
+Compiling architecture rtl of entity work.requantize [requantize_default]
+Compiling architecture rtl of entity work.conv_engine_v3 [conv_engine_v3_default]
+Compiling architecture bench of entity work.critical_b_tb
+
+==========================================
+  SERVIDOR REMOTO (desktop-16qck7n)
+==========================================
+  Conectar:  ssh -i ~/.ssh/pc-casa jce03@100.73.144.105
+
+  Claude en remoto:
+  claude --dangerously-skip-permissions
+==========================================
+
+
+==========================================
+  SERVIDOR REMOTO (desktop-16qck7n)
+==========================================
+  Conectar:  ssh -i ~/.ssh/pc-casa jce03@100.73.144.105
+
+  Claude en remoto:
+  claude --dangerously-skip-permissions
+==========================================
+
+Built simulation snapshot critical_B_sim
+=== xsim : batch run ===
+
+==========================================
+  SERVIDOR REMOTO (desktop-16qck7n)
+==========================================
+  Conectar:  ssh -i ~/.ssh/pc-casa jce03@100.73.144.105
+
+  Claude en remoto:
+  claude --dangerously-skip-permissions
+==========================================
+
+
+****** xsim v2025.2 (64-bit)
+  **** SW Build 6299465 on Fri Nov 14 19:35:11 GMT 2025
+  **** IP Build 6300035 on Fri Nov 14 10:48:45 MST 2025
+  **** SharedData Build 6298862 on Thu Nov 13 04:50:51 MST 2025
+  **** Start of session at: Wed Apr 15 00:11:21 2026
+    ** Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
+    ** Copyright 2022-2025 Advanced Micro Devices, Inc. All Rights Reserved.
+
+source xsim.dir/critical_B_sim/xsim_script.tcl
+# xsim {critical_B_sim} -autoloadwcfg -runall
+Time resolution is 1 ps
+run -all
+Note: ==============================================
+Time: 0 ps  Iteration: 0  Process: /critical_B_tb/p_main  File: C:/project/vivado/P_13_conv_test/simC/critical_B_tb.vhd
+Note: critical_B_tb : maximum tiling stress
+Time: 0 ps  Iteration: 0  Process: /critical_B_tb/p_main  File: C:/project/vivado/P_13_conv_test/simC/critical_B_tb.vhd
+Note:   c_in=9 c_out=32 4x4 k=3 s=1 pad=[1,1,1,1] ic_tile=1
+Time: 0 ps  Iteration: 0  Process: /critical_B_tb/p_main  File: C:/project/vivado/P_13_conv_test/simC/critical_B_tb.vhd
+Note:   -> 9 ic_tiles per pixel
+Time: 0 ps  Iteration: 0  Process: /critical_B_tb/p_main  File: C:/project/vivado/P_13_conv_test/simC/critical_B_tb.vhd
+Note: ==============================================
+Time: 0 ps  Iteration: 0  Process: /critical_B_tb/p_main  File: C:/project/vivado/P_13_conv_test/simC/critical_B_tb.vhd
+Note: STARTING conv_engine_v3 (config B)
+Time: 135 ns  Iteration: 0  Process: /critical_B_tb/p_main  File: C:/project/vivado/P_13_conv_test/simC/critical_B_tb.vhd
+Note: DONE after 220065 cycles
+Time: 2200795 ns  Iteration: 0  Process: /critical_B_tb/p_main  File: C:/project/vivado/P_13_conv_test/simC/critical_B_tb.vhd
+Note: Verifying outputs (CHW layout)...
+Time: 2201095 ns  Iteration: 0  Process: /critical_B_tb/p_main  File: C:/project/vivado/P_13_conv_test/simC/critical_B_tb.vhd
+Note: ==============================================
+Time: 2201095 ns  Iteration: 0  Process: /critical_B_tb/p_main  File: C:/project/vivado/P_13_conv_test/simC/critical_B_tb.vhd
+Note: critical_B_tb : ALL PASSED (512 bytes match)
+Time: 2201095 ns  Iteration: 0  Process: /critical_B_tb/p_main  File: C:/project/vivado/P_13_conv_test/simC/critical_B_tb.vhd
+Note: ==============================================
+Time: 2201095 ns  Iteration: 0  Process: /critical_B_tb/p_main  File: C:/project/vivado/P_13_conv_test/simC/critical_B_tb.vhd
+run: Time (s): cpu = 00:00:01 ; elapsed = 00:00:13 . Memory (MB): peak = 226.734 ; gain = 0.000
+exit
+INFO: xsimkernel Simulation Memory Usage: 10424 KB (Peak: 10424 KB), Simulation CPU Usage: 12202 ms
+INFO: [Common 17-206] Exiting xsim at Wed Apr 15 00:11:35 2026...
+=== done ===
+-rw-r--r-- 1 rubme 197609     6469 Apr 15 00:11 sim_B.log
+-rw-r--r-- 1 rubme 197609 28516602 Apr 15 00:11 trace_B.csv
