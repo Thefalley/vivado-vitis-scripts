@@ -132,7 +132,7 @@ architecture rtl of dpu_stream_wrapper is
     ---------------------------------------------------------------------------
     -- FSM
     ---------------------------------------------------------------------------
-    type state_t is (S_IDLE, S_LOAD, S_CONV, S_DRAIN, S_STREAM_LR);
+    type state_t is (S_IDLE, S_LOAD, S_CONV, S_DRAIN, S_STREAM_LR, S_STREAM_MP);
     signal state : state_t := S_IDLE;
 
     ---------------------------------------------------------------------------
@@ -191,6 +191,20 @@ architecture rtl of dpu_stream_wrapper is
     signal lr_valid_in  : std_logic := '0';
     signal lr_y_out     : signed(7 downto 0);
     signal lr_valid_out : std_logic;
+
+    ---------------------------------------------------------------------------
+    -- P_17 Fase 3: maxpool_unit instance signals
+    ---------------------------------------------------------------------------
+    signal mp_x_in      : signed(7 downto 0) := (others => '0');
+    signal mp_valid_in  : std_logic := '0';
+    signal mp_clear     : std_logic := '0';
+    signal mp_max_out   : signed(7 downto 0);
+    signal mp_valid_out : std_logic;
+    -- Capture timing: capturar max_out 2 ciclos despues de alimentar byte 3,
+    -- que es cuando max_r (registrado dentro de maxpool_unit) refleja ya
+    -- el ultimo byte de la ventana.
+    signal mp_fed_b3_d1 : std_logic := '0';
+    signal mp_fed_b3_d2 : std_logic := '0';
 
     ---------------------------------------------------------------------------
     -- P_17 Fase 2: SERDES 32->8->32 para modos stream
@@ -291,11 +305,11 @@ begin
     s_axi_rresp   <= "00";
     s_axi_rvalid  <= axi_rvalid_r;
 
-    -- FSM state for status register (2 bits, S_STREAM_LR comparte codigo con DRAIN)
+    -- FSM state for status register (2 bits, states stream comparten codigo con DRAIN)
     fsm_code <= "00" when state = S_IDLE  else
                 "01" when state = S_LOAD  else
                 "10" when state = S_CONV  else
-                "11";  -- S_DRAIN o S_STREAM_LR
+                "11";  -- S_DRAIN / S_STREAM_LR / S_STREAM_MP
 
     -- m_axis_tkeep: all bytes valid during drain o stream
     m_axis_tkeep <= "1111" when (drain_valid_pipe = '1' or stream_out_valid = '1')
@@ -379,6 +393,22 @@ begin
         );
 
     ---------------------------------------------------------------------------
+    -- P_17 Fase 3: maxpool_unit instance (reutiliza P_12/src/maxpool_unit.vhd)
+    -- Sin params (el maxpool no requantiza). Ventana 2×2 asumida: cada word
+    -- = 4 bytes consecutivos de una ventana, pre-ordenados por el ARM.
+    ---------------------------------------------------------------------------
+    u_mp : entity work.maxpool_unit
+        port map (
+            clk       => clk,
+            rst_n     => rst_n,
+            x_in      => mp_x_in,
+            valid_in  => mp_valid_in,
+            clear     => mp_clear,
+            max_out   => mp_max_out,
+            valid_out => mp_valid_out
+        );
+
+    ---------------------------------------------------------------------------
     -- Conv -> BRAM adapter (byte-addressed -> word-addressed, same as P_13)
     ---------------------------------------------------------------------------
     conv_byte_sel <= ddr_rd_addr(1 downto 0) when ddr_wr_en = '0'
@@ -419,10 +449,11 @@ begin
     load_bram_addr <= load_addr;
     load_bram_din  <= s_axis_tdata;
 
-    -- P_17: s_axis_tready admite stream en S_LOAD (ancho word) y en S_STREAM_LR
-    -- cuando la SERDES está libre para aceptar siguiente word
+    -- P_17: s_axis_tready admite stream en S_LOAD (ancho word) y en los
+    -- S_STREAM_* cuando la SERDES está libre para aceptar siguiente word
     s_axis_tready <= '1' when (state = S_LOAD)
-                     else '1' when (state = S_STREAM_LR and stream_word_loaded = '0'
+                     else '1' when ((state = S_STREAM_LR or state = S_STREAM_MP)
+                                    and stream_word_loaded = '0'
                                     and stream_in_last = '0')
                      else '0';
 
@@ -437,9 +468,15 @@ begin
 
     -- P_17: m_axis mux segun modo (conv DRAIN usa bram_dout, stream modes
     -- usan el registro de salida de la primitiva)
-    m_axis_tdata  <= stream_out_reg   when state = S_STREAM_LR else bram_dout;
-    m_axis_tvalid <= stream_out_valid when state = S_STREAM_LR else drain_valid_pipe;
-    m_axis_tlast  <= stream_out_last  when state = S_STREAM_LR else drain_last_pipe;
+    m_axis_tdata  <= stream_out_reg
+                        when (state = S_STREAM_LR or state = S_STREAM_MP)
+                        else bram_dout;
+    m_axis_tvalid <= stream_out_valid
+                        when (state = S_STREAM_LR or state = S_STREAM_MP)
+                        else drain_valid_pipe;
+    m_axis_tlast  <= stream_out_last
+                        when (state = S_STREAM_LR or state = S_STREAM_MP)
+                        else drain_last_pipe;
 
     ---------------------------------------------------------------------------
     -- BRAM port mux: who owns the port depends on FSM state
@@ -505,6 +542,12 @@ begin
                 -- P_17 Fase 2: SERDES resets
                 lr_valid_in         <= '0';
                 lr_x_in             <= (others => '0');
+                -- P_17 Fase 3: maxpool resets
+                mp_valid_in         <= '0';
+                mp_clear            <= '0';
+                mp_x_in             <= (others => '0');
+                mp_fed_b3_d1        <= '0';
+                mp_fed_b3_d2        <= '0';
                 stream_word_loaded  <= '0';
                 stream_byte_sel     <= "00";
                 stream_in_last      <= '0';
@@ -519,6 +562,12 @@ begin
                 ce_start <= '0';
                 -- P_17 Fase 2: lr_valid_in es pulso (alto solo mientras alimentamos byte)
                 lr_valid_in <= '0';
+                -- P_17 Fase 3: mp_valid_in / mp_clear tambien pulsos
+                mp_valid_in <= '0';
+                mp_clear    <= '0';
+                -- Capture delay pipeline
+                mp_fed_b3_d1 <= '0';
+                mp_fed_b3_d2 <= mp_fed_b3_d1;
 
                 case state is
                     when S_IDLE =>
@@ -542,6 +591,9 @@ begin
                             -- P_17: dispatch segun layer_type (0x54)
                             done_latch <= '0';
                             case reg_layer_type(3 downto 0) is
+                                when x"1" =>
+                                    -- MAXPOOL: modo stream bypass BRAM
+                                    state <= S_STREAM_MP;
                                 when x"2" =>
                                     -- LEAKY_RELU: modo stream bypass BRAM
                                     state <= S_STREAM_LR;
@@ -691,6 +743,141 @@ begin
 
                             if stream_out_last = '1' then
                                 -- Ultimo word consumido -> done
+                                stream_out_last <= '0';
+                                done_latch      <= '1';
+                                state           <= S_IDLE;
+                            end if;
+                        end if;
+
+                    ---------------------------------------------------------
+                    -- S_STREAM_MP: MAXPOOL 2x2 stream bypass BRAM
+                    --   ARM pre-ordena ventanas 2x2 contiguas: cada word
+                    --   son 4 bytes de 1 ventana. byte 0 es clear+value,
+                    --   bytes 1,2,3 solo value. Tras byte 3, max_out
+                    --   contiene el maximo de la ventana -> se captura en
+                    --   el output SERDES.
+                    --
+                    --   Ratio: 4 input bytes (1 word) -> 1 output byte.
+                    --          4 output bytes -> 1 output word.
+                    --   Es decir: 4 input words -> 1 output word.
+                    ---------------------------------------------------------
+                    when S_STREAM_MP =>
+                        -------------------------
+                        -- INPUT SIDE
+                        --
+                        -- Secuencia por ventana (5 ciclos fetch):
+                        --   cycle 0: capture word  -> asserta mp_clear (no feed)
+                        --   cycle 1: feed byte 0   -> mp_valid_in=1, mp_clear=0
+                        --   cycle 2: feed byte 1
+                        --   cycle 3: feed byte 2
+                        --   cycle 4: feed byte 3   -> marca mp_fed_b3_d1=1 para capture
+                        --
+                        -- maxpool_unit tiene prioridad clear > valid_in. Por eso
+                        -- el clear se pre-asserta el ciclo anterior al byte 0.
+                        -------------------------
+                        if stream_word_loaded = '0' then
+                            if s_axis_tvalid = '1' and stream_in_last = '0' then
+                                stream_word_in     <= s_axis_tdata;
+                                stream_word_loaded <= '1';
+                                stream_byte_sel    <= "00";
+                                stream_in_words    <= stream_in_words + 1;
+                                if s_axis_tlast = '1' then
+                                    stream_in_last <= '1';
+                                end if;
+                                -- Pre-assert clear (sin feed), visible cuando se
+                                -- empiece a alimentar byte 0 el proximo ciclo
+                                mp_clear <= '1';
+                            end if;
+                        else
+                            -- Alimentar byte actual a maxpool (clear=0)
+                            mp_valid_in <= '1';
+                            mp_clear    <= '0';
+                            case stream_byte_sel is
+                                when "00" =>
+                                    mp_x_in <= signed(stream_word_in( 7 downto  0));
+                                when "01" =>
+                                    mp_x_in <= signed(stream_word_in(15 downto  8));
+                                when "10" =>
+                                    mp_x_in <= signed(stream_word_in(23 downto 16));
+                                when others =>
+                                    mp_x_in <= signed(stream_word_in(31 downto 24));
+                            end case;
+
+                            if stream_byte_sel = "11" then
+                                -- Alimentando byte 3: marcar para capture
+                                -- 2 ciclos despues (max_r refleja b3 en cycle+2)
+                                mp_fed_b3_d1       <= '1';
+                                stream_word_loaded <= '0';
+                                stream_byte_sel    <= "00";
+                            else
+                                stream_byte_sel <= stream_byte_sel + 1;
+                            end if;
+                        end if;
+
+                        -------------------------
+                        -- OUTPUT SIDE
+                        -- mp_valid_out=1 en cada ciclo que alimentamos,
+                        -- pero solo el ULTIMO (byte 3 del word) tiene el
+                        -- max final de la ventana. Lo capturamos 1 ciclo
+                        -- despues (maxpool_unit tiene 1 ciclo latencia).
+                        --
+                        -- Usamos un flag de 1 ciclo: mp_window_done_d
+                        -- que se setea cuando byte_sel acaba de ser "11"
+                        -- con valid_in, indicando que el proximo ciclo
+                        -- tendremos valid_out con el max final.
+                        -------------------------
+                        -- Capturar max_out al ciclo DESPUES de feed byte 3
+                        -- (mp_valid_out sigue alto; usamos byte_sel='00' y
+                        --  stream_word_loaded='0' como proxy de "acabamos
+                        --  de cerrar una ventana").
+                        --
+                        -- Mejor: registramos una flag mp_capture_next de 1 ciclo
+                        -- (pulso tras alimentar byte 3).
+                        if stream_word_loaded = '1' and stream_byte_sel = "11" then
+                            -- Este ciclo alimenta byte 3; en el proximo ciclo
+                            -- capturamos max_out. Lo hacemos YA aqui pues el
+                            -- comparador maxpool_unit es combinacional en max
+                            -- (update se registra dentro). mp_max_out reflejara
+                            -- el nuevo max al proximo flanco.
+                            -- → setear flag para capturar en siguiente ciclo.
+                            null;  -- el capture real se hace abajo con mp_valid_out
+                        end if;
+
+                        -- Capture fire: 2 ciclos despues de alimentar byte 3
+                        -- mp_fed_b3_d2 va alto justo cuando max_r ya contiene
+                        -- el max de los 4 bytes de la ventana.
+                        if mp_fed_b3_d2 = '1' then
+                            -- Final del window: acumular max
+                            case stream_out_cnt is
+                                when "00" =>
+                                    stream_out_reg( 7 downto  0) <= std_logic_vector(mp_max_out);
+                                when "01" =>
+                                    stream_out_reg(15 downto  8) <= std_logic_vector(mp_max_out);
+                                when "10" =>
+                                    stream_out_reg(23 downto 16) <= std_logic_vector(mp_max_out);
+                                when others =>
+                                    stream_out_reg(31 downto 24) <= std_logic_vector(mp_max_out);
+                            end case;
+
+                            if stream_out_cnt = "11" then
+                                stream_out_valid <= '1';
+                                stream_out_cnt   <= "00";
+                                if reg_n_words /= 0 and
+                                   stream_out_count = resize(shift_right(reg_n_words, 2), 12) - 1 then
+                                    -- reg_n_words/4 output words (MP: 4 in words = 1 out word)
+                                    stream_out_last <= '1';
+                                end if;
+                            else
+                                stream_out_cnt <= stream_out_cnt + 1;
+                            end if;
+                        end if;
+
+                        -- Handshake m_axis identico al LR
+                        if stream_out_valid = '1' and m_axis_tready = '1' then
+                            stream_out_valid <= '0';
+                            stream_out_count <= stream_out_count + 1;
+
+                            if stream_out_last = '1' then
                                 stream_out_last <= '0';
                                 done_latch      <= '1';
                                 state           <= S_IDLE;
