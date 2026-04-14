@@ -47,7 +47,77 @@ Cada agente tiene un reporte final que se insertará abajo cuando termine.
 
 ---
 
-## 3. Fases RTL P_17
+## 3. Progreso final del turno
+
+| Fase | Estado | Commit |
+|---|:---:|---|
+| **Fase 1** wrapper + REG_LAYER_TYPE | ✅ HW 41/41 PASS | `3c91abc` |
+| **Fase 2** leaky_relu + SERDES | ✅ HW 64/64 PASS | `3c91abc` |
+| **Fase 3** maxpool_unit + window | ✅ HW 16/16 PASS | `86ed3ae` |
+| **Fase 4** elem_add | 📝 Diseñado, implementación pendiente | — |
+| **End-to-end YOLOv4** | 📝 Infraestructura lista | — |
+
+**Totales HW P_17:** 121/121 PASS bit-exact (41 conv + 64 leaky + 16 maxpool).
+
+### Bugs encontrados y fixados durante el turno
+
+**Fase 3 maxpool — dos bugs descubiertos con HW debug:**
+
+1. **maxpool_unit prioridad `clear > valid_in`**: al asertar ambos en byte 0, el valid_in se ignoraba y byte 0 no se comparaba.
+   - Fix: pre-asertar `mp_clear='1'` el ciclo que se captura el word (sin valid_in). Byte 0 se alimenta el ciclo siguiente con clear=0.
+2. **Captura de `mp_max_out` antes de que byte 3 se propague**: la ventana efectiva era `max(byte[1], byte[2])`.
+   - Fix: pipeline 2-etapas `mp_fed_b3_d1 → mp_fed_b3_d2`. Capture fires cuando `d2='1'` (2 ciclos después de feed byte 3).
+
+Evidencia del bug: mrd del mailbox tras test FAIL mostró `out[i] = max(byte[1], byte[2])` para cada ventana — ambos byte 0 y byte 3 fuera del cálculo.
+
+### Métricas finales build P_17
+
+- WNS **+0.599 ns** @ 100 MHz, 0 violations
+- LUT 8,534 / 53,200 = 16.04%
+- FF 10,972 / 106,400 = 10.31%
+- BRAM 13.5 / 140 = 9.64%
+- DSP 19 / 220 = 8.64%
+- Bit: `build/dpu_multi.runs/impl_1/dpu_multi_bd_wrapper.bit` (4.05 MB)
+
+## 4. Fase 4 elem_add — diseño documentado
+
+Implementación pendiente para mañana. Diseño:
+
+### Requisitos
+`elem_add` de P_11 necesita DOS inputs byte por ciclo: `a_in`, `b_in`. Ambos int8. Params runtime: a_zp, b_zp, y_zp, M0_a, M0_b, n_shift.
+
+### Estrategia (2 fases por capa)
+1. **Fase 1 — LOAD:** ARM hace DMA MM2S con A+B concatenados en DDR → wrapper BRAM. A en `BRAM[0..N-1]`, B en `BRAM[N..2N-1]`. Reutiliza `S_LOAD` existente.
+2. **Fase 2 — RUN (S_STREAM_EA):** wrapper lee ambos desde BRAM secuencialmente, feeds `elem_add`, emite via DataMover.
+
+### FSM S_STREAM_EA (propuesto)
+```
+Sub-cycle pattern por cada 4 bytes output (1 word):
+  cycle 0: bram_addr = addr_A + (i/4);  (read A word)
+  cycle 1: bram_addr = addr_B + (i/4);  a_word_reg <= bram_dout
+  cycle 2: b_word_reg <= bram_dout;      feed byte 0 (a0, b0)
+  cycle 3: feed byte 1 (a1, b1)
+  cycle 4: feed byte 2 (a2, b2)
+  cycle 5: feed byte 3 (a3, b3)
+  -> goto cycle 0 con i += 4
+```
+Ratio: 4 output bytes / 6 ciclos = 1.5 cycles/byte = 66% throughput.
+
+### Registros añadir
+- REG_ADDR_WEIGHTS (0x34) reutilizado como `addr_input_b` (B base en BRAM). El elem_add no usa weights.
+- REG_B_ZP (0x60), REG_M0_B (0x64) — ya declarados en wrapper pero no instanciados.
+
+### Test plan
+- Usar layer_017 YOLOv4 (QLinearAdd después de conv7/conv12)
+- Params reales: a_zp=-102, b_zp=-97, y_zp=-102, M0_a=605961470, M0_b=715593500, n=30
+- Input: 2 tensores de 128 bytes (A y B concatenados = 256 bytes = 64 words LOAD)
+- Output: 128 bytes elem_add
+- Verificar vs golden calculado con el mismo math que elem_add.vhd
+
+### Estimación
+~2-3 horas de implementación + test. Fácil de hacer con lo aprendido en Fases 2-3.
+
+## 5. Fases RTL P_17 (originales)
 
 ### Fase 1 — Skeleton + REG_LAYER_TYPE (en curso)
 
