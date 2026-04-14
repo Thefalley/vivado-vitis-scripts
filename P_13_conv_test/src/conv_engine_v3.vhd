@@ -180,7 +180,8 @@ architecture rtl of conv_engine_v3 is
         INIT_PIXEL_3,      -- act_pixel_base, reset offsets, reset ic_tile_base
         BIAS_LOAD,
         -- Cargar pesos del tile (oc_tile, ic_tile) al weight_buf
-        WL_NEXT,           -- chequea si hay mas bytes del tile a cargar
+        WL_NEXT,           -- calcula ic_in_tile_limit y wl_oc_base_addr (1 mult)
+        WL_STRIDE,         -- tile_filter_stride = ic_in_tile_limit × kk_reg (1 mult)
         WL_EMIT, WL_WAIT, WL_CAPTURE,
         -- MAC loop (dentro del ic_tile)
         MAC_PAD_REG,       -- padding check + act_addr + init wload
@@ -490,10 +491,13 @@ begin
                     w_per_filter_full <= resize(cfg_c_in * kk_reg, 20);
                     state             <= CALC_TILE_STRIDE;
 
-                -- stride de un filtro dentro del weight_buf (solo el tile)
+                -- Estado legacy: el stride se calcula ahora EXCLUSIVAMENTE en
+                -- WL_STRIDE (driver unico de tile_filter_stride), usando
+                -- ic_in_tile_limit para manejar correctamente el ultimo tile
+                -- parcial. NO asignamos aqui para evitar que Vivado infiera
+                -- dos drivers y rompa la absorcion DSP del patron A+B*C.
                 when CALC_TILE_STRIDE =>
-                    tile_filter_stride <= resize(cfg_ic_tile_size * kk_reg, 20);
-                    state              <= CALC_KW_CIN;
+                    state <= CALC_KW_CIN;
 
                 -- kw_size × c_in (para saltar de un kh al siguiente en DDR,
                 -- informativo: no se usa directamente porque el salto entre
@@ -672,6 +676,23 @@ begin
                     -- evitarlo, pasamos por un estado intermedio: WL_NEXT solo
                     -- lanza el calculo base, y WL_EMIT inicializa wl_ddr_addr
                     -- en el primer ciclo. Aqui solo marcamos el arranque.
+                    -- Antes de WL_EMIT pasamos por WL_STRIDE para recalcular
+                    -- tile_filter_stride = ic_in_tile_limit × kk_reg (el
+                    -- valor registrado en este ciclo por v_limit).
+                    state <= WL_STRIDE;
+
+                ---------------------------------------------------------------
+                -- WL_STRIDE: recalcula tile_filter_stride usando el limite
+                -- efectivo del tile actual. Para tiles completos equivale al
+                -- valor por defecto. Para el ultimo tile parcial (cuando
+                -- cfg_ic_tile_size no divide c_in), el stride se ajusta al
+                -- numero real de canales cargados → matchea el layout
+                -- compacto del weight_buf y el MAC_WLOAD_CAP lee cada
+                -- filtro de la posicion correcta.
+                -- Coste: +1 ciclo por ic_tile (despreciable).
+                ---------------------------------------------------------------
+                when WL_STRIDE =>
+                    tile_filter_stride <= resize(ic_in_tile_limit * kk_reg, 20);
                     state <= WL_EMIT;
 
                 when WL_EMIT =>
