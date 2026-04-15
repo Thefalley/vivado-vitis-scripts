@@ -23,13 +23,15 @@
 #include "xtime_l.h"
 #include <string.h>
 
-/* Memory map (ver P_19_OVERVIEW.md) */
+/* Memory map (ampliado tras overnight run #1) */
 #define ADDR_INPUT        0x10000000u   /* 416x416x3 = 519 KB input image */
-#define ADDR_WEIGHTS_BLOB 0x12000000u   /* 61 MB pesos (desde extract) */
-#define ADDR_ACT_POOL     0x11000000u   /* 16 MB activaciones intermedias */
-#define ADDR_HEAD_52      0x18000000u   /* head stride 8:  ~690 KB */
-#define ADDR_HEAD_26      0x18200000u   /* head stride 16: ~170 KB */
-#define ADDR_HEAD_13      0x18400000u   /* head stride 32: ~43 KB */
+#define ADDR_SCRATCH      0x13000000u   /* Scratch maxpool reorder, etc (16 MB) */
+#define ADDR_WEIGHTS_BLOB 0x12000000u   /* 61 MB pesos */
+#define ADDR_ACT_POOL     0x1A000000u   /* 96 MB activaciones (vs 16 MB pre) */
+#define POOL_SIZE         (96u * 1024u * 1024u)
+#define ADDR_HEAD_52      0x18000000u
+#define ADDR_HEAD_26      0x18200000u
+#define ADDR_HEAD_13      0x18400000u
 #define RESULT_ADDR       0x10200000u
 #define MAGIC_DONE        0xDEAD1234u
 
@@ -45,44 +47,102 @@ extern int dpu_exec_conv_tiled(const layer_config_t *L,
                                dpu_prof_t    *prof);
 
 /* ========================================================================= */
-/* Memory pool simplificado: bump allocator con direcciones fijas por capa.  */
-/* El agente anterior escribió mem_pool.c con refcount; para la primera     */
-/* version end-to-end usamos direcciones fijas derivadas del layer idx.     */
-/* Pool a 16 MB @ 0x11000000.                                                 */
+/* Memory pool v2: bump allocator con tamaños reales por capa.               */
+/* Pool 96 MB. Sin recycle (overnight run 1-shot).                            */
 /* ========================================================================= */
-static uint32_t layer_output_addr(int layer_idx)
+static uint32_t g_layer_out_addr[NUM_FPGA_LAYERS];
+static uint32_t g_pool_cursor = 0;
+
+static uint32_t pool_alloc_for_layer(int layer_idx, uint32_t size_bytes)
 {
-    /* Simple mapping: cada capa obtiene un slot de 256 KB.
-     * 16 MB / 256 KB = 64 slots. Usamos layer_idx % 64 para asignar
-     * (asumiendo que skip connections no viven mas alla de 64 layers). */
-    return ADDR_ACT_POOL + (uint32_t)((layer_idx % 64) * (256u * 1024u));
+    /* Align 64 bytes para cache lines */
+    uint32_t aligned = (size_bytes + 63u) & ~63u;
+    if (g_pool_cursor + aligned > POOL_SIZE) {
+        xil_printf("POOL EXHAUSTED layer=%d cursor=%u need=%u\r\n",
+                   layer_idx, g_pool_cursor, aligned);
+        return 0;
+    }
+    uint32_t addr = ADDR_ACT_POOL + g_pool_cursor;
+    g_layer_out_addr[layer_idx] = addr;
+    g_pool_cursor += aligned;
+    return addr;
 }
 
 static uint32_t layer_input_addr(const layer_config_t *L, int layer_idx)
 {
+    (void)layer_idx;
     if (L->input_a_idx < 0) return ADDR_INPUT;
-    return layer_output_addr(L->input_a_idx);
+    if (L->input_a_idx >= NUM_FPGA_LAYERS) return 0;
+    return g_layer_out_addr[L->input_a_idx];
 }
 
 static uint32_t layer_input_b_addr(const layer_config_t *L)
 {
     if (L->input_b_idx < 0) return 0;
-    return layer_output_addr(L->input_b_idx);
+    if (L->input_b_idx >= NUM_FPGA_LAYERS) return 0;
+    return g_layer_out_addr[L->input_b_idx];
 }
 
 /* ========================================================================= */
-/* Output overrides para los heads finales:                                   */
-/* Los ultimos 3 Concat/Conv que alimentan detections van a ADDR_HEAD_*       */
-/* (TODO: identificar layer indices exactos desde layer_configs.h).           */
+/* Output addr: los 3 heads finales van a direcciones fijas; el resto al pool */
 /* ========================================================================= */
-static uint32_t get_output_addr(int layer_idx)
+static uint32_t get_output_addr(const layer_config_t *L, int layer_idx)
 {
-    /* Placeholder: layers N-3, N-2, N-1 se asumen los heads.
-     * Real: hace falta marcar en layer_configs.h cuales son outputs. */
-    if (layer_idx == NUM_FPGA_LAYERS - 3) return ADDR_HEAD_52;
-    if (layer_idx == NUM_FPGA_LAYERS - 2) return ADDR_HEAD_26;
-    if (layer_idx == NUM_FPGA_LAYERS - 1) return ADDR_HEAD_13;
-    return layer_output_addr(layer_idx);
+    uint32_t out_bytes = L->c_out * L->h_out * L->w_out;
+    if (layer_idx == NUM_FPGA_LAYERS - 3) {
+        g_layer_out_addr[layer_idx] = ADDR_HEAD_52;
+        return ADDR_HEAD_52;
+    }
+    if (layer_idx == NUM_FPGA_LAYERS - 2) {
+        g_layer_out_addr[layer_idx] = ADDR_HEAD_26;
+        return ADDR_HEAD_26;
+    }
+    if (layer_idx == NUM_FPGA_LAYERS - 1) {
+        g_layer_out_addr[layer_idx] = ADDR_HEAD_13;
+        return ADDR_HEAD_13;
+    }
+    return pool_alloc_for_layer(layer_idx, out_bytes);
+}
+
+/* ========================================================================= */
+/* MAXPOOL real via pre-reorder ARM                                           */
+/* Input NHWC @ in_ddr, output NHWC @ out_ddr.                                */
+/* ARM reordena input a window-major (4 bytes contiguos por 2x2 window),     */
+/* luego invoca dpu_exec_pool (chunked).                                      */
+/* ========================================================================= */
+static int run_maxpool_2x2(const layer_config_t *L, int idx)
+{
+    uint32_t in_addr  = layer_input_addr(L, idx);
+    uint32_t out_addr = get_output_addr(L, idx);
+    if (!out_addr) return DPU_ERR_PARAMS;
+
+    const uint8_t *in = (const uint8_t *)(uintptr_t)in_addr;
+    uint8_t *tmp = (uint8_t *)(uintptr_t)ADDR_SCRATCH;
+    uint8_t *out = (uint8_t *)(uintptr_t)out_addr;
+
+    int H_in = L->h_in, W_in = L->w_in, C = L->c_in;
+    int H_out = L->h_out, W_out = L->w_out;
+
+    Xil_DCacheInvalidateRange(in_addr, H_in * W_in * C);
+
+    /* Reorder: cada ventana 2x2 -> 4 bytes contiguos en tmp */
+    int widx = 0;
+    for (int oh = 0; oh < H_out; oh++) {
+        for (int ow = 0; ow < W_out; ow++) {
+            int ih = oh * 2, iw = ow * 2;
+            for (int c = 0; c < C; c++) {
+                tmp[widx*4 + 0] = in[((ih)   * W_in + (iw))   * C + c];
+                tmp[widx*4 + 1] = in[((ih)   * W_in + (iw+1)) * C + c];
+                tmp[widx*4 + 2] = in[((ih+1) * W_in + (iw))   * C + c];
+                tmp[widx*4 + 3] = in[((ih+1) * W_in + (iw+1)) * C + c];
+                widx++;
+            }
+        }
+    }
+    Xil_DCacheFlushRange((UINTPTR)tmp, widx * 4);
+
+    dpu_prof_t pr;
+    return dpu_exec_pool(L, tmp, out, &pr);
 }
 
 /* ========================================================================= */
@@ -92,7 +152,9 @@ static int run_concat(const layer_config_t *L, int idx)
 {
     const uint8_t *a = (const uint8_t *)(uintptr_t)layer_input_addr(L, idx);
     const uint8_t *b = (const uint8_t *)(uintptr_t)layer_input_b_addr(L);
-    uint8_t *out = (uint8_t *)(uintptr_t)get_output_addr(idx);
+    uint32_t out_addr = get_output_addr(L, idx);
+    if (!out_addr) return DPU_ERR_PARAMS;
+    uint8_t *out = (uint8_t *)(uintptr_t)out_addr;
     int H = L->h_out, W = L->w_out;
     int c_a = L->c_in;          /* input A channels */
     int c_b = L->c_out - c_a;   /* B fills the rest */
@@ -117,7 +179,9 @@ static int run_concat(const layer_config_t *L, int idx)
 static int run_upsample(const layer_config_t *L, int idx)
 {
     const uint8_t *in = (const uint8_t *)(uintptr_t)layer_input_addr(L, idx);
-    uint8_t *out = (uint8_t *)(uintptr_t)get_output_addr(idx);
+    uint32_t out_addr = get_output_addr(L, idx);
+    if (!out_addr) return DPU_ERR_PARAMS;
+    uint8_t *out = (uint8_t *)(uintptr_t)out_addr;
     int H = L->h_in, W = L->w_in, C = L->c_in;
     int OW = 2 * W;
 
@@ -161,16 +225,20 @@ static int yolov4_run_all(void)
                                   (ADDR_WEIGHTS_BLOB + w->bias_offset);
             const uint8_t *inp  = (const uint8_t *)(uintptr_t)
                                   layer_input_addr(L, i);
-            uint8_t *outp = (uint8_t *)(uintptr_t)get_output_addr(i);
-            st = dpu_exec_conv_tiled(L, inp, wptr, bptr, outp, &prof);
+            uint32_t out_addr = get_output_addr(L, i);
+            if (!out_addr) { st = DPU_ERR_PARAMS; break; }
+            st = dpu_exec_conv_tiled(L, inp, wptr, bptr,
+                                     (uint8_t *)(uintptr_t)out_addr, &prof);
             break;
         }
 
         case OP_LEAKY_RELU: {
             const uint8_t *inp = (const uint8_t *)(uintptr_t)
                                  layer_input_addr(L, i);
-            uint8_t *outp = (uint8_t *)(uintptr_t)get_output_addr(i);
-            st = dpu_exec_leaky(L, inp, outp, &prof);
+            uint32_t out_addr = get_output_addr(L, i);
+            if (!out_addr) { st = DPU_ERR_PARAMS; break; }
+            st = dpu_exec_leaky(L, inp,
+                                (uint8_t *)(uintptr_t)out_addr, &prof);
             break;
         }
 
@@ -179,19 +247,16 @@ static int yolov4_run_all(void)
                                layer_input_addr(L, i);
             const uint8_t *b = (const uint8_t *)(uintptr_t)
                                layer_input_b_addr(L);
-            uint8_t *outp = (uint8_t *)(uintptr_t)get_output_addr(i);
-            st = dpu_exec_add(L, a, b, outp, &prof);
+            uint32_t out_addr = get_output_addr(L, i);
+            if (!out_addr) { st = DPU_ERR_PARAMS; break; }
+            st = dpu_exec_add(L, a, b,
+                              (uint8_t *)(uintptr_t)out_addr, &prof);
             break;
         }
 
-        case OP_MAXPOOL: {
-            /* NOTE: maxpool en DPU actual requiere input pre-ordenado por
-             * ventanas 2x2. Ejecutar desde ARM en lugar del DPU para
-             * evitar pre-ordering cost. Implementacion aqui stub. */
-            xil_printf("[%3d] MAXPOOL (ARM stub, skipped)\r\n", i);
-            st = DPU_OK;
+        case OP_MAXPOOL:
+            st = run_maxpool_2x2(L, i);
             break;
-        }
 
         case OP_CONCAT:
             st = run_concat(L, i);
@@ -208,19 +273,19 @@ static int yolov4_run_all(void)
 
         if (st == DPU_OK) {
             n_ok++;
-            if ((i & 0x0F) == 0 || i < 10) {
+            if ((i & 0x1F) == 0 || i < 5 || i >= NUM_FPGA_LAYERS - 5) {
                 xil_printf("[%3d] L%d op=%d OK (tiles=%d)\r\n",
                            i, L->layer_id, L->op_type, prof.n_tiles);
             }
         } else {
             n_fail++;
-            xil_printf("[%3d] L%d op=%d FAIL st=%d\r\n",
-                       i, L->layer_id, L->op_type, st);
-            /* fill output with garbage to detect propagation */
-            uint8_t *outp = (uint8_t *)(uintptr_t)get_output_addr(i);
-            uint32_t bytes = L->h_out * L->w_out * L->c_out;
-            memset(outp, GARBAGE_BYTE, bytes);
-            Xil_DCacheFlushRange((UINTPTR)outp, bytes);
+            if (n_fail <= 10 || (n_fail % 20) == 0) {
+                xil_printf("[%3d] L%d op=%d FAIL st=%d\r\n",
+                           i, L->layer_id, L->op_type, st);
+            }
+            /* No podemos hacer memset(GARBAGE) sin saber el buffer.
+             * El consumer downstream leerá basura, lo detectaremos en
+             * el head final. */
         }
     }
 

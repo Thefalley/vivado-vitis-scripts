@@ -275,8 +275,13 @@ int dpu_exec_conv(const layer_config_t *L,
 }
 
 /* ========================================================================= */
-/* dpu_exec_leaky                                                             */
+/* dpu_exec_leaky con chunking                                                */
+/* El wrapper RTL tiene reg_n_words 10-bit -> max 1023 words por burst.       */
+/* Para capas grandes (layer 0: 5.5 MB = 1.38M words) partimos en chunks.     */
 /* ========================================================================= */
+#define STREAM_CHUNK_WORDS_MAX 1023
+#define STREAM_CHUNK_BYTES_MAX (STREAM_CHUNK_WORDS_MAX * 4)
+
 int dpu_exec_leaky(const layer_config_t *L,
                    const uint8_t *in_ddr,
                    uint8_t       *out_ddr,
@@ -286,15 +291,9 @@ int dpu_exec_leaky(const layer_config_t *L,
 
     const int n_bytes = L->c_in * L->h_in * L->w_in;
     if (n_bytes % 4 != 0) return DPU_ERR_PARAMS;
-    const int n_words = n_bytes / 4;
 
-    if ((uintptr_t)in_ddr != DPU_SRC_ADDR) {
-        memcpy((void *)DPU_SRC_ADDR, in_ddr, n_bytes);
-    }
-    Xil_DCacheFlushRange((UINTPTR)DPU_SRC_ADDR, n_bytes);
-
+    /* Config regs una sola vez (iguales para todos los chunks) */
     dpu_write(REG_LAYER_TYPE, LAYER_LEAKY_RELU);
-    dpu_write(REG_N_WORDS,    n_words);
     dpu_write(REG_X_ZP,       (uint32_t)(int32_t)L->x_zp & 0x1FF);
     dpu_write(REG_Y_ZP,       (uint32_t)(int32_t)L->y_zp & 0xFF);
     dpu_write(REG_M0,         L->M0);
@@ -302,18 +301,35 @@ int dpu_exec_leaky(const layer_config_t *L,
     dpu_write(REG_M0_NEG,     L->M0_neg);
     dpu_write(REG_N_NEG,      L->n_neg);
 
-    dm_configure((uintptr_t)out_ddr, n_bytes);
-    dpu_write(REG_CTRL, 0x02);
+    int chunks = 0;
+    int off = 0;
+    while (off < n_bytes) {
+        int chunk = n_bytes - off;
+        if (chunk > STREAM_CHUNK_BYTES_MAX) chunk = STREAM_CHUNK_BYTES_MAX;
+        /* Asegurar multiple de 4 */
+        chunk &= ~0x3;
+        if (chunk == 0) break;
 
-    if (XAxiDma_SimpleTransfer(&g_dma, (UINTPTR)DPU_SRC_ADDR, n_bytes,
-                               XAXIDMA_DMA_TO_DEVICE) != XST_SUCCESS)
-        return DPU_ERR_PARAMS;
+        /* Cache flush del trozo de input antes del DMA */
+        Xil_DCacheFlushRange((UINTPTR)(in_ddr + off), chunk);
 
-    if (wait_done_latch(20000000) != DPU_OK) return DPU_ERR_TIMEOUT;
-    if (wait_dm_done(20000000) != DPU_OK) return DPU_ERR_DM_FAULT;
+        dpu_write(REG_N_WORDS, chunk / 4);
+        dm_configure((uintptr_t)(out_ddr + off), chunk);
+        dpu_write(REG_CTRL, 0x02);
+
+        if (XAxiDma_SimpleTransfer(&g_dma, (UINTPTR)(in_ddr + off), chunk,
+                                   XAXIDMA_DMA_TO_DEVICE) != XST_SUCCESS)
+            return DPU_ERR_PARAMS;
+
+        if (wait_done_latch(20000000) != DPU_OK) return DPU_ERR_TIMEOUT;
+        if (wait_dm_done(20000000) != DPU_OK) return DPU_ERR_DM_FAULT;
+
+        off += chunk;
+        chunks++;
+    }
 
     Xil_DCacheInvalidateRange((UINTPTR)out_ddr, n_bytes);
-    if (prof) { prof->n_tiles = 1; }
+    if (prof) { prof->n_tiles = chunks; }
     return DPU_OK;
 }
 
@@ -333,29 +349,42 @@ int dpu_exec_pool(const layer_config_t *L,
     /* Numero de ventanas = h_out * w_out * c_in. Cada ventana = 4 bytes */
     const int n_windows = L->h_out * L->w_out * L->c_in;
     const int n_input_bytes = n_windows * 4;
-    const int n_output_bytes = n_windows;
     if (n_input_bytes % 4 != 0) return DPU_ERR_PARAMS;
 
-    if ((uintptr_t)in_ddr != DPU_SRC_ADDR) {
-        memcpy((void *)DPU_SRC_ADDR, in_ddr, n_input_bytes);
-    }
-    Xil_DCacheFlushRange((UINTPTR)DPU_SRC_ADDR, n_input_bytes);
-
     dpu_write(REG_LAYER_TYPE, LAYER_MAXPOOL);
-    dpu_write(REG_N_WORDS,    n_input_bytes / 4);
 
-    dm_configure((uintptr_t)out_ddr, n_output_bytes);
-    dpu_write(REG_CTRL, 0x02);
+    /* Chunks de window-multiple. Max 255 windows por chunk (1020 words). */
+    const int CHUNK_WINDOWS_MAX = STREAM_CHUNK_WORDS_MAX / 4;  /* 255 */
+    const int CHUNK_IN_BYTES_MAX = CHUNK_WINDOWS_MAX * 4;
+    const int CHUNK_OUT_BYTES_MAX = CHUNK_WINDOWS_MAX;
 
-    if (XAxiDma_SimpleTransfer(&g_dma, (UINTPTR)DPU_SRC_ADDR, n_input_bytes,
-                               XAXIDMA_DMA_TO_DEVICE) != XST_SUCCESS)
-        return DPU_ERR_PARAMS;
+    int chunks = 0;
+    int win_off = 0;
+    while (win_off < n_windows) {
+        int cwin = n_windows - win_off;
+        if (cwin > CHUNK_WINDOWS_MAX) cwin = CHUNK_WINDOWS_MAX;
+        int cin_bytes  = cwin * 4;
+        int cout_bytes = cwin;
 
-    if (wait_done_latch(20000000) != DPU_OK) return DPU_ERR_TIMEOUT;
-    if (wait_dm_done(20000000) != DPU_OK) return DPU_ERR_DM_FAULT;
+        Xil_DCacheFlushRange((UINTPTR)(in_ddr + win_off*4), cin_bytes);
 
-    Xil_DCacheInvalidateRange((UINTPTR)out_ddr, n_output_bytes);
-    if (prof) { prof->n_tiles = 1; }
+        dpu_write(REG_N_WORDS, cin_bytes / 4);
+        dm_configure((uintptr_t)(out_ddr + win_off), cout_bytes);
+        dpu_write(REG_CTRL, 0x02);
+
+        if (XAxiDma_SimpleTransfer(&g_dma, (UINTPTR)(in_ddr + win_off*4),
+                                   cin_bytes, XAXIDMA_DMA_TO_DEVICE) != XST_SUCCESS)
+            return DPU_ERR_PARAMS;
+
+        if (wait_done_latch(20000000) != DPU_OK) return DPU_ERR_TIMEOUT;
+        if (wait_dm_done(20000000) != DPU_OK) return DPU_ERR_DM_FAULT;
+
+        win_off += cwin;
+        chunks++;
+    }
+
+    Xil_DCacheInvalidateRange((UINTPTR)out_ddr, n_windows);
+    if (prof) { prof->n_tiles = chunks; }
     return DPU_OK;
 }
 
@@ -373,38 +402,56 @@ int dpu_exec_add(const layer_config_t *L,
 
     const int n_bytes = L->c_in * L->h_in * L->w_in;
     if (n_bytes % 4 != 0) return DPU_ERR_PARAMS;
-    if (2 * n_bytes > DPU_BRAM_BYTES) return DPU_ERR_TILING;
 
-    uint8_t *src = (uint8_t *)DPU_SRC_ADDR;
-    memcpy(src,             in_a_ddr, n_bytes);
-    memcpy(src + n_bytes,   in_b_ddr, n_bytes);
-    Xil_DCacheFlushRange((UINTPTR)src, 2 * n_bytes);
+    /* elem_add usa BRAM (A+B load concatenados). BRAM = 4 KB,
+     * entonces max chunk = 2048 bytes de A + 2048 bytes de B.
+     * Ademas reg_n_words 10-bit = 1023 words max. Efectivo:
+     * chunk = min(2048, 1023*4/2) = 2048 bytes per input (OK). */
+    const int CHUNK_N_MAX = (DPU_BRAM_BYTES / 2) & ~0x3;  /* 2048 B A + 2048 B B */
 
-    dpu_write(REG_LAYER_TYPE,   LAYER_ELEM_ADD);
-    dpu_write(REG_N_WORDS,      (2 * n_bytes) / 4);
-    dpu_write(REG_X_ZP,         (uint32_t)(int32_t)L->x_zp & 0x1FF);  /* = a_zp */
-    dpu_write(REG_B_ZP,         (uint32_t)(int32_t)L->b_zp & 0xFF);
-    dpu_write(REG_Y_ZP,         (uint32_t)(int32_t)L->y_zp & 0xFF);
-    dpu_write(REG_M0,           L->M0);    /* M0_a */
-    dpu_write(REG_M0_B,         L->M0_b);
-    dpu_write(REG_N_SHIFT,      L->n_shift);
-    dpu_write(REG_ADDR_INPUT,   0x000);
-    dpu_write(REG_ADDR_WEIGHTS, n_bytes);
+    dpu_write(REG_LAYER_TYPE, LAYER_ELEM_ADD);
+    dpu_write(REG_X_ZP,       (uint32_t)(int32_t)L->x_zp & 0x1FF);
+    dpu_write(REG_B_ZP,       (uint32_t)(int32_t)L->b_zp & 0xFF);
+    dpu_write(REG_Y_ZP,       (uint32_t)(int32_t)L->y_zp & 0xFF);
+    dpu_write(REG_M0,         L->M0);
+    dpu_write(REG_M0_B,       L->M0_b);
+    dpu_write(REG_N_SHIFT,    L->n_shift);
 
-    /* LOAD */
-    dpu_write(REG_CTRL, 0x01);
-    if (dma_load((uintptr_t)src, 2 * n_bytes) != DPU_OK) return DPU_ERR_TIMEOUT;
-    if (wait_idle(1000000) != DPU_OK) return DPU_ERR_TIMEOUT;
+    int chunks = 0;
+    int off = 0;
+    while (off < n_bytes) {
+        int cn = n_bytes - off;
+        if (cn > CHUNK_N_MAX) cn = CHUNK_N_MAX;
+        cn &= ~0x3;
+        if (cn == 0) break;
 
-    /* DataMover + start */
-    dm_configure((uintptr_t)out_ddr, n_bytes);
-    dpu_write(REG_CTRL, 0x02);
+        uint8_t *src = (uint8_t *)DPU_SRC_ADDR;
+        memcpy(src,       in_a_ddr + off, cn);
+        memcpy(src + cn,  in_b_ddr + off, cn);
+        Xil_DCacheFlushRange((UINTPTR)src, 2 * cn);
 
-    if (wait_done_latch(20000000) != DPU_OK) return DPU_ERR_TIMEOUT;
-    if (wait_dm_done(20000000) != DPU_OK) return DPU_ERR_DM_FAULT;
+        dpu_write(REG_N_WORDS,      (2 * cn) / 4);
+        dpu_write(REG_ADDR_INPUT,   0x000);
+        dpu_write(REG_ADDR_WEIGHTS, cn);
+
+        /* LOAD */
+        dpu_write(REG_CTRL, 0x01);
+        if (dma_load((uintptr_t)src, 2 * cn) != DPU_OK) return DPU_ERR_TIMEOUT;
+        if (wait_idle(1000000) != DPU_OK) return DPU_ERR_TIMEOUT;
+
+        /* RUN */
+        dm_configure((uintptr_t)(out_ddr + off), cn);
+        dpu_write(REG_CTRL, 0x02);
+
+        if (wait_done_latch(20000000) != DPU_OK) return DPU_ERR_TIMEOUT;
+        if (wait_dm_done(20000000) != DPU_OK) return DPU_ERR_DM_FAULT;
+
+        off += cn;
+        chunks++;
+    }
 
     Xil_DCacheInvalidateRange((UINTPTR)out_ddr, n_bytes);
-    if (prof) { prof->n_tiles = 1; }
+    if (prof) { prof->n_tiles = chunks; }
     return DPU_OK;
 }
 
