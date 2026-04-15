@@ -54,10 +54,21 @@ Cada agente tiene un reporte final que se insertará abajo cuando termine.
 | **Fase 1** wrapper + REG_LAYER_TYPE | ✅ HW 41/41 PASS | `3c91abc` |
 | **Fase 2** leaky_relu + SERDES | ✅ HW 64/64 PASS | `3c91abc` |
 | **Fase 3** maxpool_unit + window | ✅ HW 16/16 PASS | `86ed3ae` |
-| **Fase 4** elem_add | 📝 Diseñado, implementación pendiente | — |
-| **End-to-end YOLOv4** | 📝 Infraestructura lista | — |
+| **Fase 4** elem_add + 7-phase FSM | ✅ HW 64/64 PASS | `6d310bf` |
+| **End-to-end YOLOv4** | 📝 Infraestructura lista, runtime pendiente | — |
 
-**Totales HW P_17:** 121/121 PASS bit-exact (41 conv + 64 leaky + 16 maxpool).
+**Totales HW P_17:** **185/185 PASS bit-exact** (41 conv + 64 leaky + 16 maxpool + 64 elem_add).
+
+### Las 4 primitivas del DPU YOLOv4 verificadas en HW
+
+| Primitiva | Ciclos/byte | DSPs | Bug encontrado durante HW debug |
+|---|:---:|:---:|---|
+| `conv_engine_v3` | complejo (tiling) | 15 (4 requant+mac32) | — (venía de P_16) |
+| `leaky_relu` | 0.25 (1/4) | 4 (2×mul_s9xu30) | ninguno |
+| `maxpool_unit` | 0.25 (1/4) | 0 | `clear>valid_in` priority + capture timing |
+| `elem_add` | 0.57 (4/7) | 4 (2×mul_s9xu30) | BRAM read latency 1-ciclo no contabilizado |
+
+**Total DSPs wrapper P_17: 23** (wrapper 19 + 4 de elem_add) | **LUT 16.82%** | **FF 10.62%** | **BRAM 9.64%**
 
 ### Bugs encontrados y fixados durante el turno
 
@@ -67,6 +78,12 @@ Cada agente tiene un reporte final que se insertará abajo cuando termine.
    - Fix: pre-asertar `mp_clear='1'` el ciclo que se captura el word (sin valid_in). Byte 0 se alimenta el ciclo siguiente con clear=0.
 2. **Captura de `mp_max_out` antes de que byte 3 se propague**: la ventana efectiva era `max(byte[1], byte[2])`.
    - Fix: pipeline 2-etapas `mp_fed_b3_d1 → mp_fed_b3_d2`. Capture fires cuando `d2='1'` (2 ciclos después de feed byte 3).
+
+**Fase 4 elem_add — un bug encontrado con HW dump:**
+
+3. **BRAM read latency 1-ciclo no contabilizado**: diseño inicial de 6 fases leía `a_word_reg <= bram_dout` en fase 1, pero en fase 1 el BRAM estaba recién comenzando el read — `bram_dout` era basura del ciclo anterior.
+   - Síntoma: 64/64 bytes FAIL. Dump mostró bytes 0xFF,0x00,0x00,0x01,0x49... (basura seguido de valor atascado) vs 0x57,0x57,... esperado.
+   - Fix: 7 fases (phase 0 issue A, phase 1 issue B, phase 2 capture A, phase 3 capture B + feed byte 0, phase 4-6 feed bytes 1-3). BRAM dout llega 1 ciclo después de bram_en + addr.
 
 Evidencia del bug: mrd del mailbox tras test FAIL mostró `out[i] = max(byte[1], byte[2])` para cada ventana — ambos byte 0 y byte 3 fuera del cálculo.
 
