@@ -109,4 +109,62 @@ Cabe holgado en Z-7020 (20% LUT total después de P_19).
 
 - P_17 DPU: ✅ 4 primitivas HW verified
 - P_18 Ethernet: ✅ protocolo offline validated
-- P_19 HDMI: 🔄 **3 agentes trabajando ahora mismo**
+- P_19 HDMI: ✅ **3 agentes completaron — fases 1-3 listas, 4-7 requieren HW**
+
+### Entregables de los agentes consolidados
+
+**Agent A — HDMI BD plan** (`docs/P_19_HDMI_PLAN.md`, ~750 palabras):
+- Análisis P_401: 720p@60Hz verificado, MMCM 100→74.2268 MHz, ADV7511 vía I2C PL (AA18/Y16)
+- **Plan B recomendado**: RGB→YCbCr 4:2:2 para reutilizar I2C de P_401 ya verificada
+- VDMA sobre HP1 (HP0 saturado con DMA+DM del DPU)
+- Framebuffer XRGB 1280×720 @ 0x1B000000 (3.51 MB)
+- Recursos extra: ~4.1k LUT, ~4.6k FF, 6 BRAM, 0 DSP, 1 MMCM, 1 ODDR
+- Snippet TCL listo para aplicar sobre `P_18/src/create_bd.tcl`
+
+**Agent B — bbox_decoder bare-metal** (`sw/bbox_decoder.{c,h}` + anchors + coco_classes, ~19 KB):
+- Port byte-a-byte de `draw_bboxes.py`
+- 9 anchors YOLOv4-416 Darknet order
+- NMS greedy per-class, sort insertion (n≤256)
+- Pre-filtro obj<0.125 recorta ~98% cells
+- Validador `host/validate_bbox_decoder.py` compila a .so y compara vs Python reference
+- Compile clean con gcc -O2 -Wall -Wextra
+
+**Agent C — framebuffer primitives** (`sw/framebuffer.{c,h}` + font8x8 + clip_helpers, 1138 LOC):
+- fb_clear / set_pixel / draw_line (Bresenham) / draw_rect con thickness / fill_rect / draw_text / draw_image_rgb
+- font8x8 con 95 glyphs ASCII printable
+- Bug encontrado y fixado: macro font horizontal mirror
+- demo_test.c genera PPM validado con réplica Python (toolchain MinGW local rota)
+- Todo integer-only sin malloc
+
+**Glue nuevo — `sw/yolov4_pipeline.c`**:
+- `pipeline_init()` — inicializa framebuffer
+- `yolov4_pipeline_run()`:
+  1. ~~Loop 255 layers dpu_exec_*~~ (TODO, stub)
+  2. Cache invalidate + `decode_heads()` → detections
+  3. `nms(iou=0.45)` → filtradas
+  4. `draw_input_image()` (416×416 centrada en 1280×720)
+  5. `draw_detections()` (rects + labels "person 0.95" con color por clase vía hash LCG)
+  6. DCache flush framebuffer para VDMA
+
+### Commits de hoy sin HW
+
+```
+6bcdab7  P_19 HDMI plan + bbox decoder + framebuffer + pipeline glue
+dafedd0  P_19 skeleton para demo HDMI bbox end-to-end
+891ae4f  P_18 socket PC<->ZedBoard infraestructura (offline validated)
+5019506  P_17 runtime: dpu_exec_* + mem_pool + smoke test HW 32/32 PASS
+```
+
+## Lo que queda (mañana con cable Ethernet)
+
+| Tarea | Dificultad | Tiempo |
+|---|---|---|
+| Aplicar snippet TCL Agent A sobre P_18 create_bd.tcl | baja | 30 min |
+| Escribir `hdmi_driver.c`: I2C ADV7511 + VDMA setup (reutiliza P_401 i2c_init) | media | 1-2 h |
+| Build P_19 (synth+impl+bit+export) | auto | 30 min |
+| Test network accept + echo simple | baja | 15 min |
+| Test lwIP WRITE_DDR + READ_DDR con cliente Python | media | 30 min |
+| Extender `yolov4_pipeline_run()` loop 255 layers con tiling ARM | alta | 2-4 h |
+| Test imagen completa → bbox → HDMI monitor | alta | 1-2 h |
+
+**Total estimado para demo end-to-end funcional: ~6-10 h de trabajo** con HW verification.
