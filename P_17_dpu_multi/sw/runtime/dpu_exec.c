@@ -81,6 +81,12 @@ static uint32_t gpio_ctrl_read_status(void) { return Xil_In32(GPIO_CTRL_BASE + 0
 static XAxiDma g_dma;
 static int g_dma_ready = 0;
 
+/* Accessor para dpu_exec_tiled.c */
+XAxiDma *dpu_get_dma(void)
+{
+    return g_dma_ready ? &g_dma : 0;
+}
+
 /* ========================================================================= */
 /* dpu_init / dpu_reset                                                       */
 /* ========================================================================= */
@@ -282,6 +288,16 @@ int dpu_exec_conv(const layer_config_t *L,
 #define STREAM_CHUNK_WORDS_MAX 1023
 #define STREAM_CHUNK_BYTES_MAX (STREAM_CHUNK_WORDS_MAX * 4)
 
+/* Espera a que la DMA MM2S termine el último transfer */
+static int wait_dma_idle(int max_polls)
+{
+    int t = 0;
+    while (XAxiDma_Busy(&g_dma, XAXIDMA_DMA_TO_DEVICE)) {
+        if (++t > max_polls) return DPU_ERR_TIMEOUT;
+    }
+    return DPU_OK;
+}
+
 int dpu_exec_leaky(const layer_config_t *L,
                    const uint8_t *in_ddr,
                    uint8_t       *out_ddr,
@@ -292,7 +308,6 @@ int dpu_exec_leaky(const layer_config_t *L,
     const int n_bytes = L->c_in * L->h_in * L->w_in;
     if (n_bytes % 4 != 0) return DPU_ERR_PARAMS;
 
-    /* Config regs una sola vez (iguales para todos los chunks) */
     dpu_write(REG_LAYER_TYPE, LAYER_LEAKY_RELU);
     dpu_write(REG_X_ZP,       (uint32_t)(int32_t)L->x_zp & 0x1FF);
     dpu_write(REG_Y_ZP,       (uint32_t)(int32_t)L->y_zp & 0xFF);
@@ -306,11 +321,12 @@ int dpu_exec_leaky(const layer_config_t *L,
     while (off < n_bytes) {
         int chunk = n_bytes - off;
         if (chunk > STREAM_CHUNK_BYTES_MAX) chunk = STREAM_CHUNK_BYTES_MAX;
-        /* Asegurar multiple de 4 */
         chunk &= ~0x3;
         if (chunk == 0) break;
 
-        /* Cache flush del trozo de input antes del DMA */
+        /* Esperar DMA anterior idle */
+        if (wait_dma_idle(10000000) != DPU_OK) return DPU_ERR_TIMEOUT;
+
         Xil_DCacheFlushRange((UINTPTR)(in_ddr + off), chunk);
 
         dpu_write(REG_N_WORDS, chunk / 4);

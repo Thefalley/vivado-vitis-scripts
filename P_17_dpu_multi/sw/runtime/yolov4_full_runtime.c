@@ -25,14 +25,16 @@
 
 /* Memory map (ampliado tras overnight run #1) */
 #define ADDR_INPUT        0x10000000u   /* 416x416x3 = 519 KB input image */
-#define ADDR_SCRATCH      0x13000000u   /* Scratch maxpool reorder, etc (16 MB) */
 #define ADDR_WEIGHTS_BLOB 0x12000000u   /* 61 MB pesos */
-#define ADDR_ACT_POOL     0x1A000000u   /* 96 MB activaciones (vs 16 MB pre) */
-#define POOL_SIZE         (96u * 1024u * 1024u)
+#define ADDR_SCRATCH      0x16000000u   /* Scratch maxpool reorder (32 MB) */
+#define ADDR_DUMMY_ZERO   0x17F00000u   /* 1 MB de ceros para layers fallidos */
 #define ADDR_HEAD_52      0x18000000u
 #define ADDR_HEAD_26      0x18200000u
 #define ADDR_HEAD_13      0x18400000u
+#define ADDR_ACT_POOL     0x1A000000u   /* 96 MB activaciones */
+#define POOL_SIZE         (96u * 1024u * 1024u)
 #define RESULT_ADDR       0x10200000u
+#define ADDR_STATUS_TABLE 0x10210000u   /* array de 255 uint32_t, status por layer */
 #define MAGIC_DONE        0xDEAD1234u
 
 /* Fallback: si una capa no se puede correr, marcamos su output con magic
@@ -68,19 +70,23 @@ static uint32_t pool_alloc_for_layer(int layer_idx, uint32_t size_bytes)
     return addr;
 }
 
+/* Retorna ADDR_DUMMY_ZERO (zeroed buffer) si la capa input no tiene
+ * output valido. Evita NULL deref en concat/add downstream de fallos. */
 static uint32_t layer_input_addr(const layer_config_t *L, int layer_idx)
 {
     (void)layer_idx;
     if (L->input_a_idx < 0) return ADDR_INPUT;
-    if (L->input_a_idx >= NUM_FPGA_LAYERS) return 0;
-    return g_layer_out_addr[L->input_a_idx];
+    if (L->input_a_idx >= NUM_FPGA_LAYERS) return ADDR_DUMMY_ZERO;
+    uint32_t a = g_layer_out_addr[L->input_a_idx];
+    return a ? a : ADDR_DUMMY_ZERO;
 }
 
 static uint32_t layer_input_b_addr(const layer_config_t *L)
 {
-    if (L->input_b_idx < 0) return 0;
-    if (L->input_b_idx >= NUM_FPGA_LAYERS) return 0;
-    return g_layer_out_addr[L->input_b_idx];
+    if (L->input_b_idx < 0) return ADDR_DUMMY_ZERO;
+    if (L->input_b_idx >= NUM_FPGA_LAYERS) return ADDR_DUMMY_ZERO;
+    uint32_t b = g_layer_out_addr[L->input_b_idx];
+    return b ? b : ADDR_DUMMY_ZERO;
 }
 
 /* ========================================================================= */
@@ -211,6 +217,15 @@ static int yolov4_run_all(void)
     XTime t_start, t_end;
     XTime_GetTime(&t_start);
 
+    /* Status table: para debug offline via mrd */
+    volatile uint32_t *status = (volatile uint32_t *)ADDR_STATUS_TABLE;
+    for (int k = 0; k < NUM_FPGA_LAYERS; k++) status[k] = 0xFFFFFFFFu;
+
+    /* Dummy zero buffer: rellenar por si algun consumer lee antes de
+     * que su producer haya escrito (o falló). */
+    memset((void *)(uintptr_t)ADDR_DUMMY_ZERO, 0, 1024*1024);
+    Xil_DCacheFlushRange((UINTPTR)ADDR_DUMMY_ZERO, 1024*1024);
+
     for (int i = 0; i < NUM_FPGA_LAYERS; i++) {
         const layer_config_t *L = &LAYERS[i];
         int st = DPU_OK;
@@ -271,11 +286,14 @@ static int yolov4_run_all(void)
             st = DPU_ERR_PARAMS;
         }
 
+        /* Encode status: bits[31:16] = op_type, bits[15:0] = error code */
+        status[i] = ((uint32_t)L->op_type << 16) | ((uint32_t)(st & 0xFFFF));
+
         if (st == DPU_OK) {
             n_ok++;
             if ((i & 0x1F) == 0 || i < 5 || i >= NUM_FPGA_LAYERS - 5) {
-                xil_printf("[%3d] L%d op=%d OK (tiles=%d)\r\n",
-                           i, L->layer_id, L->op_type, prof.n_tiles);
+                xil_printf("[%3d] L%d op=%d OK\r\n",
+                           i, L->layer_id, L->op_type);
             }
         } else {
             n_fail++;
@@ -283,11 +301,9 @@ static int yolov4_run_all(void)
                 xil_printf("[%3d] L%d op=%d FAIL st=%d\r\n",
                            i, L->layer_id, L->op_type, st);
             }
-            /* No podemos hacer memset(GARBAGE) sin saber el buffer.
-             * El consumer downstream leerá basura, lo detectaremos en
-             * el head final. */
         }
     }
+    Xil_DCacheFlushRange((UINTPTR)status, NUM_FPGA_LAYERS * 4);
 
     XTime_GetTime(&t_end);
     uint64_t cycles = 2 * (t_end - t_start);  /* XTime is COUNTS_PER_SECOND / 2 */

@@ -84,4 +84,28 @@ file mkdir $heads_out_dir
 mrd -bin -file [file join $heads_out_dir head_52.bin] $ADDR_HEAD_52 [expr $HEAD_52_BYTES/4]
 mrd -bin -file [file join $heads_out_dir head_26.bin] $ADDR_HEAD_26 [expr $HEAD_26_BYTES/4]
 mrd -bin -file [file join $heads_out_dir head_13.bin] $ADDR_HEAD_13 [expr $HEAD_13_BYTES/4]
-puts "heads dumped to $heads_out_dir"
+
+# Dump status table (255 uint32) - bits[31:16]=op_type, bits[15:0]=err code
+set ADDR_STATUS 0x10210000
+mrd -bin -file [file join $heads_out_dir status_table.bin] $ADDR_STATUS 255
+puts "heads + status dumped to $heads_out_dir"
+
+# Print per-layer status summary
+puts ""
+puts "=== Per-layer status (first 30 + last 10) ==="
+set status_data [mrd -value $ADDR_STATUS 255]
+for {set i 0} {$i < 30} {incr i} {
+    set v [lindex $status_data $i]
+    set op [expr {($v >> 16) & 0xFFFF}]
+    set st [expr {$v & 0xFFFF}]
+    set tag [expr {$st == 0 ? "OK" : "FAIL($st)"}]
+    puts [format "  [%3d] op=%d %s" $i $op $tag]
+}
+puts "..."
+for {set i 245} {$i < 255} {incr i} {
+    set v [lindex $status_data $i]
+    set op [expr {($v >> 16) & 0xFFFF}]
+    set st [expr {$v & 0xFFFF}]
+    set tag [expr {$st == 0 ? "OK" : "FAIL($st)"}]
+    puts [format "  [%3d] op=%d %s" $i $op $tag]
+}
