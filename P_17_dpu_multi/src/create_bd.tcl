@@ -40,6 +40,8 @@ read_vhdl [file join $src_dir ../../P_9_leaky_relu/src/mul_s9xu30_pipe.vhd]
 read_vhdl [file join $src_dir ../../P_9_leaky_relu/src/leaky_relu.vhd]
 # P_17 Fase 3: maxpool_unit primitive (reutiliza P_12)
 read_vhdl [file join $src_dir ../../P_12_maxpool/src/maxpool_unit.vhd]
+# P_17 Fase 4: elem_add primitive (reutiliza P_11; mul_s9xu30_pipe ya cargado por P_9)
+read_vhdl [file join $src_dir ../../P_11_elem_add/src/elem_add.vhd]
 read_vhdl [file join $src_dir dpu_stream_wrapper.vhd]
 read_vhdl [file join $src_dir dm_s2mm_ctrl.vhd]
 update_compile_order -fileset sources_1

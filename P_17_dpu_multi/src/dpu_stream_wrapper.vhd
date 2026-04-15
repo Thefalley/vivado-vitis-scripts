@@ -132,7 +132,7 @@ architecture rtl of dpu_stream_wrapper is
     ---------------------------------------------------------------------------
     -- FSM
     ---------------------------------------------------------------------------
-    type state_t is (S_IDLE, S_LOAD, S_CONV, S_DRAIN, S_STREAM_LR, S_STREAM_MP);
+    type state_t is (S_IDLE, S_LOAD, S_CONV, S_DRAIN, S_STREAM_LR, S_STREAM_MP, S_STREAM_EA);
     signal state : state_t := S_IDLE;
 
     ---------------------------------------------------------------------------
@@ -205,6 +205,27 @@ architecture rtl of dpu_stream_wrapper is
     -- el ultimo byte de la ventana.
     signal mp_fed_b3_d1 : std_logic := '0';
     signal mp_fed_b3_d2 : std_logic := '0';
+
+    ---------------------------------------------------------------------------
+    -- P_17 Fase 4: elem_add instance signals
+    -- Patron: A desde BRAM @ addr_A, B desde BRAM @ addr_B.
+    -- Ambos cargados via S_LOAD en un solo DMA: ARM concatena A+B en DDR.
+    ---------------------------------------------------------------------------
+    signal ea_a_in      : signed(7 downto 0) := (others => '0');
+    signal ea_b_in      : signed(7 downto 0) := (others => '0');
+    signal ea_valid_in  : std_logic := '0';
+    signal ea_y_out     : signed(7 downto 0);
+    signal ea_valid_out : std_logic;
+
+    -- Sub-FSM para ciclos por word: 0..5 (6 fases por 4 bytes output).
+    signal ea_phase    : unsigned(2 downto 0) := (others => '0');
+    signal ea_word_idx : unsigned(9 downto 0) := (others => '0');
+    signal a_word_reg  : std_logic_vector(31 downto 0) := (others => '0');
+    signal b_word_reg  : std_logic_vector(31 downto 0) := (others => '0');
+
+    -- BRAM control desde EA (lectura sequencial A, luego B)
+    signal ea_bram_en   : std_logic := '0';
+    signal ea_bram_addr : unsigned(9 downto 0) := (others => '0');
 
     ---------------------------------------------------------------------------
     -- P_17 Fase 2: SERDES 32->8->32 para modos stream
@@ -409,6 +430,33 @@ begin
         );
 
     ---------------------------------------------------------------------------
+    -- P_17 Fase 4: elem_add instance (reutiliza P_11/src/elem_add.vhd)
+    -- Params runtime desde AXI-Lite:
+    --   a_zp = reg_x_zp[7:0]          (input A zero-point)
+    --   b_zp = reg_b_zp[7:0]          (input B zero-point)
+    --   y_zp = reg_y_zp[7:0]          (output zero-point)
+    --   M0_a = reg_M0                  (multiplier A)
+    --   M0_b = reg_M0_b                (multiplier B)
+    --   n_shift = reg_n_shift[5:0]     (common shift)
+    ---------------------------------------------------------------------------
+    u_ea : entity work.elem_add
+        port map (
+            clk       => clk,
+            rst_n     => rst_n,
+            a_in      => ea_a_in,
+            b_in      => ea_b_in,
+            valid_in  => ea_valid_in,
+            a_zp      => signed(reg_x_zp(7 downto 0)),
+            b_zp      => signed(reg_b_zp(7 downto 0)),
+            y_zp      => signed(reg_y_zp(7 downto 0)),
+            M0_a      => unsigned(reg_M0),
+            M0_b      => unsigned(reg_M0_b),
+            n_shift   => unsigned(reg_n_shift(5 downto 0)),
+            y_out     => ea_y_out,
+            valid_out => ea_valid_out
+        );
+
+    ---------------------------------------------------------------------------
     -- Conv -> BRAM adapter (byte-addressed -> word-addressed, same as P_13)
     ---------------------------------------------------------------------------
     conv_byte_sel <= ddr_rd_addr(1 downto 0) when ddr_wr_en = '0'
@@ -450,7 +498,8 @@ begin
     load_bram_din  <= s_axis_tdata;
 
     -- P_17: s_axis_tready admite stream en S_LOAD (ancho word) y en los
-    -- S_STREAM_* cuando la SERDES está libre para aceptar siguiente word
+    -- S_STREAM_* cuando la SERDES está libre para aceptar siguiente word.
+    -- S_STREAM_EA NO consume stream (A y B ya en BRAM tras S_LOAD).
     s_axis_tready <= '1' when (state = S_LOAD)
                      else '1' when ((state = S_STREAM_LR or state = S_STREAM_MP)
                                     and stream_word_loaded = '0'
@@ -469,34 +518,39 @@ begin
     -- P_17: m_axis mux segun modo (conv DRAIN usa bram_dout, stream modes
     -- usan el registro de salida de la primitiva)
     m_axis_tdata  <= stream_out_reg
-                        when (state = S_STREAM_LR or state = S_STREAM_MP)
+                        when (state = S_STREAM_LR or state = S_STREAM_MP
+                              or state = S_STREAM_EA)
                         else bram_dout;
     m_axis_tvalid <= stream_out_valid
-                        when (state = S_STREAM_LR or state = S_STREAM_MP)
+                        when (state = S_STREAM_LR or state = S_STREAM_MP
+                              or state = S_STREAM_EA)
                         else drain_valid_pipe;
     m_axis_tlast  <= stream_out_last
-                        when (state = S_STREAM_LR or state = S_STREAM_MP)
+                        when (state = S_STREAM_LR or state = S_STREAM_MP
+                              or state = S_STREAM_EA)
                         else drain_last_pipe;
 
     ---------------------------------------------------------------------------
     -- BRAM port mux: who owns the port depends on FSM state
     ---------------------------------------------------------------------------
-    bram_en   <= conv_bram_en   when state = S_CONV  else
-                 load_bram_en   when state = S_LOAD  else
-                 drain_bram_en  when state = S_DRAIN else
+    bram_en   <= conv_bram_en    when state = S_CONV      else
+                 load_bram_en    when state = S_LOAD      else
+                 drain_bram_en   when state = S_DRAIN     else
+                 ea_bram_en      when state = S_STREAM_EA else
                  '0';
 
-    bram_we   <= conv_bram_we   when state = S_CONV  else
-                 load_bram_we   when state = S_LOAD  else
-                 "0000";  -- DRAIN and IDLE: read-only
+    bram_we   <= conv_bram_we    when state = S_CONV      else
+                 load_bram_we    when state = S_LOAD      else
+                 "0000";  -- DRAIN / IDLE / stream modes: read-only
 
-    bram_addr <= conv_bram_addr when state = S_CONV  else
-                 load_bram_addr when state = S_LOAD  else
-                 drain_bram_addr when state = S_DRAIN else
+    bram_addr <= conv_bram_addr  when state = S_CONV      else
+                 load_bram_addr  when state = S_LOAD      else
+                 drain_bram_addr when state = S_DRAIN     else
+                 ea_bram_addr    when state = S_STREAM_EA else
                  (others => '0');
 
-    bram_din  <= conv_bram_din  when state = S_CONV  else
-                 load_bram_din  when state = S_LOAD  else
+    bram_din  <= conv_bram_din   when state = S_CONV      else
+                 load_bram_din   when state = S_LOAD      else
                  (others => '0');
 
     ---------------------------------------------------------------------------
@@ -548,6 +602,16 @@ begin
                 mp_x_in             <= (others => '0');
                 mp_fed_b3_d1        <= '0';
                 mp_fed_b3_d2        <= '0';
+                -- P_17 Fase 4: elem_add resets
+                ea_valid_in         <= '0';
+                ea_a_in             <= (others => '0');
+                ea_b_in             <= (others => '0');
+                ea_phase            <= "000";
+                ea_word_idx         <= (others => '0');
+                ea_bram_en          <= '0';
+                ea_bram_addr        <= (others => '0');
+                a_word_reg          <= (others => '0');
+                b_word_reg          <= (others => '0');
                 stream_word_loaded  <= '0';
                 stream_byte_sel     <= "00";
                 stream_in_last      <= '0';
@@ -568,6 +632,9 @@ begin
                 -- Capture delay pipeline
                 mp_fed_b3_d1 <= '0';
                 mp_fed_b3_d2 <= mp_fed_b3_d1;
+                -- P_17 Fase 4: ea_valid_in tambien pulso, ea_bram_en solo en fases 0,1
+                ea_valid_in <= '0';
+                ea_bram_en  <= '0';
 
                 case state is
                     when S_IDLE =>
@@ -597,6 +664,12 @@ begin
                                 when x"2" =>
                                     -- LEAKY_RELU: modo stream bypass BRAM
                                     state <= S_STREAM_LR;
+                                when x"3" =>
+                                    -- ELEM_ADD: A+B en BRAM (cargados por S_LOAD
+                                    -- previo), EA lee ambos + feeds + DM output
+                                    state       <= S_STREAM_EA;
+                                    ea_phase    <= "000";
+                                    ea_word_idx <= (others => '0');
                                 when others =>
                                     -- CONV (default, layer_type = 0)
                                     state    <= S_CONV;
@@ -873,6 +946,126 @@ begin
                         end if;
 
                         -- Handshake m_axis identico al LR
+                        if stream_out_valid = '1' and m_axis_tready = '1' then
+                            stream_out_valid <= '0';
+                            stream_out_count <= stream_out_count + 1;
+
+                            if stream_out_last = '1' then
+                                stream_out_last <= '0';
+                                done_latch      <= '1';
+                                state           <= S_IDLE;
+                            end if;
+                        end if;
+
+                    ---------------------------------------------------------
+                    -- S_STREAM_EA: ELEM_ADD con A y B en BRAM
+                    --   A cargado @ reg_addr_input, B @ reg_addr_weights.
+                    --   reg_n_words = TOTAL LOAD words = 2*N; N output words.
+                    --   Sub-FSM 6 fases por ciclo de 4 bytes output:
+                    --     0: issue read A[word_idx]
+                    --     1: capture A, issue read B[word_idx]
+                    --     2: capture B, feed byte 0 (a_reg, bram_dout)
+                    --     3: feed byte 1 (a_reg, b_reg)
+                    --     4: feed byte 2
+                    --     5: feed byte 3, advance word_idx
+                    ---------------------------------------------------------
+                    when S_STREAM_EA =>
+                        -- BRAM read latency = 1 ciclo: el dato leido por
+                        -- bram_en='1' en ciclo K aparece en bram_dout en K+1.
+                        -- Por eso necesitamos 7 fases (2 setup + 1 capture + 4 feed).
+                        case to_integer(ea_phase) is
+                            when 0 =>
+                                if stream_in_last = '1' then
+                                    ea_bram_en <= '0';
+                                else
+                                    -- Issue A read (llega en phase 2)
+                                    ea_bram_en   <= '1';
+                                    ea_bram_addr <= unsigned(reg_addr_input(11 downto 2))
+                                                    + ea_word_idx;
+                                    ea_phase     <= "001";
+                                end if;
+
+                            when 1 =>
+                                -- Issue B read (llega en phase 3). Nota: BRAM
+                                -- sigue cargando A este ciclo, bram_dout aun stale.
+                                ea_bram_en   <= '1';
+                                ea_bram_addr <= unsigned(reg_addr_weights(11 downto 2))
+                                                + ea_word_idx;
+                                ea_phase     <= "010";
+
+                            when 2 =>
+                                -- bram_dout = A word (llegada de phase 1). Capturar.
+                                a_word_reg <= bram_dout;
+                                ea_bram_en <= '0';
+                                ea_phase   <= "011";
+
+                            when 3 =>
+                                -- bram_dout = B word. Capturar, feed byte 0 (a0,b0)
+                                b_word_reg  <= bram_dout;
+                                ea_a_in     <= signed(a_word_reg( 7 downto  0));
+                                ea_b_in     <= signed(bram_dout( 7 downto  0));
+                                ea_valid_in <= '1';
+                                ea_phase    <= "100";
+
+                            when 4 =>
+                                ea_a_in     <= signed(a_word_reg(15 downto  8));
+                                ea_b_in     <= signed(b_word_reg(15 downto  8));
+                                ea_valid_in <= '1';
+                                ea_phase    <= "101";
+
+                            when 5 =>
+                                ea_a_in     <= signed(a_word_reg(23 downto 16));
+                                ea_b_in     <= signed(b_word_reg(23 downto 16));
+                                ea_valid_in <= '1';
+                                ea_phase    <= "110";
+
+                            when 6 =>
+                                ea_a_in     <= signed(a_word_reg(31 downto 24));
+                                ea_b_in     <= signed(b_word_reg(31 downto 24));
+                                ea_valid_in <= '1';
+                                if ea_word_idx = resize(shift_right(reg_n_words, 1), 10) - 1 then
+                                    stream_in_last <= '1';
+                                    ea_phase       <= "000";
+                                else
+                                    ea_word_idx <= ea_word_idx + 1;
+                                    ea_phase    <= "000";
+                                end if;
+
+                            when others =>
+                                ea_phase <= "000";
+                        end case;
+
+                        -------------------------
+                        -- OUTPUT SIDE (SERDES)
+                        -- elem_add.vhd pipeline 8 ciclos. valid_out pulso alto
+                        -- por cada valid_in (offset 8). Acumulamos 4 bytes,
+                        -- emitimos word.
+                        -------------------------
+                        if ea_valid_out = '1' then
+                            case stream_out_cnt is
+                                when "00" =>
+                                    stream_out_reg( 7 downto  0) <= std_logic_vector(ea_y_out);
+                                when "01" =>
+                                    stream_out_reg(15 downto  8) <= std_logic_vector(ea_y_out);
+                                when "10" =>
+                                    stream_out_reg(23 downto 16) <= std_logic_vector(ea_y_out);
+                                when others =>
+                                    stream_out_reg(31 downto 24) <= std_logic_vector(ea_y_out);
+                            end case;
+
+                            if stream_out_cnt = "11" then
+                                stream_out_valid <= '1';
+                                stream_out_cnt   <= "00";
+                                -- Ultimo output word cuando count = N-1
+                                if reg_n_words /= 0 and
+                                   stream_out_count = resize(shift_right(reg_n_words, 1), 12) - 1 then
+                                    stream_out_last <= '1';
+                                end if;
+                            else
+                                stream_out_cnt <= stream_out_cnt + 1;
+                            end if;
+                        end if;
+
                         if stream_out_valid = '1' and m_axis_tready = '1' then
                             stream_out_valid <= '0';
                             stream_out_count <= stream_out_count + 1;
