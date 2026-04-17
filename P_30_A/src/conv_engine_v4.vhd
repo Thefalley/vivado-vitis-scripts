@@ -346,14 +346,33 @@ begin
 
     ---------------------------------------------------------------------------
     -- Weight buffer BRAM (read-first, 1-cycle latency)
+    -- FIX P_30_A: mux se hace DENTRO del process con un solo if/elsif.
+    -- ext_wb_we y wb_we son mutuamente excluyentes (S_LOAD_WEIGHTS vs WL_CAPTURE).
+    -- Forzamos block RAM con attribute.
     ---------------------------------------------------------------------------
     p_wb_bram : process(clk)
+        variable v_addr : integer range 0 to 32767;
+        variable v_din  : std_logic_vector(7 downto 0);
+        variable v_we   : std_logic;
     begin
         if rising_edge(clk) then
+            -- Mux write port (variables → un solo driver al array)
             if ext_wb_we = '1' then
-                wb_ram(to_integer(ext_wb_addr)) <= std_logic_vector(ext_wb_data);
+                v_addr := to_integer(ext_wb_addr);
+                v_din  := std_logic_vector(ext_wb_data);
+                v_we   := '1';
             elsif wb_we = '1' then
-                wb_ram(to_integer(wb_addr)) <= wb_din;
+                v_addr := to_integer(wb_addr);
+                v_din  := wb_din;
+                v_we   := '1';
+            else
+                v_addr := 0;
+                v_din  := (others => '0');
+                v_we   := '0';
+            end if;
+
+            if v_we = '1' then
+                wb_ram(v_addr) <= v_din;
             end if;
             wb_dout <= signed(wb_ram(to_integer(wb_addr)));
         end if;
