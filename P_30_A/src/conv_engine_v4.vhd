@@ -87,6 +87,9 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use work.mac_array_pkg.all;
 
+library xpm;
+use xpm.vcomponents.all;
+
 entity conv_engine_v4 is
     generic (
         WB_SIZE : natural := 32768
@@ -303,15 +306,17 @@ architecture rtl of conv_engine_v4 is
     ---------------------------------------------------------------------------
     -- Buffers
     ---------------------------------------------------------------------------
-    type weight_mem_t is array(0 to WB_SIZE-1) of std_logic_vector(7 downto 0);
-    signal wb_ram : weight_mem_t := (others => (others => '0'));
-    attribute ram_style : string;
-    attribute ram_style of wb_ram : signal is "block";
+    -- OLD array-based RAM (replaced by xpm_memory_tdpram, see below):
+    --   type weight_mem_t is array(0 to WB_SIZE-1) of std_logic_vector(7 downto 0);
+    --   signal wb_ram : weight_mem_t := (others => (others => '0'));
+    --   attribute ram_style : string;
+    --   attribute ram_style of wb_ram : signal is "block";
 
-    signal wb_addr : unsigned(14 downto 0) := (others => '0');
-    signal wb_we   : std_logic := '0';
-    signal wb_din  : std_logic_vector(7 downto 0) := (others => '0');
-    signal wb_dout : signed(7 downto 0) := (others => '0');
+    signal wb_addr    : unsigned(14 downto 0) := (others => '0');
+    signal wb_we      : std_logic := '0';
+    signal wb_din     : std_logic_vector(7 downto 0) := (others => '0');
+    signal wb_dout    : signed(7 downto 0) := (others => '0');
+    signal wb_dout_slv: std_logic_vector(7 downto 0);
     signal bias_buf   : bias_array_t;
 
     ---------------------------------------------------------------------------
@@ -345,38 +350,87 @@ begin
     stride_val    <= to_unsigned(2, 10) when cfg_stride = '1' else to_unsigned(1, 10);
 
     ---------------------------------------------------------------------------
-    -- Weight buffer BRAM (read-first, 1-cycle latency)
-    -- FIX P_30_A: mux se hace DENTRO del process con un solo if/elsif.
-    -- ext_wb_we y wb_we son mutuamente excluyentes (S_LOAD_WEIGHTS vs WL_CAPTURE).
-    -- Forzamos block RAM con attribute.
+    -- Weight buffer BRAM — xpm_memory_tdpram (true dual-port, BRAM36 forced)
+    --
+    -- Port A = internal (conv FSM): write during WL_CAPTURE, read for wb_dout
+    -- Port B = external (wrapper FIFO): write during S_LOAD_WEIGHTS only
+    --
+    -- Replaces the old p_wb_bram process whose write-port mux prevented
+    -- Vivado from inferring Block RAM (fell to distributed → WNS -0.647 ns).
     ---------------------------------------------------------------------------
-    p_wb_bram : process(clk)
-        variable v_addr : integer range 0 to 32767;
-        variable v_din  : std_logic_vector(7 downto 0);
-        variable v_we   : std_logic;
-    begin
-        if rising_edge(clk) then
-            -- Mux write port (variables → un solo driver al array)
-            if ext_wb_we = '1' then
-                v_addr := to_integer(ext_wb_addr);
-                v_din  := std_logic_vector(ext_wb_data);
-                v_we   := '1';
-            elsif wb_we = '1' then
-                v_addr := to_integer(wb_addr);
-                v_din  := wb_din;
-                v_we   := '1';
-            else
-                v_addr := 0;
-                v_din  := (others => '0');
-                v_we   := '0';
-            end if;
+    -- OLD mux-based process (kept for reference):
+    --   p_wb_bram : process(clk)
+    --       variable v_addr : integer range 0 to 32767;
+    --       variable v_din  : std_logic_vector(7 downto 0);
+    --       variable v_we   : std_logic;
+    --   begin
+    --       if rising_edge(clk) then
+    --           if ext_wb_we = '1' then
+    --               v_addr := to_integer(ext_wb_addr);
+    --               v_din  := std_logic_vector(ext_wb_data);
+    --               v_we   := '1';
+    --           elsif wb_we = '1' then
+    --               v_addr := to_integer(wb_addr);
+    --               v_din  := wb_din;
+    --               v_we   := '1';
+    --           else
+    --               v_addr := 0;
+    --               v_din  := (others => '0');
+    --               v_we   := '0';
+    --           end if;
+    --           if v_we = '1' then
+    --               wb_ram(v_addr) <= v_din;
+    --           end if;
+    --           wb_dout <= signed(wb_ram(to_integer(wb_addr)));
+    --       end if;
+    --   end process;
 
-            if v_we = '1' then
-                wb_ram(v_addr) <= v_din;
-            end if;
-            wb_dout <= signed(wb_ram(to_integer(wb_addr)));
-        end if;
-    end process;
+    xpm_wb_ram : xpm_memory_tdpram
+        generic map (
+            ADDR_WIDTH_A            => 15,
+            ADDR_WIDTH_B            => 15,
+            WRITE_DATA_WIDTH_A      => 8,
+            READ_DATA_WIDTH_A       => 8,
+            WRITE_DATA_WIDTH_B      => 8,
+            READ_DATA_WIDTH_B       => 8,
+            MEMORY_SIZE             => 32768 * 8,   -- bits
+            BYTE_WRITE_WIDTH_A      => 8,
+            BYTE_WRITE_WIDTH_B      => 8,
+            CLOCKING_MODE           => "common_clock",
+            MEMORY_PRIMITIVE        => "block",     -- force BRAM36
+            READ_LATENCY_A          => 1,
+            READ_LATENCY_B          => 1,
+            WRITE_MODE_A            => "read_first",
+            WRITE_MODE_B            => "read_first"
+        )
+        port map (
+            -- Port A: internal (conv FSM)
+            clka              => clk,
+            ena               => '1',
+            wea(0)            => wb_we,
+            addra             => std_logic_vector(wb_addr),
+            dina              => wb_din,
+            douta             => wb_dout_slv,
+            -- Port B: external (FIFO weight load)
+            clkb              => clk,
+            enb               => '1',
+            web(0)            => ext_wb_we,
+            addrb             => std_logic_vector(ext_wb_addr),
+            dinb              => std_logic_vector(ext_wb_data),
+            doutb             => open,              -- not read from port B
+            -- Unused
+            rsta              => '0',
+            rstb              => '0',
+            regcea            => '1',
+            regceb            => '1',
+            sleep             => '0',
+            injectdbiterra    => '0',
+            injectdbiterrb    => '0',
+            injectsbiterra    => '0',
+            injectsbiterrb    => '0'
+        );
+
+    wb_dout <= signed(wb_dout_slv);
 
     ---------------------------------------------------------------------------
     -- Instancias reusadas de v1 (NO se tocan)

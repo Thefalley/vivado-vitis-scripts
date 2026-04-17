@@ -1,106 +1,26 @@
-===== P_30_A sim layer 2 =====
-Fri, Apr 17, 2026  9:57:06 PM
-
-==========================================
-  SERVIDOR REMOTO (desktop-16qck7n)
-==========================================
-  Conectar:  ssh -i ~/.ssh/pc-casa jce03@100.73.144.105
-
-  Claude en remoto:
-  claude --dangerously-skip-permissions
-==========================================
-
-INFO: [VRFC 10-163] Analyzing VHDL file "C:/project/vivado/P_30_A/src/mul_s32x32_pipe.vhd" into library work
-INFO: [VRFC 10-3107] analyzing entity 'mul_s32x32_pipe'
-INFO: [VRFC 10-163] Analyzing VHDL file "C:/project/vivado/P_30_A/src/requantize.vhd" into library work
-INFO: [VRFC 10-3107] analyzing entity 'requantize'
-INFO: [VRFC 10-163] Analyzing VHDL file "C:/project/vivado/P_30_A/src/mac_unit.vhd" into library work
-INFO: [VRFC 10-3107] analyzing entity 'mac_unit'
-INFO: [VRFC 10-163] Analyzing VHDL file "C:/project/vivado/P_30_A/src/mac_array.vhd" into library work
-INFO: [VRFC 10-3107] analyzing entity 'mac_array'
-INFO: [VRFC 10-163] Analyzing VHDL file "C:/project/vivado/P_30_A/src/conv_engine_v4.vhd" into library work
-INFO: [VRFC 10-3107] analyzing entity 'conv_engine_v4'
-INFO: [VRFC 10-163] Analyzing VHDL file "C:/project/vivado/P_30_A/src/fifo_weights.vhd" into library work
-INFO: [VRFC 10-3107] analyzing entity 'fifo_weights'
-INFO: [VRFC 10-163] Analyzing VHDL file "C:/project/vivado/P_30_A/sim/conv_v4_layer2_tb.vhd" into library work
-INFO: [VRFC 10-3107] analyzing entity 'conv_v4_layer2_tb'
-WARNING: [VRFC 10-2115] shared variables must be of a protected type [C:/project/vivado/P_30_A/sim/conv_v4_layer2_tb.vhd:47]
-
-==========================================
-  SERVIDOR REMOTO (desktop-16qck7n)
-==========================================
-  Conectar:  ssh -i ~/.ssh/pc-casa jce03@100.73.144.105
-
-  Claude en remoto:
-  claude --dangerously-skip-permissions
-==========================================
-
-Vivado Simulator v2025.2
-Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
-Copyright 2022-2025 Advanced Micro Devices, Inc. All Rights Reserved.
-Running: C:/AMDDesignTools/2025.2/Vivado/bin/unwrapped/win64.o/xelab.exe -debug typical -top conv_v4_layer2_tb -snapshot layer2_snap 
-Multi-threading is on. Using 6 slave threads.
-Starting static elaboration
-Completed static elaboration
-Starting simulation data flow analysis
-Completed simulation data flow analysis
-Time Resolution for simulation is 1ps
-Compiling package std.standard
-Compiling package std.textio
-Compiling package ieee.std_logic_1164
-Compiling package ieee.numeric_std
-Compiling package ieee.std_logic_textio
-Compiling package work.mac_array_pkg
-Compiling package xpm.vcomponents
-Compiling package vl.vl_types
-Compiling module xpm.xpm_memory_base(MEMORY_SIZE=2621...
-Compiling module xpm.xpm_memory_tdpram(MEMORY_SIZE=26...
-Compiling architecture rtl of entity work.mac_unit [mac_unit_default]
-Compiling architecture rtl of entity work.mac_array [mac_array_default]
-Compiling architecture rtl of entity work.mul_s32x32_pipe [mul_s32x32_pipe_default]
-Compiling architecture rtl of entity work.requantize [requantize_default]
-Compiling architecture rtl of entity work.conv_engine_v4 [conv_engine_v4_default]
-Compiling architecture sim of entity work.conv_v4_layer2_tb
-
-==========================================
-  SERVIDOR REMOTO (desktop-16qck7n)
-==========================================
-  Conectar:  ssh -i ~/.ssh/pc-casa jce03@100.73.144.105
-
-  Claude en remoto:
-  claude --dangerously-skip-permissions
-==========================================
-
-
-==========================================
-  SERVIDOR REMOTO (desktop-16qck7n)
-==========================================
-  Conectar:  ssh -i ~/.ssh/pc-casa jce03@100.73.144.105
-
-  Claude en remoto:
-  claude --dangerously-skip-permissions
-==========================================
-
-Built simulation snapshot layer2_snap
-
-==========================================
-  SERVIDOR REMOTO (desktop-16qck7n)
-==========================================
-  Conectar:  ssh -i ~/.ssh/pc-casa jce03@100.73.144.105
-
-  Claude en remoto:
-  claude --dangerously-skip-permissions
-==========================================
-
-
-****** xsim v2025.2 (64-bit)
-  **** SW Build 6299465 on Fri Nov 14 19:35:11 GMT 2025
-  **** IP Build 6300035 on Fri Nov 14 10:48:45 MST 2025
-  **** SharedData Build 6298862 on Thu Nov 13 04:50:51 MST 2025
-  **** Start of session at: Fri Apr 17 21:57:13 2026
-    ** Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
-    ** Copyright 2022-2025 Advanced Micro Devices, Inc. All Rights Reserved.
-
+#-----------------------------------------------------------
+# xsim v2025.2 (64-bit)
+# SW Build 6299465 on Fri Nov 14 19:35:11 GMT 2025
+# IP Build 6300035 on Fri Nov 14 10:48:45 MST 2025
+# SharedData Build 6298862 on Thu Nov 13 04:50:51 MST 2025
+# Start of session at: Fri Apr 17 21:57:13 2026
+# Process ID         : 25252
+# Current directory  : C:/project/vivado/P_30_A/sim
+# Command line       : xsim.exe -mode tcl -source {xsim.dir/layer2_snap/xsim_script.tcl}
+# Log file           : C:/project/vivado/P_30_A/sim/xsim.log
+# Journal file       : C:/project/vivado/P_30_A/sim\xsim.jou
+# Running On         : DESKTOP-6J3HG3R
+# Platform           : Windows Server 2016 or Windows 10
+# Operating System   : 19045
+# Processor Detail   : Intel(R) Core(TM) i5-10300H CPU @ 2.50GHz
+# CPU Frequency      : 2496 MHz
+# CPU Physical cores : 4
+# CPU Logical cores  : 8
+# Host memory        : 16940 MB
+# Swap memory        : 27058 MB
+# Total Virtual      : 43998 MB
+# Available Virtual  : 12864 MB
+#-----------------------------------------------------------
 source xsim.dir/layer2_snap/xsim_script.tcl
 # xsim {layer2_snap} -autoloadwcfg -tclbatch {run_layer2.tcl}
 Time resolution is 1 ps
@@ -819,5 +739,3 @@ run: Time (s): cpu = 00:00:01 ; elapsed = 00:00:49 . Memory (MB): peak = 226.195
 ## quit
 INFO: xsimkernel Simulation Memory Usage: 9376 KB (Peak: 9376 KB), Simulation CPU Usage: 47108 ms
 INFO: [Common 17-206] Exiting xsim at Fri Apr 17 21:58:04 2026...
-===== DONE =====
-Fri, Apr 17, 2026  9:58:04 PM

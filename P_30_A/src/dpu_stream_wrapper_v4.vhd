@@ -30,7 +30,7 @@
 --   CONV  : conv_engine_v3 owns the BRAM (random R/W via DDR interface)
 --   DRAIN : reading BRAM sequentially, emitting AXI-Stream master beats
 --
--- BRAM: 1024 x 32-bit words with per-byte write-enables (P_100 pattern).
+-- BRAM: 2048 x 32-bit words with per-byte write-enables (P_100 pattern).
 --       Single-port, time-division-muxed between conv, stream, and regs.
 --
 -- Register map (32-bit, offset from base):
@@ -145,7 +145,7 @@ architecture rtl of dpu_stream_wrapper is
     ---------------------------------------------------------------------------
     -- Config registers
     ---------------------------------------------------------------------------
-    signal reg_n_words     : unsigned(9 downto 0)  := (others => '0');
+    signal reg_n_words     : unsigned(10 downto 0) := (others => '0');
     signal reg_c_in        : std_logic_vector(31 downto 0) := (others => '0');
     signal reg_c_out       : std_logic_vector(31 downto 0) := (others => '0');
     signal reg_h_in        : std_logic_vector(31 downto 0) := (others => '0');
@@ -241,13 +241,13 @@ architecture rtl of dpu_stream_wrapper is
 
     -- Sub-FSM para ciclos por word: 0..5 (6 fases por 4 bytes output).
     signal ea_phase    : unsigned(2 downto 0) := (others => '0');
-    signal ea_word_idx : unsigned(9 downto 0) := (others => '0');
+    signal ea_word_idx : unsigned(10 downto 0) := (others => '0');
     signal a_word_reg  : std_logic_vector(31 downto 0) := (others => '0');
     signal b_word_reg  : std_logic_vector(31 downto 0) := (others => '0');
 
     -- BRAM control desde EA (lectura sequencial A, luego B)
     signal ea_bram_en   : std_logic := '0';
-    signal ea_bram_addr : unsigned(9 downto 0) := (others => '0');
+    signal ea_bram_addr : unsigned(10 downto 0) := (others => '0');
 
     ---------------------------------------------------------------------------
     -- P_17 Fase 2: SERDES 32->8->32 para modos stream
@@ -281,7 +281,7 @@ architecture rtl of dpu_stream_wrapper is
     -- Single-port signals (time-division muxed by FSM state)
     signal bram_en    : std_logic;
     signal bram_we    : std_logic_vector(3 downto 0);
-    signal bram_addr  : unsigned(9 downto 0);
+    signal bram_addr  : unsigned(10 downto 0);
     signal bram_din   : std_logic_vector(31 downto 0);
     signal bram_dout  : std_logic_vector(31 downto 0) := (others => '0');
 
@@ -292,23 +292,23 @@ architecture rtl of dpu_stream_wrapper is
     -- Conv -> BRAM
     signal conv_bram_en   : std_logic;
     signal conv_bram_we   : std_logic_vector(3 downto 0);
-    signal conv_bram_addr : unsigned(9 downto 0);
+    signal conv_bram_addr : unsigned(10 downto 0);
     signal conv_bram_din  : std_logic_vector(31 downto 0);
 
     -- Stream LOAD -> BRAM
     signal load_bram_en   : std_logic;
     signal load_bram_we   : std_logic_vector(3 downto 0);
-    signal load_bram_addr : unsigned(9 downto 0);
+    signal load_bram_addr : unsigned(10 downto 0);
     signal load_bram_din  : std_logic_vector(31 downto 0);
 
     -- Stream DRAIN <- BRAM
     signal drain_bram_en   : std_logic;
-    signal drain_bram_addr : unsigned(9 downto 0);
+    signal drain_bram_addr : unsigned(10 downto 0);
 
     -- Load/Drain counters
-    signal load_addr   : unsigned(9 downto 0) := (others => '0');
-    signal drain_addr  : unsigned(9 downto 0) := (others => '0');
-    signal drain_count : unsigned(9 downto 0) := (others => '0');
+    signal load_addr   : unsigned(10 downto 0) := (others => '0');
+    signal drain_addr  : unsigned(10 downto 0) := (others => '0');
+    signal drain_count : unsigned(10 downto 0) := (others => '0');
 
     -- Drain pipeline: BRAM has 1-cycle read latency
     signal drain_valid_pipe : std_logic := '0';
@@ -494,8 +494,8 @@ begin
                      else ddr_wr_addr(1 downto 0);
 
     conv_bram_en   <= ddr_rd_en or ddr_wr_en;
-    conv_bram_addr <= ddr_wr_addr(11 downto 2) when ddr_wr_en = '1'
-                      else ddr_rd_addr(11 downto 2);
+    conv_bram_addr <= ddr_wr_addr(12 downto 2) when ddr_wr_en = '1'
+                      else ddr_rd_addr(12 downto 2);
     conv_bram_din  <= ddr_wr_data & ddr_wr_data & ddr_wr_data & ddr_wr_data;
 
     conv_bram_we <= "0001" when (ddr_wr_en = '1' and ddr_wr_addr(1 downto 0) = "00") else
@@ -1016,7 +1016,7 @@ begin
                                 else
                                     -- Issue A read (llega en phase 2)
                                     ea_bram_en   <= '1';
-                                    ea_bram_addr <= unsigned(reg_addr_input(11 downto 2))
+                                    ea_bram_addr <= unsigned(reg_addr_input(12 downto 2))
                                                     + ea_word_idx;
                                     ea_phase     <= "001";
                                 end if;
@@ -1025,7 +1025,7 @@ begin
                                 -- Issue B read (llega en phase 3). Nota: BRAM
                                 -- sigue cargando A este ciclo, bram_dout aun stale.
                                 ea_bram_en   <= '1';
-                                ea_bram_addr <= unsigned(reg_addr_weights(11 downto 2))
+                                ea_bram_addr <= unsigned(reg_addr_weights(12 downto 2))
                                                 + ea_word_idx;
                                 ea_phase     <= "010";
 
@@ -1059,7 +1059,7 @@ begin
                                 ea_a_in     <= signed(a_word_reg(31 downto 24));
                                 ea_b_in     <= signed(b_word_reg(31 downto 24));
                                 ea_valid_in <= '1';
-                                if ea_word_idx = resize(shift_right(reg_n_words, 1), 10) - 1 then
+                                if ea_word_idx = resize(shift_right(reg_n_words, 1), 11) - 1 then
                                     stream_in_last <= '1';
                                     ea_phase       <= "000";
                                 else
@@ -1175,7 +1175,7 @@ begin
                             cmd_start <= s_axi_wdata(1);
                             cmd_drain <= s_axi_wdata(2);
                             cmd_load_weights <= s_axi_wdata(3);  -- P_30_A: bit 3
-                        when 16#04# => reg_n_words      <= unsigned(s_axi_wdata(9 downto 0));
+                        when 16#04# => reg_n_words      <= unsigned(s_axi_wdata(10 downto 0));
                         when 16#08# => reg_c_in          <= s_axi_wdata;
                         when 16#0C# => reg_c_out         <= s_axi_wdata;
                         when 16#10# => reg_h_in          <= s_axi_wdata;
@@ -1245,7 +1245,7 @@ begin
                                     reg_rd_data(11 downto 10) <= fsm_code;
                                 when 16#04# =>
                                     reg_rd_data <= (others => '0');
-                                    reg_rd_data(9 downto 0) <= std_logic_vector(reg_n_words);
+                                    reg_rd_data(10 downto 0) <= std_logic_vector(reg_n_words);
                                 when 16#08# => reg_rd_data <= reg_c_in;
                                 when 16#0C# => reg_rd_data <= reg_c_out;
                                 when 16#10# => reg_rd_data <= reg_h_in;
