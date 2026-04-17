@@ -75,6 +75,7 @@ set_property -dict [list \
     CONFIG.PCW_FPGA0_PERIPHERAL_FREQMHZ {100} \
     CONFIG.PCW_USE_M_AXI_GP0 {1} \
     CONFIG.PCW_USE_S_AXI_HP0 {1} \
+    CONFIG.PCW_USE_S_AXI_HP1 {1} \
     CONFIG.PCW_USE_FABRIC_INTERRUPT {1} \
     CONFIG.PCW_IRQ_F2P_INTR {1} \
     CONFIG.PCW_ENET0_PERIPHERAL_ENABLE {1} \
@@ -126,9 +127,26 @@ set_property -dict [list \
 set ctrl [create_bd_cell -type module -reference dm_s2mm_ctrl dm_s2mm_ctrl_0]
 
 # ==============================================================
-# 5. dpu_stream_wrapper (module reference - conv_engine_v3 inside)
+# 5. dpu_stream_wrapper_v4 (P_30_A: conv_engine_v4 + BRAM 8KB + w_stream port)
 # ==============================================================
 create_bd_cell -type module -reference dpu_stream_wrapper dpu_stream_wrapper_0
+
+# ==============================================================
+# 5b. P_30_A: Weight DMA (MM2S only, for streaming weights to wb_ram)
+# ==============================================================
+set dma_w [create_bd_cell -type ip -vlnv xilinx.com:ip:axi_dma:7.1 axi_dma_w]
+set_property -dict [list \
+    CONFIG.c_include_sg {0} \
+    CONFIG.c_sg_include_stscntrl_strm {0} \
+    CONFIG.c_include_mm2s {1} \
+    CONFIG.c_include_s2mm {0} \
+    CONFIG.c_mm2s_burst_size {256} \
+] $dma_w
+
+# ==============================================================
+# 5c. P_30_A: Weight FIFO (AXI-Stream 32b in, byte out)
+# ==============================================================
+create_bd_cell -type module -reference fifo_weights fifo_weights_0
 
 # ==============================================================
 # 6. AXI GPIO - Address register (32-bit output for dest_addr)
@@ -160,15 +178,19 @@ set_property -dict [list \
 set rst [create_bd_cell -type ip -vlnv xilinx.com:ip:proc_sys_reset:5.0 proc_sys_reset_0]
 
 set concat [create_bd_cell -type ip -vlnv xilinx.com:ip:xlconcat:2.1 xlconcat_0]
-set_property CONFIG.NUM_PORTS {3} $concat
+set_property CONFIG.NUM_PORTS {4} $concat
 
-# GP0 interconnect: PS -> {DMA ctrl, conv_wrapper ctrl, GPIO_addr, GPIO_ctrl}
+# GP0 interconnect: PS -> {DMA ctrl, wrapper ctrl, GPIO_addr, GPIO_ctrl, DMA_W ctrl}
 set ic_gp0 [create_bd_cell -type ip -vlnv xilinx.com:ip:axi_interconnect:2.1 axi_ic_gp0]
-set_property -dict [list CONFIG.NUM_MI {4} CONFIG.NUM_SI {1}] $ic_gp0
+set_property -dict [list CONFIG.NUM_MI {5} CONFIG.NUM_SI {1}] $ic_gp0
 
 # HP0 interconnect: {DMA MM2S, DataMover S2MM} -> PS DDR
 set ic_hp0 [create_bd_cell -type ip -vlnv xilinx.com:ip:axi_interconnect:2.1 axi_ic_hp0]
 set_property -dict [list CONFIG.NUM_MI {1} CONFIG.NUM_SI {2}] $ic_hp0
+
+# P_30_A: HP1 interconnect: {DMA_W MM2S} -> PS DDR
+set ic_hp1 [create_bd_cell -type ip -vlnv xilinx.com:ip:axi_interconnect:2.1 axi_ic_hp1]
+set_property -dict [list CONFIG.NUM_MI {1} CONFIG.NUM_SI {1}] $ic_hp1
 
 # ==============================================================
 # CONNECTIONS
@@ -178,8 +200,12 @@ set_property -dict [list CONFIG.NUM_MI {1} CONFIG.NUM_SI {2}] $ic_hp0
 connect_bd_net [get_bd_pins ps7/FCLK_CLK0] \
     [get_bd_pins ps7/M_AXI_GP0_ACLK] \
     [get_bd_pins ps7/S_AXI_HP0_ACLK] \
+    [get_bd_pins ps7/S_AXI_HP1_ACLK] \
     [get_bd_pins axi_dma_0/s_axi_lite_aclk] \
     [get_bd_pins axi_dma_0/m_axi_mm2s_aclk] \
+    [get_bd_pins axi_dma_w/s_axi_lite_aclk] \
+    [get_bd_pins axi_dma_w/m_axi_mm2s_aclk] \
+    [get_bd_pins fifo_weights_0/clk] \
     [get_bd_pins axi_datamover_0/m_axi_s2mm_aclk] \
     [get_bd_pins axi_datamover_0/m_axis_s2mm_cmdsts_awclk] \
     [get_bd_pins dm_s2mm_ctrl_0/clk] \
@@ -196,6 +222,10 @@ connect_bd_net [get_bd_pins ps7/FCLK_CLK0] \
     [get_bd_pins axi_ic_hp0/S00_ACLK] \
     [get_bd_pins axi_ic_hp0/S01_ACLK] \
     [get_bd_pins axi_ic_hp0/M00_ACLK] \
+    [get_bd_pins axi_ic_gp0/M04_ACLK] \
+    [get_bd_pins axi_ic_hp1/ACLK] \
+    [get_bd_pins axi_ic_hp1/S00_ACLK] \
+    [get_bd_pins axi_ic_hp1/M00_ACLK] \
     [get_bd_pins proc_sys_reset_0/slowest_sync_clk]
 
 # --- Resets ---
@@ -212,10 +242,16 @@ connect_bd_net [get_bd_pins proc_sys_reset_0/interconnect_aresetn] \
     [get_bd_pins axi_ic_hp0/ARESETN] \
     [get_bd_pins axi_ic_hp0/S00_ARESETN] \
     [get_bd_pins axi_ic_hp0/S01_ARESETN] \
-    [get_bd_pins axi_ic_hp0/M00_ARESETN]
+    [get_bd_pins axi_ic_hp0/M00_ARESETN] \
+    [get_bd_pins axi_ic_gp0/M04_ARESETN] \
+    [get_bd_pins axi_ic_hp1/ARESETN] \
+    [get_bd_pins axi_ic_hp1/S00_ARESETN] \
+    [get_bd_pins axi_ic_hp1/M00_ARESETN]
 
 connect_bd_net [get_bd_pins proc_sys_reset_0/peripheral_aresetn] \
     [get_bd_pins axi_dma_0/axi_resetn] \
+    [get_bd_pins axi_dma_w/axi_resetn] \
+    [get_bd_pins fifo_weights_0/rst_n] \
     [get_bd_pins axi_datamover_0/m_axi_s2mm_aresetn] \
     [get_bd_pins axi_datamover_0/m_axis_s2mm_cmdsts_aresetn] \
     [get_bd_pins dm_s2mm_ctrl_0/resetn] \
@@ -251,9 +287,26 @@ connect_bd_intf_net [get_bd_intf_pins axi_datamover_0/M_AXI_S2MM] \
 connect_bd_intf_net [get_bd_intf_pins axi_ic_hp0/M00_AXI] \
     [get_bd_intf_pins ps7/S_AXI_HP0]
 
-# --- DMA MM2S -> dpu_stream_wrapper s_axis (LOAD data into BRAM) ---
+# --- DMA MM2S -> dpu_stream_wrapper s_axis (LOAD input+bias into BRAM) ---
 connect_bd_intf_net [get_bd_intf_pins axi_dma_0/M_AXIS_MM2S] \
     [get_bd_intf_pins dpu_stream_wrapper_0/s_axis]
+
+# --- P_30_A: DMA_W ctrl on GP0/M04 ---
+connect_bd_intf_net [get_bd_intf_pins axi_ic_gp0/M04_AXI] \
+    [get_bd_intf_pins axi_dma_w/S_AXI_LITE]
+
+# --- P_30_A: DMA_W MM2S -> HP1 -> DDR (reads weights from DDR) ---
+connect_bd_intf_net [get_bd_intf_pins axi_dma_w/M_AXI_MM2S] \
+    [get_bd_intf_pins axi_ic_hp1/S00_AXI]
+connect_bd_intf_net [get_bd_intf_pins axi_ic_hp1/M00_AXI] \
+    [get_bd_intf_pins ps7/S_AXI_HP1]
+
+# --- P_30_A: DMA_W stream -> FIFO_W -> wrapper w_stream ---
+connect_bd_intf_net [get_bd_intf_pins axi_dma_w/M_AXIS_MM2S] \
+    [get_bd_intf_pins fifo_weights_0/s_axis]
+connect_bd_net [get_bd_pins fifo_weights_0/m_data]  [get_bd_pins dpu_stream_wrapper_0/w_stream_data_i]
+connect_bd_net [get_bd_pins fifo_weights_0/m_valid] [get_bd_pins dpu_stream_wrapper_0/w_stream_valid_i]
+connect_bd_net [get_bd_pins dpu_stream_wrapper_0/w_stream_ready_o] [get_bd_pins fifo_weights_0/m_ready]
 
 # --- dpu_stream_wrapper m_axis -> DataMover S_AXIS_S2MM (DRAIN output) ---
 connect_bd_intf_net [get_bd_intf_pins dpu_stream_wrapper_0/m_axis] \
@@ -281,6 +334,7 @@ connect_bd_net [get_bd_pins dm_s2mm_ctrl_0/status_reg] [get_bd_pins gpio_ctrl/gp
 connect_bd_net [get_bd_pins axi_dma_0/mm2s_introut]      [get_bd_pins xlconcat_0/In0]
 connect_bd_net [get_bd_pins dm_s2mm_ctrl_0/done_irq]      [get_bd_pins xlconcat_0/In1]
 connect_bd_net [get_bd_pins axi_datamover_0/s2mm_err]     [get_bd_pins xlconcat_0/In2]
+connect_bd_net [get_bd_pins axi_dma_w/mm2s_introut]       [get_bd_pins xlconcat_0/In3]
 connect_bd_net [get_bd_pins xlconcat_0/dout]              [get_bd_pins ps7/IRQ_F2P]
 
 # --- DDR and FIXED_IO ---
@@ -310,12 +364,15 @@ update_compile_order -fileset sources_1
 puts "============================================================"
 puts "OK: Block Design 'dpu_eth_bd' created"
 puts "  - Zynq PS (ZedBoard, DDR 512MB, GP0 + HP0, IRQ)"
-puts "  - AXI DMA (MM2S only - load data to conv wrapper)"
-puts "  - AXI DataMover (S2MM only - write output to DDR)"
+puts "  - AXI DMA_IN (MM2S - load input+bias to BRAM)"
+puts "  - AXI DMA_W  (MM2S - load weights via FIFO to wb_ram) [P_30_A]"
+puts "  - fifo_weights (AXI-Stream 32b -> byte-level) [P_30_A]"
+puts "  - AXI DataMover (S2MM - write output to DDR)"
 puts "  - dm_s2mm_ctrl (DataMover cmd generator, GPIO-controlled)"
-puts "  - dpu_stream_wrapper (conv_engine_v3 + AXI-Stream)"
+puts "  - dpu_stream_wrapper_v4 (conv_engine_v4 + BRAM 8KB + w_stream)"
 puts "  - 2x AXI GPIO (addr + ctrl/status for dm_s2mm_ctrl)"
-puts "  - GP0: 4 slaves (DMA, wrapper, GPIO_addr, GPIO_ctrl)"
-puts "  - HP0: 2 masters (DMA MM2S, DataMover S2MM)"
-puts "  - Interrupts: DMA mm2s + dm_done + s2mm_err"
+puts "  - GP0: 5 slaves (DMA_IN, wrapper, GPIO_addr, GPIO_ctrl, DMA_W)"
+puts "  - HP0: 2 masters (DMA_IN MM2S, DataMover S2MM)"
+puts "  - HP1: 1 master (DMA_W MM2S) [P_30_A]"
+puts "  - Interrupts: DMA_IN + dm_done + s2mm_err + DMA_W"
 puts "============================================================"
