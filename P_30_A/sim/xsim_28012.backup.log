@@ -1,0 +1,191 @@
+#-----------------------------------------------------------
+# xsim v2025.2 (64-bit)
+# SW Build 6299465 on Fri Nov 14 19:35:11 GMT 2025
+# IP Build 6300035 on Fri Nov 14 10:48:45 MST 2025
+# SharedData Build 6298862 on Thu Nov 13 04:50:51 MST 2025
+# Start of session at: Fri Apr 17 18:07:42 2026
+# Process ID         : 28012
+# Current directory  : C:/project/vivado/P_30_A/sim
+# Command line       : xsim.exe -mode tcl -source {xsim.dir/v4_layer0_snap/xsim_script.tcl}
+# Log file           : C:/project/vivado/P_30_A/sim/xsim.log
+# Journal file       : C:/project/vivado/P_30_A/sim\xsim.jou
+# Running On         : DESKTOP-6J3HG3R
+# Platform           : Windows Server 2016 or Windows 10
+# Operating System   : 19045
+# Processor Detail   : Intel(R) Core(TM) i5-10300H CPU @ 2.50GHz
+# CPU Frequency      : 2496 MHz
+# CPU Physical cores : 4
+# CPU Logical cores  : 8
+# Host memory        : 16940 MB
+# Swap memory        : 23932 MB
+# Total Virtual      : 40873 MB
+# Available Virtual  : 13215 MB
+#-----------------------------------------------------------
+source xsim.dir/v4_layer0_snap/xsim_script.tcl
+# xsim {v4_layer0_snap} -autoloadwcfg -tclbatch {run_v4_l0.tcl}
+Time resolution is 1 ps
+source run_v4_l0.tcl
+## run all
+Note: Loaded 48 B from vectors_layer0/input_4x4x3_nchw.hex
+Time: 50 ns  Iteration: 0  Process: /conv_engine_v4_layer0_tb/p_stim  File: C:/project/vivado/P_30_A/sim/conv_v4_layer0_tb.vhd
+Note: Loaded 864 B from vectors_layer0/weights_ohwi.hex
+Time: 50 ns  Iteration: 0  Process: /conv_engine_v4_layer0_tb/p_stim  File: C:/project/vivado/P_30_A/sim/conv_v4_layer0_tb.vhd
+Note: Loaded 128 B from vectors_layer0/bias_int32.hex
+Time: 50 ns  Iteration: 0  Process: /conv_engine_v4_layer0_tb/p_stim  File: C:/project/vivado/P_30_A/sim/conv_v4_layer0_tb.vhd
+Note: === Starting conv_engine_v4 with layer 0 vectors ===
+Time: 120 ns  Iteration: 0  Process: /conv_engine_v4_layer0_tb/p_stim  File: C:/project/vivado/P_30_A/sim/conv_v4_layer0_tb.vhd
+Note: [mon] t= state=21 oh=0 ow=0 busy='1'
+Time: 20 us  Iteration: 0  Process: /conv_engine_v4_layer0_tb/p_mon  File: C:/project/vivado/P_30_A/sim/conv_v4_layer0_tb.vhd
+Note: [mon] t= state=25 oh=0 ow=0 busy='1'
+Time: 40 us  Iteration: 0  Process: /conv_engine_v4_layer0_tb/p_mon  File: C:/project/vivado/P_30_A/sim/conv_v4_layer0_tb.vhd
+Note: [wr 1] addr=0x0000600 data=0xE9
+Time: 48845 ns  Iteration: 0  Process: /conv_engine_v4_layer0_tb/p_wr_mon  File: C:/project/vivado/P_30_A/sim/conv_v4_layer0_tb.vhd
+Note: [wr 2] addr=0x0000610 data=0xFD
+Time: 48945 ns  Iteration: 0  Process: /conv_engine_v4_layer0_tb/p_wr_mon  File: C:/project/vivado/P_30_A/sim/conv_v4_layer0_tb.vhd
+Note: [wr 3] addr=0x0000620 data=0xED
+Time: 49045 ns  Iteration: 0  Process: /conv_engine_v4_layer0_tb/p_wr_mon  File: C:/project/vivado/P_30_A/sim/conv_v4_layer0_tb.vhd
+Note: [wr 4] addr=0x0000630 data=0xD7
+Time: 49145 ns  Iteration: 0  Process: /conv_engine_v4_layer0_tb/p_wr_mon  File: C:/project/vivado/P_30_A/sim/conv_v4_layer0_tb.vhd
+Note: [wr 5] addr=0x0000640 data=0xE9
+Time: 49245 ns  Iteration: 0  Process: /conv_engine_v4_layer0_tb/p_wr_mon  File: C:/project/vivado/P_30_A/sim/conv_v4_layer0_tb.vhd
+Note: [wr 6] addr=0x0000650 data=0x02
+Time: 49345 ns  Iteration: 0  Process: /conv_engine_v4_layer0_tb/p_wr_mon  File: C:/project/vivado/P_30_A/sim/conv_v4_layer0_tb.vhd
+Note: [wr 7] addr=0x0000660 data=0xF0
+Time: 49445 ns  Iteration: 0  Process: /conv_engine_v4_layer0_tb/p_wr_mon  File: C:/project/vivado/P_30_A/sim/conv_v4_layer0_tb.vhd
+Note: [wr 8] addr=0x0000670 data=0xC4
+Time: 49545 ns  Iteration: 0  Process: /conv_engine_v4_layer0_tb/p_wr_mon  File: C:/project/vivado/P_30_A/sim/conv_v4_layer0_tb.vhd
+Note: [wr 9] addr=0x0000680 data=0xCE
+Time: 49645 ns  Iteration: 0  Process: /conv_engine_v4_layer0_tb/p_wr_mon  File: C:/project/vivado/P_30_A/sim/conv_v4_layer0_tb.vhd
+Note: [wr 10] addr=0x0000690 data=0x02
+Time: 49745 ns  Iteration: 0  Process: /conv_engine_v4_layer0_tb/p_wr_mon  File: C:/project/vivado/P_30_A/sim/conv_v4_layer0_tb.vhd
+Note: [wr 11] addr=0x00006A0 data=0xE3
+Time: 49845 ns  Iteration: 0  Process: /conv_engine_v4_layer0_tb/p_wr_mon  File: C:/project/vivado/P_30_A/sim/conv_v4_layer0_tb.vhd
+Note: [wr 12] addr=0x00006B0 data=0xF1
+Time: 49945 ns  Iteration: 0  Process: /conv_engine_v4_layer0_tb/p_wr_mon  File: C:/project/vivado/P_30_A/sim/conv_v4_layer0_tb.vhd
+Note: [wr 13] addr=0x00006C0 data=0x0C
+Time: 50045 ns  Iteration: 0  Process: /conv_engine_v4_layer0_tb/p_wr_mon  File: C:/project/vivado/P_30_A/sim/conv_v4_layer0_tb.vhd
+Note: [wr 14] addr=0x00006D0 data=0xBB
+Time: 50145 ns  Iteration: 0  Process: /conv_engine_v4_layer0_tb/p_wr_mon  File: C:/project/vivado/P_30_A/sim/conv_v4_layer0_tb.vhd
+Note: [wr 15] addr=0x00006E0 data=0x11
+Time: 50245 ns  Iteration: 0  Process: /conv_engine_v4_layer0_tb/p_wr_mon  File: C:/project/vivado/P_30_A/sim/conv_v4_layer0_tb.vhd
+Note: [wr 16] addr=0x00006F0 data=0x02
+Time: 50345 ns  Iteration: 0  Process: /conv_engine_v4_layer0_tb/p_wr_mon  File: C:/project/vivado/P_30_A/sim/conv_v4_layer0_tb.vhd
+Note: [wr 17] addr=0x0000700 data=0xD5
+Time: 50445 ns  Iteration: 0  Process: /conv_engine_v4_layer0_tb/p_wr_mon  File: C:/project/vivado/P_30_A/sim/conv_v4_layer0_tb.vhd
+Note: [wr 18] addr=0x0000710 data=0xDD
+Time: 50545 ns  Iteration: 0  Process: /conv_engine_v4_layer0_tb/p_wr_mon  File: C:/project/vivado/P_30_A/sim/conv_v4_layer0_tb.vhd
+Note: [wr 19] addr=0x0000720 data=0xE2
+Time: 50645 ns  Iteration: 0  Process: /conv_engine_v4_layer0_tb/p_wr_mon  File: C:/project/vivado/P_30_A/sim/conv_v4_layer0_tb.vhd
+Note: [wr 20] addr=0x0000730 data=0x0D
+Time: 50745 ns  Iteration: 0  Process: /conv_engine_v4_layer0_tb/p_wr_mon  File: C:/project/vivado/P_30_A/sim/conv_v4_layer0_tb.vhd
+Note: [wr 21] addr=0x0000740 data=0xEA
+Time: 50845 ns  Iteration: 0  Process: /conv_engine_v4_layer0_tb/p_wr_mon  File: C:/project/vivado/P_30_A/sim/conv_v4_layer0_tb.vhd
+Note: [wr 22] addr=0x0000750 data=0x13
+Time: 50945 ns  Iteration: 0  Process: /conv_engine_v4_layer0_tb/p_wr_mon  File: C:/project/vivado/P_30_A/sim/conv_v4_layer0_tb.vhd
+Note: [wr 23] addr=0x0000760 data=0xBC
+Time: 51045 ns  Iteration: 0  Process: /conv_engine_v4_layer0_tb/p_wr_mon  File: C:/project/vivado/P_30_A/sim/conv_v4_layer0_tb.vhd
+Note: [wr 24] addr=0x0000770 data=0xD9
+Time: 51145 ns  Iteration: 0  Process: /conv_engine_v4_layer0_tb/p_wr_mon  File: C:/project/vivado/P_30_A/sim/conv_v4_layer0_tb.vhd
+Note: [wr 25] addr=0x0000780 data=0xF1
+Time: 51245 ns  Iteration: 0  Process: /conv_engine_v4_layer0_tb/p_wr_mon  File: C:/project/vivado/P_30_A/sim/conv_v4_layer0_tb.vhd
+Note: [wr 26] addr=0x0000790 data=0xE0
+Time: 51345 ns  Iteration: 0  Process: /conv_engine_v4_layer0_tb/p_wr_mon  File: C:/project/vivado/P_30_A/sim/conv_v4_layer0_tb.vhd
+Note: [wr 27] addr=0x00007A0 data=0xFA
+Time: 51445 ns  Iteration: 0  Process: /conv_engine_v4_layer0_tb/p_wr_mon  File: C:/project/vivado/P_30_A/sim/conv_v4_layer0_tb.vhd
+Note: [wr 28] addr=0x00007B0 data=0xEE
+Time: 51545 ns  Iteration: 0  Process: /conv_engine_v4_layer0_tb/p_wr_mon  File: C:/project/vivado/P_30_A/sim/conv_v4_layer0_tb.vhd
+Note: [wr 29] addr=0x00007C0 data=0xEE
+Time: 51645 ns  Iteration: 0  Process: /conv_engine_v4_layer0_tb/p_wr_mon  File: C:/project/vivado/P_30_A/sim/conv_v4_layer0_tb.vhd
+Note: [wr 30] addr=0x00007D0 data=0x10
+Time: 51745 ns  Iteration: 0  Process: /conv_engine_v4_layer0_tb/p_wr_mon  File: C:/project/vivado/P_30_A/sim/conv_v4_layer0_tb.vhd
+Note: [wr 31] addr=0x00007E0 data=0x1D
+Time: 51845 ns  Iteration: 0  Process: /conv_engine_v4_layer0_tb/p_wr_mon  File: C:/project/vivado/P_30_A/sim/conv_v4_layer0_tb.vhd
+Note: [wr 32] addr=0x00007F0 data=0xE3
+Time: 51945 ns  Iteration: 0  Process: /conv_engine_v4_layer0_tb/p_wr_mon  File: C:/project/vivado/P_30_A/sim/conv_v4_layer0_tb.vhd
+Note: [mon] t= state=20 oh=0 ow=1 busy='1'
+Time: 60 us  Iteration: 0  Process: /conv_engine_v4_layer0_tb/p_mon  File: C:/project/vivado/P_30_A/sim/conv_v4_layer0_tb.vhd
+Note: [mon] t= state=28 oh=0 ow=1 busy='1'
+Time: 80 us  Iteration: 0  Process: /conv_engine_v4_layer0_tb/p_mon  File: C:/project/vivado/P_30_A/sim/conv_v4_layer0_tb.vhd
+Note: [wr 33] addr=0x0000601 data=0xEB
+Time: 96715 ns  Iteration: 0  Process: /conv_engine_v4_layer0_tb/p_wr_mon  File: C:/project/vivado/P_30_A/sim/conv_v4_layer0_tb.vhd
+Note: [wr 34] addr=0x0000611 data=0xED
+Time: 96815 ns  Iteration: 0  Process: /conv_engine_v4_layer0_tb/p_wr_mon  File: C:/project/vivado/P_30_A/sim/conv_v4_layer0_tb.vhd
+Note: [wr 35] addr=0x0000621 data=0xF3
+Time: 96915 ns  Iteration: 0  Process: /conv_engine_v4_layer0_tb/p_wr_mon  File: C:/project/vivado/P_30_A/sim/conv_v4_layer0_tb.vhd
+Note: [mon] t= state=22 oh=0 ow=2 busy='1'
+Time: 100 us  Iteration: 0  Process: /conv_engine_v4_layer0_tb/p_mon  File: C:/project/vivado/P_30_A/sim/conv_v4_layer0_tb.vhd
+Note: [mon] t= state=21 oh=0 ow=2 busy='1'
+Time: 120 us  Iteration: 0  Process: /conv_engine_v4_layer0_tb/p_mon  File: C:/project/vivado/P_30_A/sim/conv_v4_layer0_tb.vhd
+Note: [mon] t= state=25 oh=0 ow=2 busy='1'
+Time: 140 us  Iteration: 0  Process: /conv_engine_v4_layer0_tb/p_mon  File: C:/project/vivado/P_30_A/sim/conv_v4_layer0_tb.vhd
+Note: [mon] t= state=20 oh=0 ow=3 busy='1'
+Time: 160 us  Iteration: 0  Process: /conv_engine_v4_layer0_tb/p_mon  File: C:/project/vivado/P_30_A/sim/conv_v4_layer0_tb.vhd
+Note: [mon] t= state=25 oh=0 ow=3 busy='1'
+Time: 180 us  Iteration: 0  Process: /conv_engine_v4_layer0_tb/p_mon  File: C:/project/vivado/P_30_A/sim/conv_v4_layer0_tb.vhd
+Note: [mon] t= state=21 oh=1 ow=0 busy='1'
+Time: 200 us  Iteration: 0  Process: /conv_engine_v4_layer0_tb/p_mon  File: C:/project/vivado/P_30_A/sim/conv_v4_layer0_tb.vhd
+Note: [mon] t= state=20 oh=1 ow=0 busy='1'
+Time: 220 us  Iteration: 0  Process: /conv_engine_v4_layer0_tb/p_mon  File: C:/project/vivado/P_30_A/sim/conv_v4_layer0_tb.vhd
+Note: [mon] t= state=24 oh=1 ow=0 busy='1'
+Time: 240 us  Iteration: 0  Process: /conv_engine_v4_layer0_tb/p_mon  File: C:/project/vivado/P_30_A/sim/conv_v4_layer0_tb.vhd
+Note: [mon] t= state=22 oh=1 ow=1 busy='1'
+Time: 260 us  Iteration: 0  Process: /conv_engine_v4_layer0_tb/p_mon  File: C:/project/vivado/P_30_A/sim/conv_v4_layer0_tb.vhd
+Note: [mon] t= state=24 oh=1 ow=1 busy='1'
+Time: 280 us  Iteration: 0  Process: /conv_engine_v4_layer0_tb/p_mon  File: C:/project/vivado/P_30_A/sim/conv_v4_layer0_tb.vhd
+Note: [mon] t= state=21 oh=1 ow=2 busy='1'
+Time: 300 us  Iteration: 0  Process: /conv_engine_v4_layer0_tb/p_mon  File: C:/project/vivado/P_30_A/sim/conv_v4_layer0_tb.vhd
+Note: [mon] t= state=25 oh=1 ow=2 busy='1'
+Time: 320 us  Iteration: 0  Process: /conv_engine_v4_layer0_tb/p_mon  File: C:/project/vivado/P_30_A/sim/conv_v4_layer0_tb.vhd
+Note: [mon] t= state=20 oh=1 ow=3 busy='1'
+Time: 340 us  Iteration: 0  Process: /conv_engine_v4_layer0_tb/p_mon  File: C:/project/vivado/P_30_A/sim/conv_v4_layer0_tb.vhd
+Note: [mon] t= state=22 oh=1 ow=3 busy='1'
+Time: 360 us  Iteration: 0  Process: /conv_engine_v4_layer0_tb/p_mon  File: C:/project/vivado/P_30_A/sim/conv_v4_layer0_tb.vhd
+Note: [mon] t= state=24 oh=1 ow=3 busy='1'
+Time: 380 us  Iteration: 0  Process: /conv_engine_v4_layer0_tb/p_mon  File: C:/project/vivado/P_30_A/sim/conv_v4_layer0_tb.vhd
+Note: [mon] t= state=20 oh=2 ow=0 busy='1'
+Time: 400 us  Iteration: 0  Process: /conv_engine_v4_layer0_tb/p_mon  File: C:/project/vivado/P_30_A/sim/conv_v4_layer0_tb.vhd
+Note: [mon] t= state=25 oh=2 ow=0 busy='1'
+Time: 420 us  Iteration: 0  Process: /conv_engine_v4_layer0_tb/p_mon  File: C:/project/vivado/P_30_A/sim/conv_v4_layer0_tb.vhd
+Note: [mon] t= state=22 oh=2 ow=1 busy='1'
+Time: 440 us  Iteration: 0  Process: /conv_engine_v4_layer0_tb/p_mon  File: C:/project/vivado/P_30_A/sim/conv_v4_layer0_tb.vhd
+Note: [mon] t= state=21 oh=2 ow=1 busy='1'
+Time: 460 us  Iteration: 0  Process: /conv_engine_v4_layer0_tb/p_mon  File: C:/project/vivado/P_30_A/sim/conv_v4_layer0_tb.vhd
+Note: [mon] t= state=34 oh=2 ow=1 busy='1'
+Time: 480 us  Iteration: 0  Process: /conv_engine_v4_layer0_tb/p_mon  File: C:/project/vivado/P_30_A/sim/conv_v4_layer0_tb.vhd
+Note: [mon] t= state=20 oh=2 ow=2 busy='1'
+Time: 500 us  Iteration: 0  Process: /conv_engine_v4_layer0_tb/p_mon  File: C:/project/vivado/P_30_A/sim/conv_v4_layer0_tb.vhd
+Note: [mon] t= state=25 oh=2 ow=2 busy='1'
+Time: 520 us  Iteration: 0  Process: /conv_engine_v4_layer0_tb/p_mon  File: C:/project/vivado/P_30_A/sim/conv_v4_layer0_tb.vhd
+Note: [mon] t= state=22 oh=2 ow=3 busy='1'
+Time: 540 us  Iteration: 0  Process: /conv_engine_v4_layer0_tb/p_mon  File: C:/project/vivado/P_30_A/sim/conv_v4_layer0_tb.vhd
+Note: [mon] t= state=24 oh=2 ow=3 busy='1'
+Time: 560 us  Iteration: 0  Process: /conv_engine_v4_layer0_tb/p_mon  File: C:/project/vivado/P_30_A/sim/conv_v4_layer0_tb.vhd
+Note: [mon] t= state=20 oh=3 ow=0 busy='1'
+Time: 580 us  Iteration: 0  Process: /conv_engine_v4_layer0_tb/p_mon  File: C:/project/vivado/P_30_A/sim/conv_v4_layer0_tb.vhd
+Note: [mon] t= state=22 oh=3 ow=0 busy='1'
+Time: 600 us  Iteration: 0  Process: /conv_engine_v4_layer0_tb/p_mon  File: C:/project/vivado/P_30_A/sim/conv_v4_layer0_tb.vhd
+Note: [mon] t= state=24 oh=3 ow=0 busy='1'
+Time: 620 us  Iteration: 0  Process: /conv_engine_v4_layer0_tb/p_mon  File: C:/project/vivado/P_30_A/sim/conv_v4_layer0_tb.vhd
+Note: [mon] t= state=21 oh=3 ow=1 busy='1'
+Time: 640 us  Iteration: 0  Process: /conv_engine_v4_layer0_tb/p_mon  File: C:/project/vivado/P_30_A/sim/conv_v4_layer0_tb.vhd
+Note: [mon] t= state=29 oh=3 ow=1 busy='1'
+Time: 660 us  Iteration: 0  Process: /conv_engine_v4_layer0_tb/p_mon  File: C:/project/vivado/P_30_A/sim/conv_v4_layer0_tb.vhd
+Note: [mon] t= state=20 oh=3 ow=2 busy='1'
+Time: 680 us  Iteration: 0  Process: /conv_engine_v4_layer0_tb/p_mon  File: C:/project/vivado/P_30_A/sim/conv_v4_layer0_tb.vhd
+Note: [mon] t= state=22 oh=3 ow=2 busy='1'
+Time: 700 us  Iteration: 0  Process: /conv_engine_v4_layer0_tb/p_mon  File: C:/project/vivado/P_30_A/sim/conv_v4_layer0_tb.vhd
+Note: [mon] t= state=34 oh=3 ow=2 busy='1'
+Time: 720 us  Iteration: 0  Process: /conv_engine_v4_layer0_tb/p_mon  File: C:/project/vivado/P_30_A/sim/conv_v4_layer0_tb.vhd
+Note: [mon] t= state=21 oh=3 ow=3 busy='1'
+Time: 740 us  Iteration: 0  Process: /conv_engine_v4_layer0_tb/p_mon  File: C:/project/vivado/P_30_A/sim/conv_v4_layer0_tb.vhd
+Note: [mon] t= state=24 oh=3 ow=3 busy='1'
+Time: 760 us  Iteration: 0  Process: /conv_engine_v4_layer0_tb/p_mon  File: C:/project/vivado/P_30_A/sim/conv_v4_layer0_tb.vhd
+Note: === DONE! Comparing output ===
+Time: 770065 ns  Iteration: 0  Process: /conv_engine_v4_layer0_tb/p_stim  File: C:/project/vivado/P_30_A/sim/conv_v4_layer0_tb.vhd
+Note: === RESULT: 512/512 bytes OK, 0 mismatches ===
+Time: 770115 ns  Iteration: 0  Process: /conv_engine_v4_layer0_tb/p_stim  File: C:/project/vivado/P_30_A/sim/conv_v4_layer0_tb.vhd
+Failure: Simulation end
+Time: 770215 ns  Iteration: 0  Process: /conv_engine_v4_layer0_tb/p_stim  File: C:/project/vivado/P_30_A/sim/conv_v4_layer0_tb.vhd
+$finish called at time : 770215 ns : File "C:/project/vivado/P_30_A/sim/conv_v4_layer0_tb.vhd" Line 261
+## quit
+INFO: [Common 17-206] Exiting xsim at Fri Apr 17 18:07:47 2026...
