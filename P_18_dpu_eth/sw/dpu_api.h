@@ -58,6 +58,15 @@ int dpu_exec_conv (const layer_config_t *L,
                    uint8_t       *out_ddr,
                    dpu_prof_t    *prof);
 
+/* Como dpu_exec_conv pero con tiling H+W automatico en ARM si la layer
+ * no cabe en el BRAM del wrapper (4 KB). Delega en dpu_exec_conv si cabe. */
+int dpu_exec_conv_tiled(const layer_config_t *L,
+                        const uint8_t *in_ddr,
+                        const int8_t  *weights_ddr,
+                        const int32_t *bias_ddr,
+                        uint8_t       *out_ddr,
+                        dpu_prof_t    *prof);
+
 /* LEAKY: y = leaky_relu(x).  Single input, no weights. */
 int dpu_exec_leaky(const layer_config_t *L,
                    const uint8_t *in_ddr,

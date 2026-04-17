@@ -22,6 +22,7 @@
 
 #include "platform_eth.h"
 #include "dpu_api.h"
+#include "eth_protocol.h"
 
 /* ---- Network config ---- */
 #define BOARD_IP_1  192
@@ -53,14 +54,17 @@ int main(void)
     struct netif *netif = &server_netif;
     ip_addr_t ipaddr, netmask, gw;
 
-    Xil_DCacheFlush();
+    /* Init caches + GIC + SCU timer (lwIP tcp_fasttmr/slowtmr depends on this) */
+    init_platform();
+
+    /* Pre-compute CRC32 table BEFORE any callback que lo use.
+     * No lazy-init dentro de on_recv (eso rompió V1). */
+    p18_crc32_init();
 
     xil_printf("\r\n\r\n##############################################\r\n");
     xil_printf("  P_18 DPU+Ethernet server\r\n");
     xil_printf("##############################################\r\n");
 
-    /* Init lwIP + platform timers (heredado de P_400) */
-    platform_enable_interrupts();
     lwip_init();
 
     IP4_ADDR(&ipaddr,  BOARD_IP_1, BOARD_IP_2, BOARD_IP_3, BOARD_IP_4);
@@ -74,6 +78,9 @@ int main(void)
     }
     netif_set_default(netif);
     netif_set_up(netif);
+
+    /* Enable IRQ mask AFTER netif is up (matches P_400 sequence) */
+    platform_enable_interrupts();
 
     xil_printf("Network up: %d.%d.%d.%d mask %d.%d.%d.%d\r\n",
                BOARD_IP_1, BOARD_IP_2, BOARD_IP_3, BOARD_IP_4,

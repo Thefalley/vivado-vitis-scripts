@@ -79,6 +79,9 @@ static uint32_t gpio_ctrl_read_status(void) { return Xil_In32(GPIO_CTRL_BASE + 0
 
 /* Shared DMA instance (populated by dpu_init) */
 static XAxiDma g_dma;
+
+/* Accessor usado por dpu_exec_tiled.c (tiling H+W por ARM). */
+XAxiDma *dpu_get_dma(void) { return &g_dma; }
 static int g_dma_ready = 0;
 
 /* ========================================================================= */
@@ -210,12 +213,31 @@ int dpu_exec_conv(const layer_config_t *L,
 
     uint8_t *src = (uint8_t *)DPU_SRC_ADDR;
     memset(src, 0, TOT_BYTES);
+
+    /* Invalidate D-cache para los buffers source ANTES de leerlos: el PC
+     * los escribio via DDR y sin esto el ARM lee cache stale (ceros del
+     * boot o basura antigua). 2026-04-17 bug confirmado con dump_scratch.py
+     * Tamanios alineados a 64 para garantizar cubrir cache lines.
+     */
+    {
+        #define ALIGN_UP(x, a)   (((x) + ((a)-1)) & ~((a)-1))
+        uint32_t in_align = ALIGN_UP(in_bytes, 64);
+        uint32_t w_align  = ALIGN_UP(w_bytes, 64);
+        uint32_t b_align  = ALIGN_UP(b_bytes, 64);
+        Xil_DCacheInvalidateRange((UINTPTR)in_ddr, in_align);
+        Xil_DCacheInvalidateRange((UINTPTR)weights_ddr, w_align);
+        Xil_DCacheInvalidateRange((UINTPTR)bias_ddr, b_align);
+    }
+
     memcpy(src + IN_OFF, in_ddr, in_bytes);
 
-    /* Transpose weights OIHW -> OHWI */
+    /* Pesos YA vienen en OHWI desde el PC (extract_weights_blob.py los
+     * transpone, y los tests XSIM usan el mismo layout).
+     * Antes aqui habia un transpose_oihw_to_ohwi que doblaba el orden y
+     * rompia el bit-exact. FIX 2026-04-17: copia directa.
+     */
     int8_t *wbuf = (int8_t *)(src + W_OFF);
-    transpose_oihw_to_ohwi((const int8_t *)weights_ddr, wbuf,
-                           L->c_out, L->c_in, kh, kw);
+    memcpy(wbuf, (const void *)weights_ddr, (size_t)w_bytes);
 
     /* Bias int32 -> little-endian bytes */
     uint8_t *bbuf = src + B_OFF;
@@ -277,6 +299,11 @@ int dpu_exec_conv(const layer_config_t *L,
 /* ========================================================================= */
 /* dpu_exec_leaky                                                             */
 /* ========================================================================= */
+/* El wrapper tiene reg_n_words de 10 bits -> max 1023 words = 4092 bytes.
+ * Partimos en chunks de ese tamano (copiado de P_17 runtime verificado). */
+#define STREAM_CHUNK_WORDS_MAX 1023
+#define STREAM_CHUNK_BYTES_MAX (STREAM_CHUNK_WORDS_MAX * 4)  /* 4092 */
+
 int dpu_exec_leaky(const layer_config_t *L,
                    const uint8_t *in_ddr,
                    uint8_t       *out_ddr,
@@ -284,17 +311,24 @@ int dpu_exec_leaky(const layer_config_t *L,
 {
     if (!g_dma_ready) return DPU_ERR_PARAMS;
 
-    const int n_bytes = L->c_in * L->h_in * L->w_in;
-    if (n_bytes % 4 != 0) return DPU_ERR_PARAMS;
-    const int n_words = n_bytes / 4;
+    #ifndef ALIGN_UP
+    #define ALIGN_UP(x, a)   (((x) + ((a)-1)) & ~((a)-1))
+    #endif
 
-    if ((uintptr_t)in_ddr != DPU_SRC_ADDR) {
-        memcpy((void *)DPU_SRC_ADDR, in_ddr, n_bytes);
+    const uint32_t n_bytes_total = (uint32_t)L->c_in * L->h_in * L->w_in;
+    if (n_bytes_total % 4 != 0) return DPU_ERR_PARAMS;
+
+    /* Wait DMA idle + invalidate cache input */
+    {
+        int wait_t = 0;
+        while (XAxiDma_Busy(&g_dma, XAXIDMA_DMA_TO_DEVICE)) {
+            if (++wait_t > 5000000) return DPU_ERR_TIMEOUT;
+        }
     }
-    Xil_DCacheFlushRange((UINTPTR)DPU_SRC_ADDR, n_bytes);
+    Xil_DCacheInvalidateRange((UINTPTR)in_ddr, ALIGN_UP(n_bytes_total, 64));
 
+    /* Programar registros constantes una vez (M0, zp, etc.) */
     dpu_write(REG_LAYER_TYPE, LAYER_LEAKY_RELU);
-    dpu_write(REG_N_WORDS,    n_words);
     dpu_write(REG_X_ZP,       (uint32_t)(int32_t)L->x_zp & 0x1FF);
     dpu_write(REG_Y_ZP,       (uint32_t)(int32_t)L->y_zp & 0xFF);
     dpu_write(REG_M0,         L->M0);
@@ -302,18 +336,42 @@ int dpu_exec_leaky(const layer_config_t *L,
     dpu_write(REG_M0_NEG,     L->M0_neg);
     dpu_write(REG_N_NEG,      L->n_neg);
 
-    dm_configure((uintptr_t)out_ddr, n_bytes);
-    dpu_write(REG_CTRL, 0x02);
+    /* Chunking loop — patron copiado de P_17 runtime verificado en HW. */
+    uint32_t n_chunks = 0;
+    uint32_t off = 0;
+    while (off < n_bytes_total) {
+        uint32_t chunk = n_bytes_total - off;
+        if (chunk > STREAM_CHUNK_BYTES_MAX) chunk = STREAM_CHUNK_BYTES_MAX;
+        chunk &= ~0x3u;
+        if (chunk == 0) break;
 
-    if (XAxiDma_SimpleTransfer(&g_dma, (UINTPTR)DPU_SRC_ADDR, n_bytes,
-                               XAXIDMA_DMA_TO_DEVICE) != XST_SUCCESS)
-        return DPU_ERR_PARAMS;
+        /* Wait DMA idle from previous chunk */
+        {
+            int wait_t = 0;
+            while (XAxiDma_Busy(&g_dma, XAXIDMA_DMA_TO_DEVICE)) {
+                if (++wait_t > 10000000) return DPU_ERR_TIMEOUT;
+            }
+        }
 
-    if (wait_done_latch(20000000) != DPU_OK) return DPU_ERR_TIMEOUT;
-    if (wait_dm_done(20000000) != DPU_OK) return DPU_ERR_DM_FAULT;
+        Xil_DCacheFlushRange((UINTPTR)(in_ddr + off), chunk);
 
-    Xil_DCacheInvalidateRange((UINTPTR)out_ddr, n_bytes);
-    if (prof) { prof->n_tiles = 1; }
+        dpu_write(REG_N_WORDS, chunk / 4);
+        dm_configure((uintptr_t)(out_ddr + off), chunk);
+        dpu_write(REG_CTRL, 0x02);
+
+        if (XAxiDma_SimpleTransfer(&g_dma, (UINTPTR)(in_ddr + off), chunk,
+                                   XAXIDMA_DMA_TO_DEVICE) != XST_SUCCESS)
+            return DPU_ERR_PARAMS;
+
+        if (wait_done_latch(20000000) != DPU_OK) return DPU_ERR_TIMEOUT;
+        if (wait_dm_done(20000000)    != DPU_OK) return DPU_ERR_DM_FAULT;
+
+        off += chunk;
+        n_chunks++;
+    }
+
+    Xil_DCacheInvalidateRange((UINTPTR)out_ddr, ALIGN_UP(n_bytes_total, 64));
+    if (prof) { prof->n_tiles = n_chunks; }
     return DPU_OK;
 }
 

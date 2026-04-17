@@ -1,0 +1,43 @@
+#-----------------------------------------------------------
+# xsim v2025.2 (64-bit)
+# SW Build 6299465 on Fri Nov 14 19:35:11 GMT 2025
+# IP Build 6300035 on Fri Nov 14 10:48:45 MST 2025
+# SharedData Build 6298862 on Thu Nov 13 04:50:51 MST 2025
+# Start of session at: Fri Apr 17 00:26:20 2026
+# Process ID         : 28228
+# Current directory  : C:/project/vivado/P_18_dpu_eth/sim
+# Command line       : xsim.exe -mode tcl -source {xsim.dir/layer0_snap/xsim_script.tcl}
+# Log file           : C:/project/vivado/P_18_dpu_eth/sim/xsim.log
+# Journal file       : C:/project/vivado/P_18_dpu_eth/sim\xsim.jou
+# Running On         : DESKTOP-6J3HG3R
+# Platform           : Windows Server 2016 or Windows 10
+# Operating System   : 19045
+# Processor Detail   : Intel(R) Core(TM) i5-10300H CPU @ 2.50GHz
+# CPU Frequency      : 2496 MHz
+# CPU Physical cores : 4
+# CPU Logical cores  : 8
+# Host memory        : 16940 MB
+# Swap memory        : 23932 MB
+# Total Virtual      : 40873 MB
+# Available Virtual  : 12786 MB
+#-----------------------------------------------------------
+source xsim.dir/layer0_snap/xsim_script.tcl
+# xsim {layer0_snap} -autoloadwcfg -tclbatch {run_layer0.tcl}
+Time resolution is 1 ps
+source run_layer0.tcl
+## run all
+Error: requantize: M0 bit 31 != 0, valor no cabe en signed(32). M0 debe ser < 2^31 (max ~2^30 en nuestro modelo).
+Time: 0 ps  Iteration: 0  Process: /conv_engine_v3_layer0_tb/u_dut/u_rq/p_assert_m0  File: C:/project/vivado/P_13_conv_test/src/requantize.vhd
+Note: Loaded 48 bytes from ../host/xsim_vectors/input_4x4x3_nchw.hex
+Time: 120 ns  Iteration: 0  Process: /conv_engine_v3_layer0_tb/p_stim  File: C:/project/vivado/P_18_dpu_eth/sim/conv_engine_v3_layer0_tb.vhd
+Note: Loaded 864 bytes from ../host/xsim_vectors/weights_ohwi.hex
+Time: 120 ns  Iteration: 0  Process: /conv_engine_v3_layer0_tb/p_stim  File: C:/project/vivado/P_18_dpu_eth/sim/conv_engine_v3_layer0_tb.vhd
+Note: Loaded 128 bytes from ../host/xsim_vectors/bias_int32.hex
+Time: 120 ns  Iteration: 0  Process: /conv_engine_v3_layer0_tb/p_stim  File: C:/project/vivado/P_18_dpu_eth/sim/conv_engine_v3_layer0_tb.vhd
+Note: === Starting conv_engine_v3 with layer 0 vectors ===
+Time: 150 ns  Iteration: 0  Process: /conv_engine_v3_layer0_tb/p_stim  File: C:/project/vivado/P_18_dpu_eth/sim/conv_engine_v3_layer0_tb.vhd
+Failure: *** TIMEOUT waiting for done ***
+Time: 500160 ns  Iteration: 0  Process: /conv_engine_v3_layer0_tb/p_stim  File: C:/project/vivado/P_18_dpu_eth/sim/conv_engine_v3_layer0_tb.vhd
+$finish called at time : 500160 ns : File "C:/project/vivado/P_18_dpu_eth/sim/conv_engine_v3_layer0_tb.vhd" Line 237
+## quit
+INFO: [Common 17-206] Exiting xsim at Fri Apr 17 00:26:23 2026...

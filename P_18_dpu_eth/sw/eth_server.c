@@ -51,6 +51,9 @@ typedef struct {
     uint32_t    stream_dst;     /* siguiente direccion DDR a escribir */
     uint32_t    stream_first4;  /* primeros 4 bytes del payload = addr */
     uint8_t     stream_addr_got; /* bytes del addr capturados (0..4) */
+    /* Pending TX para RSP_DATA grandes (READ_DDR) */
+    const uint8_t *pending_ptr;
+    uint32_t       pending_len;
     /* Non-streaming path: small commands con buffer */
     uint8_t     payload[64];    /* commands pequeñitos */
 } eth_conn_t;
@@ -61,6 +64,7 @@ static eth_conn_t g_conn;
 /* ========================================================================= */
 /* Helpers TX                                                                 */
 /* ========================================================================= */
+/* Versión síncrona para headers/ACKs pequeños que siempre caben */
 static err_t eth_send_raw(struct tcp_pcb *tpcb, const void *buf, uint32_t len)
 {
     err_t err;
@@ -70,7 +74,7 @@ static err_t eth_send_raw(struct tcp_pcb *tpcb, const void *buf, uint32_t len)
         uint32_t avail = tcp_sndbuf(tpcb);
         if (avail == 0) {
             tcp_output(tpcb);
-            return ERR_MEM;  /* caller should retry */
+            return ERR_MEM;
         }
         if (snd > avail) snd = avail;
         err = tcp_write(tpcb, p, snd, TCP_WRITE_FLAG_COPY);
@@ -78,6 +82,35 @@ static err_t eth_send_raw(struct tcp_pcb *tpcb, const void *buf, uint32_t len)
         p += snd;
         len -= snd;
     }
+    return tcp_output(tpcb);
+}
+
+/* Versión async: si no cabe todo, deja pending en c->pending_* y continúa
+ * desde on_sent() cuando lwIP libere espacio. Para READ_DDR grande. */
+static err_t eth_send_raw_async(struct tcp_pcb *tpcb, eth_conn_t *c,
+                                const void *buf, uint32_t len)
+{
+    const uint8_t *p = (const uint8_t *)buf;
+    while (len > 0) {
+        uint32_t avail = tcp_sndbuf(tpcb);
+        if (avail == 0) {
+            c->pending_ptr = p;
+            c->pending_len = len;
+            return tcp_output(tpcb);
+        }
+        uint32_t snd = (len < avail) ? len : avail;
+        err_t err = tcp_write(tpcb, p, snd, TCP_WRITE_FLAG_COPY);
+        if (err == ERR_MEM) {
+            c->pending_ptr = p;
+            c->pending_len = len;
+            return tcp_output(tpcb);
+        }
+        if (err != ERR_OK) return err;
+        p += snd;
+        len -= snd;
+    }
+    c->pending_ptr = NULL;
+    c->pending_len = 0;
     return tcp_output(tpcb);
 }
 
@@ -125,25 +158,154 @@ static err_t handle_cmd_ping(struct tcp_pcb *tpcb, eth_conn_t *c)
     return eth_send_raw(tpcb, "P_18 OK\0", 8);
 }
 
+/* EXEC_LAYER (real).
+ *
+ * Payload: u16 layer_idx, u16 flags  (4 bytes total).
+ * El cliente Python ya escribió:
+ *   - layer_cfg_t en DDR @ ADDR_CFG_ARRAY+idx*72 (solo direcciones relevantes)
+ *   - pesos / input en sus direcciones asignadas
+ *
+ * El firmware es la autoridad del **tipo de capa** vía LAYERS[layer_idx]
+ * (generado al cuantizar la red). El PC solo aporta las direcciones DDR.
+ *
+ * Despacha a dpu_exec_conv/leaky/pool/add (HW DPU) o arm_concat/upsample
+ * (ARM puro), calcula CRC32 del output, responde ACK{cycles,out_crc,out_bytes}.
+ */
 static err_t handle_cmd_exec_layer(struct tcp_pcb *tpcb, eth_conn_t *c)
 {
-    /* payload: u32 layer_idx, u32 in_addr, u32 out_addr,
-                u32 w_addr, u32 b_addr, u32 in_b_addr */
-    if (c->hdr.payload_len < 24)
+    if (c->hdr.payload_len < 4)
         return eth_send_error(tpcb, c->hdr.tag, STATUS_ERR_INVALID_CMD, 0);
-    uint32_t layer_idx, in_a, out_a, w_a, b_a, in_b;
-    memcpy(&layer_idx, c->payload + 0,  4);
-    memcpy(&in_a,      c->payload + 4,  4);
-    memcpy(&out_a,     c->payload + 8,  4);
-    memcpy(&w_a,       c->payload + 12, 4);
-    memcpy(&b_a,       c->payload + 16, 4);
-    memcpy(&in_b,      c->payload + 20, 4);
 
-    /* TODO: llamar dpu_exec_* segun LAYERS[layer_idx].op_type */
-    (void)layer_idx; (void)in_a; (void)out_a; (void)w_a; (void)b_a; (void)in_b;
+    uint16_t layer_idx, flags;
+    memcpy(&layer_idx, c->payload + 0, 2);
+    memcpy(&flags,     c->payload + 2, 2);
+    (void)flags;
 
-    uint32_t cycles = 0;
-    return eth_send_ack(tpcb, c->hdr.tag, STATUS_OK, &cycles, 4);
+    if (layer_idx >= NUM_FPGA_LAYERS)
+        return eth_send_error(tpcb, c->hdr.tag,
+                              STATUS_ERR_INVALID_CMD, layer_idx);
+
+    /* 1. Leer layer_cfg_t (direcciones) del PC */
+    uint32_t cfg_addr = ADDR_CFG_ARRAY + layer_idx * LAYER_CFG_SIZE;
+    if (!eth_addr_is_safe(cfg_addr, LAYER_CFG_SIZE))
+        return eth_send_error(tpcb, c->hdr.tag,
+                              STATUS_ERR_INVALID_ADDR, cfg_addr);
+
+    Xil_DCacheInvalidateRange(cfg_addr, LAYER_CFG_SIZE);
+    layer_cfg_t cfg;
+    memcpy(&cfg, (const void *)(uintptr_t)cfg_addr, LAYER_CFG_SIZE);
+
+    /* 2. L = LAYERS[] del firmware por defecto. Pero si el cfg del PC trae
+     *    dimensiones distintas (h_in, w_in, c_in, c_out, h_out, w_out)
+     *    override — util para test de sub-tile sin tiling ARM. */
+    layer_config_t L_local = LAYERS[layer_idx];
+    if (cfg.h_in != 0 && cfg.w_in != 0 && cfg.c_in != 0 && cfg.c_out != 0) {
+        L_local.c_in   = cfg.c_in;
+        L_local.c_out  = cfg.c_out;
+        L_local.h_in   = cfg.h_in;
+        L_local.w_in   = cfg.w_in;
+        L_local.h_out  = cfg.h_out;
+        L_local.w_out  = cfg.w_out;
+        if (cfg.kh != 0)       L_local.kernel = cfg.kh;
+        if (cfg.stride_h != 0) L_local.stride = cfg.stride_h;
+        L_local.pad = cfg.pad_top;   /* usado por runtime; pads asim los maneja tiled */
+    }
+    const layer_config_t *L = &L_local;
+
+    uint32_t out_bytes = (uint32_t)L->c_out * L->h_out * L->w_out;
+    if (out_bytes == 0 || !eth_addr_is_safe(cfg.out_addr, out_bytes))
+        return eth_send_error(tpcb, c->hdr.tag,
+                              STATUS_ERR_INVALID_ADDR, cfg.out_addr);
+
+    uint32_t in_bytes = (uint32_t)L->c_in * L->h_in * L->w_in;
+    if (cfg.in_addr && in_bytes)
+        Xil_DCacheInvalidateRange(cfg.in_addr, in_bytes);
+
+    dpu_prof_t prof = {0};
+    int rc = DPU_OK;
+
+    /* 3. Dispatch según LAYERS[layer_idx].op_type (del runtime, no del cfg) */
+    switch (L->op_type) {
+    case OP_CONV:
+        /* Usa la variante tiled: hace fast-path si cabe en BRAM, o strip
+         * mining H+W en ARM si la layer es mas grande (todas en YOLOv4). */
+        rc = dpu_exec_conv_tiled(L,
+                           (const uint8_t *)(uintptr_t)cfg.in_addr,
+                           (const int8_t  *)(uintptr_t)cfg.w_addr,
+                           (const int32_t *)(uintptr_t)cfg.b_addr,
+                           (uint8_t       *)(uintptr_t)cfg.out_addr,
+                           &prof);
+        break;
+    case OP_LEAKY_RELU:
+        rc = dpu_exec_leaky(L,
+                            (const uint8_t *)(uintptr_t)cfg.in_addr,
+                            (uint8_t       *)(uintptr_t)cfg.out_addr,
+                            &prof);
+        break;
+    case OP_MAXPOOL:
+        rc = dpu_exec_pool(L,
+                           (const uint8_t *)(uintptr_t)cfg.in_addr,
+                           (uint8_t       *)(uintptr_t)cfg.out_addr,
+                           &prof);
+        break;
+    case OP_ADD:
+        if (cfg.in_b_addr) {
+            uint32_t b_bytes = in_bytes;  /* misma shape */
+            Xil_DCacheInvalidateRange(cfg.in_b_addr, b_bytes);
+        }
+        rc = dpu_exec_add(L,
+                          (const uint8_t *)(uintptr_t)cfg.in_addr,
+                          (const uint8_t *)(uintptr_t)cfg.in_b_addr,
+                          (uint8_t       *)(uintptr_t)cfg.out_addr,
+                          &prof);
+        break;
+    case OP_CONCAT: {
+        /* LAYERS[].c_in es canales del operando A; el B los inferimos de c_out */
+        uint16_t c_a = L->c_in;
+        uint16_t c_b = L->c_out - c_a;
+        if (cfg.in_b_addr)
+            Xil_DCacheInvalidateRange(cfg.in_b_addr,
+                                      (uint32_t)c_b * L->h_in * L->w_in);
+        rc = arm_concat(L,
+                        (const uint8_t *)(uintptr_t)cfg.in_addr,   c_a,
+                        (const uint8_t *)(uintptr_t)cfg.in_b_addr, c_b,
+                        (uint8_t       *)(uintptr_t)cfg.out_addr,
+                        &prof);
+        break;
+    }
+    case OP_RESIZE:
+        rc = arm_upsample(L,
+                          (const uint8_t *)(uintptr_t)cfg.in_addr,
+                          (uint8_t       *)(uintptr_t)cfg.out_addr,
+                          &prof);
+        break;
+    default:
+        return eth_send_error(tpcb, c->hdr.tag,
+                              STATUS_ERR_INVALID_CMD, L->op_type);
+    }
+
+    /* 4. Traducir error code del runtime al protocolo */
+    uint32_t status = STATUS_OK;
+    if (rc != DPU_OK) {
+        switch (rc) {
+        case DPU_ERR_TIMEOUT:  status = STATUS_ERR_DPU_TIMEOUT;  break;
+        case DPU_ERR_DM_FAULT: status = STATUS_ERR_DPU_FAULT;    break;
+        case DPU_ERR_TILING:   status = STATUS_ERR_DPU_FAULT;    break;
+        case DPU_ERR_PARAMS:   status = STATUS_ERR_INVALID_CMD;  break;
+        default:               status = STATUS_ERR_DPU_FAULT;    break;
+        }
+        /* Responder error pero con 3 extras para layout consistente */
+        uint32_t extra_err[3] = {prof.cycles_total, (uint32_t)rc, out_bytes};
+        return eth_send_ack(tpcb, c->hdr.tag, status,
+                            extra_err, sizeof(extra_err));
+    }
+
+    /* 5. CRC32 de la salida — fuera de on_recv, aquí es seguro */
+    Xil_DCacheInvalidateRange(cfg.out_addr, out_bytes);
+    uint32_t out_crc = p18_crc32((void *)(uintptr_t)cfg.out_addr, out_bytes);
+
+    uint32_t extra[3] = {prof.cycles_total, out_crc, out_bytes};
+    return eth_send_ack(tpcb, c->hdr.tag, status, extra, sizeof(extra));
 }
 
 static err_t handle_cmd_run_network(struct tcp_pcb *tpcb, eth_conn_t *c)
@@ -193,7 +355,7 @@ static err_t handle_cmd_read_ddr(struct tcp_pcb *tpcb, eth_conn_t *c)
 
     err_t e = eth_send_hdr(tpcb, RSP_DATA, c->hdr.tag, len);
     if (e != ERR_OK) return e;
-    return eth_send_raw(tpcb, (const void *)(uintptr_t)addr, len);
+    return eth_send_raw_async(tpcb, c, (const void *)(uintptr_t)addr, len);
 }
 
 /* WRITE_DDR: streaming path. El payload del command es:
@@ -371,6 +533,22 @@ static err_t on_recv(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t err)
     return ERR_OK;
 }
 
+/* Callback cuando lwIP libera espacio en el send buffer.
+ * Si hay datos pendientes (READ_DDR grande), seguimos enviando. */
+static err_t on_sent(void *arg, struct tcp_pcb *tpcb, u16_t len)
+{
+    eth_conn_t *c = (eth_conn_t *)arg;
+    (void)len;
+    if (c->pending_len > 0 && c->pending_ptr != NULL) {
+        const uint8_t *p = c->pending_ptr;
+        uint32_t rem = c->pending_len;
+        c->pending_ptr = NULL;
+        c->pending_len = 0;
+        return eth_send_raw_async(tpcb, c, p, rem);
+    }
+    return ERR_OK;
+}
+
 static err_t on_accept(void *arg, struct tcp_pcb *newpcb, err_t err)
 {
     (void)arg; (void)err;
@@ -379,6 +557,7 @@ static err_t on_accept(void *arg, struct tcp_pcb *newpcb, err_t err)
     g_conn.state = ST_IDLE;
     tcp_arg(newpcb, &g_conn);
     tcp_recv(newpcb, on_recv);
+    tcp_sent(newpcb, on_sent);
     tcp_nagle_disable(newpcb);
     return ERR_OK;
 }

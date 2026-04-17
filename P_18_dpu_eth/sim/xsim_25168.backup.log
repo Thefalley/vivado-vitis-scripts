@@ -1,0 +1,219 @@
+#-----------------------------------------------------------
+# xsim v2025.2 (64-bit)
+# SW Build 6299465 on Fri Nov 14 19:35:11 GMT 2025
+# IP Build 6300035 on Fri Nov 14 10:48:45 MST 2025
+# SharedData Build 6298862 on Thu Nov 13 04:50:51 MST 2025
+# Start of session at: Fri Apr 17 00:27:51 2026
+# Process ID         : 25168
+# Current directory  : C:/project/vivado/P_18_dpu_eth/sim
+# Command line       : xsim.exe -mode tcl -source {xsim.dir/layer0_snap/xsim_script.tcl}
+# Log file           : C:/project/vivado/P_18_dpu_eth/sim/xsim.log
+# Journal file       : C:/project/vivado/P_18_dpu_eth/sim\xsim.jou
+# Running On         : DESKTOP-6J3HG3R
+# Platform           : Windows Server 2016 or Windows 10
+# Operating System   : 19045
+# Processor Detail   : Intel(R) Core(TM) i5-10300H CPU @ 2.50GHz
+# CPU Frequency      : 2496 MHz
+# CPU Physical cores : 4
+# CPU Logical cores  : 8
+# Host memory        : 16940 MB
+# Swap memory        : 23932 MB
+# Total Virtual      : 40873 MB
+# Available Virtual  : 12722 MB
+#-----------------------------------------------------------
+source xsim.dir/layer0_snap/xsim_script.tcl
+# xsim {layer0_snap} -autoloadwcfg -tclbatch {run_layer0.tcl}
+Time resolution is 1 ps
+source run_layer0.tcl
+## run all
+Note: Loaded 48 bytes from ../host/xsim_vectors/input_4x4x3_nchw.hex
+Time: 120 ns  Iteration: 0  Process: /conv_engine_v3_layer0_tb/p_stim  File: C:/project/vivado/P_18_dpu_eth/sim/conv_engine_v3_layer0_tb.vhd
+Note: Loaded 864 bytes from ../host/xsim_vectors/weights_ohwi.hex
+Time: 120 ns  Iteration: 0  Process: /conv_engine_v3_layer0_tb/p_stim  File: C:/project/vivado/P_18_dpu_eth/sim/conv_engine_v3_layer0_tb.vhd
+Note: Loaded 128 bytes from ../host/xsim_vectors/bias_int32.hex
+Time: 120 ns  Iteration: 0  Process: /conv_engine_v3_layer0_tb/p_stim  File: C:/project/vivado/P_18_dpu_eth/sim/conv_engine_v3_layer0_tb.vhd
+Note: === Starting conv_engine_v3 with layer 0 vectors ===
+Time: 150 ns  Iteration: 0  Process: /conv_engine_v3_layer0_tb/p_stim  File: C:/project/vivado/P_18_dpu_eth/sim/conv_engine_v3_layer0_tb.vhd
+Note: [mon] state=21 oh=0 ow=0 ic=0 busy='1'
+Time: 10 us  Iteration: 0  Process: /conv_engine_v3_layer0_tb/p_mon  File: C:/project/vivado/P_18_dpu_eth/sim/conv_engine_v3_layer0_tb.vhd
+Note: [mon] state=22 oh=0 ow=0 ic=0 busy='1'
+Time: 20 us  Iteration: 0  Process: /conv_engine_v3_layer0_tb/p_mon  File: C:/project/vivado/P_18_dpu_eth/sim/conv_engine_v3_layer0_tb.vhd
+Note: [mon] state=20 oh=0 ow=0 ic=0 busy='1'
+Time: 30 us  Iteration: 0  Process: /conv_engine_v3_layer0_tb/p_mon  File: C:/project/vivado/P_18_dpu_eth/sim/conv_engine_v3_layer0_tb.vhd
+Note: [mon] state=25 oh=0 ow=0 ic=2 busy='1'
+Time: 40 us  Iteration: 0  Process: /conv_engine_v3_layer0_tb/p_mon  File: C:/project/vivado/P_18_dpu_eth/sim/conv_engine_v3_layer0_tb.vhd
+Note: [mon] state=34 oh=0 ow=0 ic=2 busy='1'
+Time: 50 us  Iteration: 0  Process: /conv_engine_v3_layer0_tb/p_mon  File: C:/project/vivado/P_18_dpu_eth/sim/conv_engine_v3_layer0_tb.vhd
+Note: [mon] state=21 oh=0 ow=1 ic=0 busy='1'
+Time: 60 us  Iteration: 0  Process: /conv_engine_v3_layer0_tb/p_mon  File: C:/project/vivado/P_18_dpu_eth/sim/conv_engine_v3_layer0_tb.vhd
+Note: [mon] state=22 oh=0 ow=1 ic=0 busy='1'
+Time: 70 us  Iteration: 0  Process: /conv_engine_v3_layer0_tb/p_mon  File: C:/project/vivado/P_18_dpu_eth/sim/conv_engine_v3_layer0_tb.vhd
+Note: [mon] state=26 oh=0 ow=1 ic=2 busy='1'
+Time: 80 us  Iteration: 0  Process: /conv_engine_v3_layer0_tb/p_mon  File: C:/project/vivado/P_18_dpu_eth/sim/conv_engine_v3_layer0_tb.vhd
+Note: [mon] state=25 oh=0 ow=1 ic=2 busy='1'
+Time: 90 us  Iteration: 0  Process: /conv_engine_v3_layer0_tb/p_mon  File: C:/project/vivado/P_18_dpu_eth/sim/conv_engine_v3_layer0_tb.vhd
+Note: [mon] state=20 oh=0 ow=2 ic=0 busy='1'
+Time: 100 us  Iteration: 0  Process: /conv_engine_v3_layer0_tb/p_mon  File: C:/project/vivado/P_18_dpu_eth/sim/conv_engine_v3_layer0_tb.vhd
+Note: [mon] state=21 oh=0 ow=2 ic=0 busy='1'
+Time: 110 us  Iteration: 0  Process: /conv_engine_v3_layer0_tb/p_mon  File: C:/project/vivado/P_18_dpu_eth/sim/conv_engine_v3_layer0_tb.vhd
+Note: [mon] state=22 oh=0 ow=2 ic=0 busy='1'
+Time: 120 us  Iteration: 0  Process: /conv_engine_v3_layer0_tb/p_mon  File: C:/project/vivado/P_18_dpu_eth/sim/conv_engine_v3_layer0_tb.vhd
+Note: [mon] state=25 oh=0 ow=2 ic=0 busy='1'
+Time: 130 us  Iteration: 0  Process: /conv_engine_v3_layer0_tb/p_mon  File: C:/project/vivado/P_18_dpu_eth/sim/conv_engine_v3_layer0_tb.vhd
+Note: [mon] state=25 oh=0 ow=2 ic=2 busy='1'
+Time: 140 us  Iteration: 0  Process: /conv_engine_v3_layer0_tb/p_mon  File: C:/project/vivado/P_18_dpu_eth/sim/conv_engine_v3_layer0_tb.vhd
+Note: [mon] state=20 oh=0 ow=3 ic=0 busy='1'
+Time: 150 us  Iteration: 0  Process: /conv_engine_v3_layer0_tb/p_mon  File: C:/project/vivado/P_18_dpu_eth/sim/conv_engine_v3_layer0_tb.vhd
+Note: [mon] state=21 oh=0 ow=3 ic=0 busy='1'
+Time: 160 us  Iteration: 0  Process: /conv_engine_v3_layer0_tb/p_mon  File: C:/project/vivado/P_18_dpu_eth/sim/conv_engine_v3_layer0_tb.vhd
+Note: [mon] state=22 oh=0 ow=3 ic=0 busy='1'
+Time: 170 us  Iteration: 0  Process: /conv_engine_v3_layer0_tb/p_mon  File: C:/project/vivado/P_18_dpu_eth/sim/conv_engine_v3_layer0_tb.vhd
+Note: [mon] state=25 oh=0 ow=3 ic=0 busy='1'
+Time: 180 us  Iteration: 0  Process: /conv_engine_v3_layer0_tb/p_mon  File: C:/project/vivado/P_18_dpu_eth/sim/conv_engine_v3_layer0_tb.vhd
+Note: [mon] state=25 oh=0 ow=3 ic=2 busy='1'
+Time: 190 us  Iteration: 0  Process: /conv_engine_v3_layer0_tb/p_mon  File: C:/project/vivado/P_18_dpu_eth/sim/conv_engine_v3_layer0_tb.vhd
+Note: [mon] state=22 oh=1 ow=0 ic=0 busy='1'
+Time: 200 us  Iteration: 0  Process: /conv_engine_v3_layer0_tb/p_mon  File: C:/project/vivado/P_18_dpu_eth/sim/conv_engine_v3_layer0_tb.vhd
+Note: [mon] state=20 oh=1 ow=0 ic=0 busy='1'
+Time: 210 us  Iteration: 0  Process: /conv_engine_v3_layer0_tb/p_mon  File: C:/project/vivado/P_18_dpu_eth/sim/conv_engine_v3_layer0_tb.vhd
+Note: [mon] state=21 oh=1 ow=0 ic=0 busy='1'
+Time: 220 us  Iteration: 0  Process: /conv_engine_v3_layer0_tb/p_mon  File: C:/project/vivado/P_18_dpu_eth/sim/conv_engine_v3_layer0_tb.vhd
+Note: [mon] state=24 oh=1 ow=0 ic=0 busy='1'
+Time: 230 us  Iteration: 0  Process: /conv_engine_v3_layer0_tb/p_mon  File: C:/project/vivado/P_18_dpu_eth/sim/conv_engine_v3_layer0_tb.vhd
+Note: [mon] state=24 oh=1 ow=0 ic=2 busy='1'
+Time: 240 us  Iteration: 0  Process: /conv_engine_v3_layer0_tb/p_mon  File: C:/project/vivado/P_18_dpu_eth/sim/conv_engine_v3_layer0_tb.vhd
+Note: [mon] state=22 oh=1 ow=1 ic=0 busy='1'
+Time: 250 us  Iteration: 0  Process: /conv_engine_v3_layer0_tb/p_mon  File: C:/project/vivado/P_18_dpu_eth/sim/conv_engine_v3_layer0_tb.vhd
+Note: [mon] state=20 oh=1 ow=1 ic=0 busy='1'
+Time: 260 us  Iteration: 0  Process: /conv_engine_v3_layer0_tb/p_mon  File: C:/project/vivado/P_18_dpu_eth/sim/conv_engine_v3_layer0_tb.vhd
+Note: [mon] state=25 oh=1 ow=1 ic=0 busy='1'
+Time: 270 us  Iteration: 0  Process: /conv_engine_v3_layer0_tb/p_mon  File: C:/project/vivado/P_18_dpu_eth/sim/conv_engine_v3_layer0_tb.vhd
+Note: [mon] state=24 oh=1 ow=1 ic=0 busy='1'
+Time: 280 us  Iteration: 0  Process: /conv_engine_v3_layer0_tb/p_mon  File: C:/project/vivado/P_18_dpu_eth/sim/conv_engine_v3_layer0_tb.vhd
+Note: [mon] state=34 oh=1 ow=1 ic=2 busy='1'
+Time: 290 us  Iteration: 0  Process: /conv_engine_v3_layer0_tb/p_mon  File: C:/project/vivado/P_18_dpu_eth/sim/conv_engine_v3_layer0_tb.vhd
+Note: [mon] state=22 oh=1 ow=2 ic=0 busy='1'
+Time: 300 us  Iteration: 0  Process: /conv_engine_v3_layer0_tb/p_mon  File: C:/project/vivado/P_18_dpu_eth/sim/conv_engine_v3_layer0_tb.vhd
+Note: [mon] state=20 oh=1 ow=2 ic=0 busy='1'
+Time: 310 us  Iteration: 0  Process: /conv_engine_v3_layer0_tb/p_mon  File: C:/project/vivado/P_18_dpu_eth/sim/conv_engine_v3_layer0_tb.vhd
+Note: [mon] state=25 oh=1 ow=2 ic=0 busy='1'
+Time: 320 us  Iteration: 0  Process: /conv_engine_v3_layer0_tb/p_mon  File: C:/project/vivado/P_18_dpu_eth/sim/conv_engine_v3_layer0_tb.vhd
+Note: [mon] state=24 oh=1 ow=2 ic=0 busy='1'
+Time: 330 us  Iteration: 0  Process: /conv_engine_v3_layer0_tb/p_mon  File: C:/project/vivado/P_18_dpu_eth/sim/conv_engine_v3_layer0_tb.vhd
+Note: [mon] state=21 oh=1 ow=3 ic=0 busy='1'
+Time: 340 us  Iteration: 0  Process: /conv_engine_v3_layer0_tb/p_mon  File: C:/project/vivado/P_18_dpu_eth/sim/conv_engine_v3_layer0_tb.vhd
+Note: [mon] state=22 oh=1 ow=3 ic=0 busy='1'
+Time: 350 us  Iteration: 0  Process: /conv_engine_v3_layer0_tb/p_mon  File: C:/project/vivado/P_18_dpu_eth/sim/conv_engine_v3_layer0_tb.vhd
+Note: [mon] state=20 oh=1 ow=3 ic=0 busy='1'
+Time: 360 us  Iteration: 0  Process: /conv_engine_v3_layer0_tb/p_mon  File: C:/project/vivado/P_18_dpu_eth/sim/conv_engine_v3_layer0_tb.vhd
+Note: [mon] state=27 oh=1 ow=3 ic=0 busy='1'
+Time: 370 us  Iteration: 0  Process: /conv_engine_v3_layer0_tb/p_mon  File: C:/project/vivado/P_18_dpu_eth/sim/conv_engine_v3_layer0_tb.vhd
+Note: [mon] state=24 oh=1 ow=3 ic=0 busy='1'
+Time: 380 us  Iteration: 0  Process: /conv_engine_v3_layer0_tb/p_mon  File: C:/project/vivado/P_18_dpu_eth/sim/conv_engine_v3_layer0_tb.vhd
+Note: [mon] state=20 oh=2 ow=0 ic=0 busy='1'
+Time: 390 us  Iteration: 0  Process: /conv_engine_v3_layer0_tb/p_mon  File: C:/project/vivado/P_18_dpu_eth/sim/conv_engine_v3_layer0_tb.vhd
+Note: [mon] state=21 oh=2 ow=0 ic=0 busy='1'
+Time: 400 us  Iteration: 0  Process: /conv_engine_v3_layer0_tb/p_mon  File: C:/project/vivado/P_18_dpu_eth/sim/conv_engine_v3_layer0_tb.vhd
+Note: [mon] state=22 oh=2 ow=0 ic=0 busy='1'
+Time: 410 us  Iteration: 0  Process: /conv_engine_v3_layer0_tb/p_mon  File: C:/project/vivado/P_18_dpu_eth/sim/conv_engine_v3_layer0_tb.vhd
+Note: [mon] state=25 oh=2 ow=0 ic=1 busy='1'
+Time: 420 us  Iteration: 0  Process: /conv_engine_v3_layer0_tb/p_mon  File: C:/project/vivado/P_18_dpu_eth/sim/conv_engine_v3_layer0_tb.vhd
+Note: [mon] state=25 oh=2 ow=0 ic=0 busy='1'
+Time: 430 us  Iteration: 0  Process: /conv_engine_v3_layer0_tb/p_mon  File: C:/project/vivado/P_18_dpu_eth/sim/conv_engine_v3_layer0_tb.vhd
+Note: [mon] state=20 oh=2 ow=1 ic=0 busy='1'
+Time: 440 us  Iteration: 0  Process: /conv_engine_v3_layer0_tb/p_mon  File: C:/project/vivado/P_18_dpu_eth/sim/conv_engine_v3_layer0_tb.vhd
+Note: [mon] state=21 oh=2 ow=1 ic=0 busy='1'
+Time: 450 us  Iteration: 0  Process: /conv_engine_v3_layer0_tb/p_mon  File: C:/project/vivado/P_18_dpu_eth/sim/conv_engine_v3_layer0_tb.vhd
+Note: [mon] state=22 oh=2 ow=1 ic=0 busy='1'
+Time: 460 us  Iteration: 0  Process: /conv_engine_v3_layer0_tb/p_mon  File: C:/project/vivado/P_18_dpu_eth/sim/conv_engine_v3_layer0_tb.vhd
+Note: [mon] state=25 oh=2 ow=1 ic=1 busy='1'
+Time: 470 us  Iteration: 0  Process: /conv_engine_v3_layer0_tb/p_mon  File: C:/project/vivado/P_18_dpu_eth/sim/conv_engine_v3_layer0_tb.vhd
+Note: [mon] state=34 oh=2 ow=1 ic=2 busy='1'
+Time: 480 us  Iteration: 0  Process: /conv_engine_v3_layer0_tb/p_mon  File: C:/project/vivado/P_18_dpu_eth/sim/conv_engine_v3_layer0_tb.vhd
+Note: [mon] state=20 oh=2 ow=2 ic=0 busy='1'
+Time: 490 us  Iteration: 0  Process: /conv_engine_v3_layer0_tb/p_mon  File: C:/project/vivado/P_18_dpu_eth/sim/conv_engine_v3_layer0_tb.vhd
+Note: [mon] state=21 oh=2 ow=2 ic=0 busy='1'
+Time: 500 us  Iteration: 0  Process: /conv_engine_v3_layer0_tb/p_mon  File: C:/project/vivado/P_18_dpu_eth/sim/conv_engine_v3_layer0_tb.vhd
+Note: [mon] state=24 oh=2 ow=2 ic=1 busy='1'
+Time: 510 us  Iteration: 0  Process: /conv_engine_v3_layer0_tb/p_mon  File: C:/project/vivado/P_18_dpu_eth/sim/conv_engine_v3_layer0_tb.vhd
+Note: [mon] state=25 oh=2 ow=2 ic=1 busy='1'
+Time: 520 us  Iteration: 0  Process: /conv_engine_v3_layer0_tb/p_mon  File: C:/project/vivado/P_18_dpu_eth/sim/conv_engine_v3_layer0_tb.vhd
+Note: [mon] state=34 oh=2 ow=2 ic=2 busy='1'
+Time: 530 us  Iteration: 0  Process: /conv_engine_v3_layer0_tb/p_mon  File: C:/project/vivado/P_18_dpu_eth/sim/conv_engine_v3_layer0_tb.vhd
+Note: [mon] state=20 oh=2 ow=3 ic=0 busy='1'
+Time: 540 us  Iteration: 0  Process: /conv_engine_v3_layer0_tb/p_mon  File: C:/project/vivado/P_18_dpu_eth/sim/conv_engine_v3_layer0_tb.vhd
+Note: [mon] state=21 oh=2 ow=3 ic=0 busy='1'
+Time: 550 us  Iteration: 0  Process: /conv_engine_v3_layer0_tb/p_mon  File: C:/project/vivado/P_18_dpu_eth/sim/conv_engine_v3_layer0_tb.vhd
+Note: [mon] state=24 oh=2 ow=3 ic=1 busy='1'
+Time: 560 us  Iteration: 0  Process: /conv_engine_v3_layer0_tb/p_mon  File: C:/project/vivado/P_18_dpu_eth/sim/conv_engine_v3_layer0_tb.vhd
+Note: [mon] state=25 oh=2 ow=3 ic=1 busy='1'
+Time: 570 us  Iteration: 0  Process: /conv_engine_v3_layer0_tb/p_mon  File: C:/project/vivado/P_18_dpu_eth/sim/conv_engine_v3_layer0_tb.vhd
+Note: [mon] state=21 oh=3 ow=0 ic=0 busy='1'
+Time: 580 us  Iteration: 0  Process: /conv_engine_v3_layer0_tb/p_mon  File: C:/project/vivado/P_18_dpu_eth/sim/conv_engine_v3_layer0_tb.vhd
+Note: [mon] state=22 oh=3 ow=0 ic=0 busy='1'
+Time: 590 us  Iteration: 0  Process: /conv_engine_v3_layer0_tb/p_mon  File: C:/project/vivado/P_18_dpu_eth/sim/conv_engine_v3_layer0_tb.vhd
+Note: [mon] state=20 oh=3 ow=0 ic=0 busy='1'
+Time: 600 us  Iteration: 0  Process: /conv_engine_v3_layer0_tb/p_mon  File: C:/project/vivado/P_18_dpu_eth/sim/conv_engine_v3_layer0_tb.vhd
+Note: [mon] state=25 oh=3 ow=0 ic=1 busy='1'
+Time: 610 us  Iteration: 0  Process: /conv_engine_v3_layer0_tb/p_mon  File: C:/project/vivado/P_18_dpu_eth/sim/conv_engine_v3_layer0_tb.vhd
+Note: [mon] state=24 oh=3 ow=0 ic=1 busy='1'
+Time: 620 us  Iteration: 0  Process: /conv_engine_v3_layer0_tb/p_mon  File: C:/project/vivado/P_18_dpu_eth/sim/conv_engine_v3_layer0_tb.vhd
+Note: [mon] state=21 oh=3 ow=1 ic=0 busy='1'
+Time: 630 us  Iteration: 0  Process: /conv_engine_v3_layer0_tb/p_mon  File: C:/project/vivado/P_18_dpu_eth/sim/conv_engine_v3_layer0_tb.vhd
+Note: [mon] state=22 oh=3 ow=1 ic=0 busy='1'
+Time: 640 us  Iteration: 0  Process: /conv_engine_v3_layer0_tb/p_mon  File: C:/project/vivado/P_18_dpu_eth/sim/conv_engine_v3_layer0_tb.vhd
+Note: [mon] state=20 oh=3 ow=1 ic=0 busy='1'
+Time: 650 us  Iteration: 0  Process: /conv_engine_v3_layer0_tb/p_mon  File: C:/project/vivado/P_18_dpu_eth/sim/conv_engine_v3_layer0_tb.vhd
+Note: [mon] state=27 oh=3 ow=1 ic=1 busy='1'
+Time: 660 us  Iteration: 0  Process: /conv_engine_v3_layer0_tb/p_mon  File: C:/project/vivado/P_18_dpu_eth/sim/conv_engine_v3_layer0_tb.vhd
+Note: [mon] state=24 oh=3 ow=1 ic=1 busy='1'
+Time: 670 us  Iteration: 0  Process: /conv_engine_v3_layer0_tb/p_mon  File: C:/project/vivado/P_18_dpu_eth/sim/conv_engine_v3_layer0_tb.vhd
+Note: [mon] state=21 oh=3 ow=2 ic=0 busy='1'
+Time: 680 us  Iteration: 0  Process: /conv_engine_v3_layer0_tb/p_mon  File: C:/project/vivado/P_18_dpu_eth/sim/conv_engine_v3_layer0_tb.vhd
+Note: [mon] state=22 oh=3 ow=2 ic=0 busy='1'
+Time: 690 us  Iteration: 0  Process: /conv_engine_v3_layer0_tb/p_mon  File: C:/project/vivado/P_18_dpu_eth/sim/conv_engine_v3_layer0_tb.vhd
+Note: [mon] state=20 oh=3 ow=2 ic=0 busy='1'
+Time: 700 us  Iteration: 0  Process: /conv_engine_v3_layer0_tb/p_mon  File: C:/project/vivado/P_18_dpu_eth/sim/conv_engine_v3_layer0_tb.vhd
+Note: [mon] state=24 oh=3 ow=2 ic=2 busy='1'
+Time: 710 us  Iteration: 0  Process: /conv_engine_v3_layer0_tb/p_mon  File: C:/project/vivado/P_18_dpu_eth/sim/conv_engine_v3_layer0_tb.vhd
+Note: [mon] state=34 oh=3 ow=2 ic=2 busy='1'
+Time: 720 us  Iteration: 0  Process: /conv_engine_v3_layer0_tb/p_mon  File: C:/project/vivado/P_18_dpu_eth/sim/conv_engine_v3_layer0_tb.vhd
+Note: [mon] state=21 oh=3 ow=3 ic=0 busy='1'
+Time: 730 us  Iteration: 0  Process: /conv_engine_v3_layer0_tb/p_mon  File: C:/project/vivado/P_18_dpu_eth/sim/conv_engine_v3_layer0_tb.vhd
+Note: [mon] state=22 oh=3 ow=3 ic=0 busy='1'
+Time: 740 us  Iteration: 0  Process: /conv_engine_v3_layer0_tb/p_mon  File: C:/project/vivado/P_18_dpu_eth/sim/conv_engine_v3_layer0_tb.vhd
+Note: [mon] state=25 oh=3 ow=3 ic=2 busy='1'
+Time: 750 us  Iteration: 0  Process: /conv_engine_v3_layer0_tb/p_mon  File: C:/project/vivado/P_18_dpu_eth/sim/conv_engine_v3_layer0_tb.vhd
+Note: [mon] state=24 oh=3 ow=3 ic=2 busy='1'
+Time: 760 us  Iteration: 0  Process: /conv_engine_v3_layer0_tb/p_mon  File: C:/project/vivado/P_18_dpu_eth/sim/conv_engine_v3_layer0_tb.vhd
+Note: [mon] state=34 oh=3 ow=3 ic=2 busy='1'
+Time: 770 us  Iteration: 0  Process: /conv_engine_v3_layer0_tb/p_mon  File: C:/project/vivado/P_18_dpu_eth/sim/conv_engine_v3_layer0_tb.vhd
+Note: === DONE! Comparing output ===
+Time: 770075 ns  Iteration: 1  Process: /conv_engine_v3_layer0_tb/p_stim  File: C:/project/vivado/P_18_dpu_eth/sim/conv_engine_v3_layer0_tb.vhd
+Warning: MISMATCH at idx 0  got=0xXX (0)  expected=0xE9 (-23)
+Time: 770125 ns  Iteration: 0  Process: /conv_engine_v3_layer0_tb/p_stim  File: C:/project/vivado/P_18_dpu_eth/sim/conv_engine_v3_layer0_tb.vhd
+Warning: MISMATCH at idx 1  got=0xXX (0)  expected=0xEB (-21)
+Time: 770125 ns  Iteration: 0  Process: /conv_engine_v3_layer0_tb/p_stim  File: C:/project/vivado/P_18_dpu_eth/sim/conv_engine_v3_layer0_tb.vhd
+Warning: MISMATCH at idx 2  got=0xXX (0)  expected=0xE9 (-23)
+Time: 770125 ns  Iteration: 0  Process: /conv_engine_v3_layer0_tb/p_stim  File: C:/project/vivado/P_18_dpu_eth/sim/conv_engine_v3_layer0_tb.vhd
+Warning: MISMATCH at idx 3  got=0xXX (0)  expected=0xCB (-53)
+Time: 770125 ns  Iteration: 0  Process: /conv_engine_v3_layer0_tb/p_stim  File: C:/project/vivado/P_18_dpu_eth/sim/conv_engine_v3_layer0_tb.vhd
+Warning: MISMATCH at idx 4  got=0xXX (0)  expected=0xE4 (-28)
+Time: 770125 ns  Iteration: 0  Process: /conv_engine_v3_layer0_tb/p_stim  File: C:/project/vivado/P_18_dpu_eth/sim/conv_engine_v3_layer0_tb.vhd
+Warning: MISMATCH at idx 5  got=0xXX (0)  expected=0xF6 (-10)
+Time: 770125 ns  Iteration: 0  Process: /conv_engine_v3_layer0_tb/p_stim  File: C:/project/vivado/P_18_dpu_eth/sim/conv_engine_v3_layer0_tb.vhd
+Warning: MISMATCH at idx 6  got=0xXX (0)  expected=0xEF (-17)
+Time: 770125 ns  Iteration: 0  Process: /conv_engine_v3_layer0_tb/p_stim  File: C:/project/vivado/P_18_dpu_eth/sim/conv_engine_v3_layer0_tb.vhd
+Warning: MISMATCH at idx 7  got=0xXX (0)  expected=0xBA (-70)
+Time: 770125 ns  Iteration: 0  Process: /conv_engine_v3_layer0_tb/p_stim  File: C:/project/vivado/P_18_dpu_eth/sim/conv_engine_v3_layer0_tb.vhd
+Warning: MISMATCH at idx 8  got=0xXX (0)  expected=0xF0 (-16)
+Time: 770125 ns  Iteration: 0  Process: /conv_engine_v3_layer0_tb/p_stim  File: C:/project/vivado/P_18_dpu_eth/sim/conv_engine_v3_layer0_tb.vhd
+Warning: MISMATCH at idx 9  got=0xXX (0)  expected=0xF2 (-14)
+Time: 770125 ns  Iteration: 0  Process: /conv_engine_v3_layer0_tb/p_stim  File: C:/project/vivado/P_18_dpu_eth/sim/conv_engine_v3_layer0_tb.vhd
+Note: === TB COMPLETE -- idx=9 ===
+Time: 770125 ns  Iteration: 0  Process: /conv_engine_v3_layer0_tb/p_stim  File: C:/project/vivado/P_18_dpu_eth/sim/conv_engine_v3_layer0_tb.vhd
+Failure: Simulation end
+Time: 770225 ns  Iteration: 0  Process: /conv_engine_v3_layer0_tb/p_stim  File: C:/project/vivado/P_18_dpu_eth/sim/conv_engine_v3_layer0_tb.vhd
+$finish called at time : 770225 ns : File "C:/project/vivado/P_18_dpu_eth/sim/conv_engine_v3_layer0_tb.vhd" Line 285
+## quit
+INFO: [Common 17-206] Exiting xsim at Fri Apr 17 00:27:55 2026...
