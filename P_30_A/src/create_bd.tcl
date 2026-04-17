@@ -28,22 +28,18 @@ set proj_dir [get_property DIRECTORY [current_project]]
 set src_dir [file normalize [file join $proj_dir ../src]]
 
 # --- VHDL sources (todo local en src/, copiado de P_9/P_11/P_12/P_13) ---
-# Multiplicadores y MAC
+# P_30_A: solo los archivos necesarios (sin legacy v1/v2/v3)
 read_vhdl [file join $src_dir mul_s32x32_pipe.vhd]
 read_vhdl [file join $src_dir mul_s9xu30_pipe.vhd]
 read_vhdl [file join $src_dir mac_unit.vhd]
 read_vhdl [file join $src_dir mac_array.vhd]
 read_vhdl [file join $src_dir requantize.vhd]
-# Conv engine (v1/v2 legacy compile-only, v3 instanciado)
-read_vhdl [file join $src_dir conv_engine.vhd]
-read_vhdl [file join $src_dir conv_engine_v2.vhd]
-read_vhdl [file join $src_dir conv_engine_v3.vhd]
-# Primitivas stream
+read_vhdl [file join $src_dir conv_engine_v4.vhd]
 read_vhdl [file join $src_dir leaky_relu.vhd]
 read_vhdl [file join $src_dir maxpool_unit.vhd]
 read_vhdl [file join $src_dir elem_add.vhd]
-# Wrapper + DataMover control
-read_vhdl [file join $src_dir dpu_stream_wrapper.vhd]
+read_vhdl [file join $src_dir fifo_weights.vhd]
+read_vhdl [file join $src_dir dpu_stream_wrapper_v4.vhd]
 read_vhdl [file join $src_dir dm_s2mm_ctrl.vhd]
 update_compile_order -fileset sources_1
 
