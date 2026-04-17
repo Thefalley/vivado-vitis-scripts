@@ -27,21 +27,22 @@ create_bd_design "dpu_eth_bd"
 set proj_dir [get_property DIRECTORY [current_project]]
 set src_dir [file normalize [file join $proj_dir ../src]]
 
-# --- VHDL sources (reuse conv_engine_v3 pipeline from P_13, local wrapper) ---
-read_vhdl [file join $src_dir ../../P_13_conv_test/src/mac_unit.vhd]
-read_vhdl [file join $src_dir ../../P_13_conv_test/src/mac_array.vhd]
-read_vhdl [file join $src_dir ../../P_13_conv_test/src/mul_s32x32_pipe.vhd]
-read_vhdl [file join $src_dir ../../P_13_conv_test/src/requantize.vhd]
-read_vhdl [file join $src_dir ../../P_13_conv_test/src/conv_engine.vhd]
-read_vhdl [file join $src_dir ../../P_13_conv_test/src/conv_engine_v2.vhd]
-read_vhdl [file join $src_dir ../../P_13_conv_test/src/conv_engine_v3.vhd]
-# P_17 Fase 2: leaky_relu primitive (reutiliza P_9, params runtime por port)
-read_vhdl [file join $src_dir ../../P_9_leaky_relu/src/mul_s9xu30_pipe.vhd]
-read_vhdl [file join $src_dir ../../P_9_leaky_relu/src/leaky_relu.vhd]
-# P_17 Fase 3: maxpool_unit primitive (reutiliza P_12)
-read_vhdl [file join $src_dir ../../P_12_maxpool/src/maxpool_unit.vhd]
-# P_17 Fase 4: elem_add primitive (reutiliza P_11; mul_s9xu30_pipe ya cargado por P_9)
-read_vhdl [file join $src_dir ../../P_11_elem_add/src/elem_add.vhd]
+# --- VHDL sources (todo local en src/, copiado de P_9/P_11/P_12/P_13) ---
+# Multiplicadores y MAC
+read_vhdl [file join $src_dir mul_s32x32_pipe.vhd]
+read_vhdl [file join $src_dir mul_s9xu30_pipe.vhd]
+read_vhdl [file join $src_dir mac_unit.vhd]
+read_vhdl [file join $src_dir mac_array.vhd]
+read_vhdl [file join $src_dir requantize.vhd]
+# Conv engine (v1/v2 legacy compile-only, v3 instanciado)
+read_vhdl [file join $src_dir conv_engine.vhd]
+read_vhdl [file join $src_dir conv_engine_v2.vhd]
+read_vhdl [file join $src_dir conv_engine_v3.vhd]
+# Primitivas stream
+read_vhdl [file join $src_dir leaky_relu.vhd]
+read_vhdl [file join $src_dir maxpool_unit.vhd]
+read_vhdl [file join $src_dir elem_add.vhd]
+# Wrapper + DataMover control
 read_vhdl [file join $src_dir dpu_stream_wrapper.vhd]
 read_vhdl [file join $src_dir dm_s2mm_ctrl.vhd]
 update_compile_order -fileset sources_1
