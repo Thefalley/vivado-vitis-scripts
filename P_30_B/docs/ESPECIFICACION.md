@@ -274,6 +274,18 @@ P_30_A/
 
 Vivado NO está en el PC local (solo Vitis/xsct/xsim). Para síntesis hay que usar el servidor.
 
+**Servidor remoto:**
+- Conexión: `ssh -i ~/.ssh/pc-casa jce03@100.73.144.105`
+- Workdir: `C:\Users\jce03\Desktop\claude\vivado-server`
+- Vivado: disco externo `E:/vivado-instalado/2025.2.1/Vivado/2025.2/bin/vivado`
+- Los fuentes se copian al servidor via `scp` o `git clone` en el workdir
+
+**PC local:**
+- ZedBoard conectada por USB-JTAG + cable Ethernet (192.168.1.10)
+- xsct/xsim en `C:/AMDDesignTools/2025.2/`
+- Python 3.14 para tests
+- arm-none-eabi-gcc para compilar firmware
+
 ### 10.3 Comunicación PC ↔ ARM (Ethernet)
 
 Los datos se cargan en la DDR del ZedBoard mediante un **servidor TCP** que corre en el ARM (bare-metal, lwIP, puerto 7001) y un **cliente Python** en el PC.
