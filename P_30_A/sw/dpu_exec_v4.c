@@ -274,21 +274,36 @@ int dpu_exec_conv_v4(const layer_config_t *L,
     int needs_ic_tiling = (L->c_out * kh * kw * L->c_in > 32768)
                        || (L->c_out % N_MAC != 0);
 
-    /* Spatial tiling: find largest tile that fits in BRAM.
-     * For IC-tiled layers, use c_out_group=N_MAC (not full c_out)
-     * since each CMD_START only produces N_MAC output channels. */
+    /* Spatial tiling.
+     *
+     * CRITICAL: When ic_tile_size < c_in (real IC tiling needed), the ARM
+     * issues separate CMD_STARTs for each IC tile. Between them, the 32 MAC
+     * accumulators retain partial sums. But the accumulators are PER-PIXEL:
+     * after processing all pixels of IC tile 0, only the LAST pixel's
+     * accumulators survive. IC tile 1 then processes pixel (0,0) with the
+     * wrong accumulators.
+     *
+     * FIX: force tile=1x1 when ic_tile_size < c_in. This way each spatial
+     * tile is 1 pixel, so the accumulator always corresponds to that pixel.
+     * Slow (1 pixel per CMD_START) but correct. More transactions, same memory. */
+    int real_ic_tiling = (ic_tile_size < L->c_in);
     int c_out_bram = needs_ic_tiling ? N_MAC : L->c_out;
     int tile_h, tile_w;
-    for (tile_h = 16; tile_h >= 1; tile_h--) {
-        tile_w = tile_h;
-        int in_h = (tile_h - 1) * stride + kh;
-        int in_w = (tile_w - 1) * stride + kw;
-        int tot = ALIGN_UP(c_out_bram * tile_h * tile_w, 64)
-                + ALIGN_UP(ic_tile_size * in_h * in_w, 64)
-                + ALIGN_UP(c_out_bram * 4, 64);
-        if (tot <= DPU_BRAM_BYTES) break;
+
+    if (real_ic_tiling) {
+        tile_h = 1; tile_w = 1;
+    } else {
+        for (tile_h = 16; tile_h >= 1; tile_h--) {
+            tile_w = tile_h;
+            int in_h = (tile_h - 1) * stride + kh;
+            int in_w = (tile_w - 1) * stride + kw;
+            int tot = ALIGN_UP(c_out_bram * tile_h * tile_w, 64)
+                    + ALIGN_UP(ic_tile_size * in_h * in_w, 64)
+                    + ALIGN_UP(c_out_bram * 4, 64);
+            if (tot <= DPU_BRAM_BYTES) break;
+        }
+        if (tile_h < 1) tile_h = tile_w = 1;
     }
-    if (tile_h < 1) tile_h = tile_w = 1;
 
     xil_printf("tile=%dx%d ic_ts=%d oc_groups=%d%s\r\n",
                tile_h, tile_w, ic_tile_size,

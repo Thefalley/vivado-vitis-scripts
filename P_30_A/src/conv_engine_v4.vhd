@@ -701,8 +701,12 @@ begin
                     state <= BIAS_LOAD;
 
                 when BIAS_LOAD =>
-                    mac_lb <= '1';
-                    -- Arrancar la carga de pesos del primer ic_tile
+                    -- Load bias into MAC accumulators ONLY on first IC tile
+                    -- (when no_clear=0). On subsequent IC tiles (no_clear=1),
+                    -- skip load_bias to preserve the partial accumulator sums.
+                    if cfg_no_clear = '0' then
+                        mac_lb <= '1';
+                    end if;
                     state  <= WL_NEXT;
 
                 ---------------------------------------------------------------
