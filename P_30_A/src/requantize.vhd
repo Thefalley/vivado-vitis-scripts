@@ -7,7 +7,8 @@
 --   Es la operacion "multiply_shift" que usamos en Python y C.
 --
 -- FORMULA:
---   resultado = clamp( ((acc * M0) + 2^(n-1)) >> n  +  y_zp,  -128, 127 )
+--   resultado = clamp( round_half_to_even((acc * M0), n) >> n  +  y_zp,  -128, 127 )
+--   (Banker's rounding to match ONNX Runtime quantization)
 --
 -- COMO LO HACE (8 etapas de pipeline):
 --
@@ -22,8 +23,11 @@
 --     Timing: WNS = +1.989 ns @ 100 MHz. Carry chain max: 28 bits.
 --
 --   ETAPA 6 (ciclo N+5):
---     rounded = mult_result + 2^(n-1)
+--     rounded = mult_result + 2^(n-1)   [conditionally, see below]
 --     Suma de 64 bits. Sumar "medio bit" para redondear (no truncar).
+--     Round-half-to-even (banker's rounding, matches ONNX Runtime):
+--       If frac bits == exactly 0.5 AND integer part is even,
+--       the round value is suppressed (add 0 instead of 2^(n-1)).
 --
 --   ETAPA 7 (ciclo N+6):
 --     shifted = rounded >> n
@@ -131,6 +135,16 @@ architecture rtl of requantize is
     signal s6_valid   : std_logic;
 
     ---------------------------------------------------------------------------
+    -- Round-half-to-even (banker's rounding) support signals
+    -- Used in Stage 6 to detect when mult_result is exactly halfway
+    -- between two integers and the integer part is even, in which
+    -- case the round-up value must be suppressed to match ONNX Runtime.
+    ---------------------------------------------------------------------------
+    signal rhe_is_halfway   : std_logic;  -- frac bits == exactly 0.5
+    signal rhe_int_is_even  : std_logic;  -- integer part (bit n) is 0
+    signal rhe_suppress     : std_logic;  -- suppress round-up
+
+    ---------------------------------------------------------------------------
     -- ETAPA 7: registros de shift
     ---------------------------------------------------------------------------
     signal s7_shifted : signed(31 downto 0);
@@ -226,16 +240,75 @@ begin
     end process p_param_pipe;
 
     ---------------------------------------------------------------------------
-    -- ETAPA 6: REDONDEO
+    -- ETAPA 6: REDONDEO — round-half-to-even (banker's rounding)
     --
-    -- rounded = mult_result + 2^(n_shift - 1)
-    -- Sumar "medio bit" para que el shift posterior redondee.
-    -- 1 suma de 64 bits (~4 ns carry chain).
+    -- Original: rounded = mult_result + 2^(n-1)   [round-half-up]
+    --
+    -- ONNX Runtime uses round-half-to-even:
+    --   - If fractional part is NOT exactly 0.5: round normally
+    --     (add 2^(n-1) and truncate via shift — same as before)
+    --   - If fractional part is EXACTLY 0.5 AND integer part is even:
+    --     do NOT add the round value (truncate = keep even result)
+    --   - If fractional part is EXACTLY 0.5 AND integer part is odd:
+    --     add the round value (round up to next even result)
+    --
+    -- Detection (combinational, before the register):
+    --   "exactly halfway" = bits [n-1 : 0] of mult_result == 2^(n-1)
+    --     i.e., bit n-1 is 1 and all bits below n-1 are 0.
+    --   "integer part is even" = bit n of mult_result is 0.
+    --   When both: suppress the round-up (add 0 instead of 2^(n-1)).
     --
     -- Lee de: mult_result (salida del multiplicador, ciclo 5)
     --         mp_n(4), mp_yzp(4), mp_valid(4) (pipeline alineado)
     ---------------------------------------------------------------------------
+
+    -- Combinational: detect exact halfway and even integer part
+    p_rhe_detect : process(mult_result, mp_n(4))
+        variable n_val    : natural;
+        variable halfway  : std_logic;
+        variable int_even : std_logic;
+    begin
+        n_val := to_integer(mp_n(4));
+
+        if n_val = 0 then
+            -- n=0: no shift, no fractional bits, rounding is moot
+            halfway  := '0';
+            int_even := '0';
+        else
+            -- Check if bits [n-1:0] == 2^(n-1):
+            --   bit n-1 must be '1', all bits below must be '0'
+            halfway := '1';
+            for i in 0 to 62 loop
+                if i < n_val - 1 then
+                    -- bits below n-1 must be '0'
+                    if mult_result(i) = '1' then
+                        halfway := '0';
+                    end if;
+                elsif i = n_val - 1 then
+                    -- bit n-1 must be '1'
+                    if mult_result(i) = '0' then
+                        halfway := '0';
+                    end if;
+                end if;
+            end loop;
+
+            -- Check if bit n of mult_result is 0 (integer part is even)
+            -- n_val ranges 1..63, so bit index n_val is always within 1..63
+            if mult_result(n_val) = '0' then
+                int_even := '1';
+            else
+                int_even := '0';
+            end if;
+        end if;
+
+        rhe_is_halfway  <= halfway;
+        rhe_int_is_even <= int_even;
+        rhe_suppress    <= halfway and int_even;
+    end process p_rhe_detect;
+
+    -- Registered stage 6: add round value conditionally
     p_etapa6 : process(clk)
+        variable round_val : signed(63 downto 0);
     begin
         if rising_edge(clk) then
             if rst_n = '0' then
@@ -244,7 +317,14 @@ begin
             s6_yzp     <= (others => '0');
             s6_valid   <= '0';
         else
-            s6_rounded <= mult_result + make_round_val(mp_n(4));
+            -- Round-half-to-even: suppress 2^(n-1) when exactly halfway
+            -- and the integer part is already even (truncation = correct)
+            if rhe_suppress = '1' then
+                round_val := (others => '0');
+            else
+                round_val := make_round_val(mp_n(4));
+            end if;
+            s6_rounded <= mult_result + round_val;
             s6_n       <= mp_n(4);
             s6_yzp     <= mp_yzp(4);
             s6_valid   <= mp_valid(4);
