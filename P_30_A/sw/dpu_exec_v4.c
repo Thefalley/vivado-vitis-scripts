@@ -52,6 +52,8 @@
 #define REG_NO_CLEAR      0x68
 #define REG_NO_REQUANTIZE 0x6C
 #define REG_WB_N_BYTES    0x70
+#define REG_SKIP_WL       0x74  /* '1' = skip weight preload from BRAM (use FIFO path) */
+#define REG_DBG_CE_STATE  0x78  /* RO: conv_engine internal FSM state index */
 
 #define LAYER_CONV 0
 #define CMD_LOAD         0x01
@@ -98,10 +100,12 @@ int dpu_v4_init(void)
 
 static int wait_dma_idle(XAxiDma *dma, int max) {
     int t = 0;
-    while (XAxiDma_Busy(dma, XAXIDMA_DMA_TO_DEVICE)) {
+    for (;;) {
+        uint32_t sr = Xil_In32(dma->RegBase + 0x04);
+        if (sr & 0x01) return DPU_OK;  /* HALTED → channel stopped, no transfer */
+        if (sr & 0x02) return DPU_OK;  /* IDLE → running but no active transfer */
         if (++t > max) return DPU_ERR_TIMEOUT;
     }
-    return DPU_OK;
 }
 
 static int wait_done_latch(int max) {
@@ -131,6 +135,7 @@ static void dm_configure(uint32_t dest, uint32_t bytes) {
 #define TILE_SCRATCH   0x14000000u
 #define TILE_IN_BUF    (TILE_SCRATCH + 0x100000u)  /* +1 MB */
 #define TILE_OUT_BUF   (TILE_SCRATCH + 0x200000u)  /* +2 MB */
+#define W_TILE_BUF     (TILE_SCRATCH + 0x300000u)  /* +3 MB, max 32KB */
 
 /*
  * dpu_exec_conv_v4 -- Ejecuta una capa CONV con IC tiling via ARM.
@@ -151,6 +156,60 @@ int dpu_exec_conv_v4(const layer_config_t *L,
                      dpu_prof_t    *prof)
 {
     if (!g_dma_ready) return DPU_ERR_PARAMS;
+
+    /*
+     * Debug trace — cada paso critico se escribe al mailbox DDR Y se
+     * imprime por UART. Desde el PC se ve con un terminal serie al COM
+     * del ZedBoard (115200 8N1).
+     *
+     * Mailbox DDR 0x10100000 — 4 words (ultima snapshot):
+     *   +0: step   +4: REG_CTRL   +8: CE_STATE   +12: extra
+     *
+     * Formato UART:
+     *   [0x10] W=0 CE=0 x=0       (wrapper_fsm, conv_state, extra)
+     *   [0xF0] ERR W=2 CE=5 x=... (state mismatch → abort)
+     */
+    #define DBG_ADDR 0x10100000u
+    #define DBGSNAP(step, extra) do { \
+        uint32_t _s = (step), _x = (extra); \
+        uint32_t _ctrl = dpu_read(REG_CTRL); \
+        uint32_t _ce   = dpu_read(REG_DBG_CE_STATE); \
+        *(volatile uint32_t *)(DBG_ADDR +  0) = _s; \
+        *(volatile uint32_t *)(DBG_ADDR +  4) = _ctrl; \
+        *(volatile uint32_t *)(DBG_ADDR +  8) = _ce; \
+        *(volatile uint32_t *)(DBG_ADDR + 12) = _x; \
+        Xil_DCacheFlushRange(DBG_ADDR, 16); \
+        if (dbg_verbose || (_s & 0xE0) == 0xE0) \
+            xil_printf("[0x%02x] W=%d CE=%d x=0x%08x\r\n", \
+                       _s, (_ctrl>>10)&3, _ce, _x); \
+    } while(0)
+
+    /* Throttle: solo imprime tile 0, 1 y cada 500 para no saturar UART.
+     * Errores SIEMPRE se imprimen. Mailbox DDR siempre se actualiza. */
+    int dbg_verbose = 1;  /* se pone a 0 despues del primer tile */
+
+    /* Check: verify wrapper_fsm and conv_engine state match expected.
+     * wrapper_fsm: bits 11:10 of REG_CTRL (0=IDLE,1=LOAD,2=CONV,3=DRAIN)
+     * ce_state:    REG_DBG_CE_STATE (0=IDLE, see state_t in conv_engine_v4.vhd)
+     * On mismatch: prints ERR, writes snapshot, returns DPU_ERR_PARAMS. */
+    #define CE_IDLE 0
+    #define WRAPPER_IDLE 0
+    #define WRAPPER_LOAD 1
+    #define WRAPPER_CONV 2
+    #define CHK_STATE(step, exp_w, exp_ce) do { \
+        uint32_t _ctrl = dpu_read(REG_CTRL); \
+        uint32_t _ce   = dpu_read(REG_DBG_CE_STATE); \
+        uint32_t _wfsm = (_ctrl >> 10) & 0x3; \
+        if (_wfsm != (uint32_t)(exp_w) || _ce != (uint32_t)(exp_ce)) { \
+            xil_printf("[0x%02x] ERR W=%d(exp %d) CE=%d(exp %d)\r\n", \
+                       (step), _wfsm, (exp_w), _ce, (exp_ce)); \
+            DBGSNAP(0xF0 | ((step) & 0x0F), (_wfsm << 16) | (_ce & 0xFFFF)); \
+            return DPU_ERR_PARAMS; \
+        } \
+    } while(0)
+
+    /* --- Entry: wrapper and conv_engine should both be IDLE --- */
+    CHK_STATE(0x10, WRAPPER_IDLE, CE_IDLE);
 
     const int kh = L->kernel;
     const int kw = L->kernel;
@@ -229,29 +288,41 @@ int dpu_exec_conv_v4(const layer_config_t *L,
                 /* ============================================ */
                 /* PASO 1: Cargar pesos via DMA_W → FIFO → wb_ram */
                 /* ============================================ */
-                const int8_t *w_ptr = weights_ddr + ic_base;  /* OHWI offset */
-                /* Los pesos en OHWI para este ic_tile: necesitamos extraer
-                 * w[oc][kh][kw][ic_base:ic_base+ic_ts] de un bloque compacto.
-                 * El blob tiene w[oc][kh][kw][0:c_in], asi que el offset
-                 * para (oc=0, kh=0, kw=0, ic=ic_base) es ic_base bytes. */
+                UINTPTR w_dma_src;
+                if (ic_ts == L->c_in) {
+                    w_dma_src = (UINTPTR)weights_ddr;
+                    Xil_DCacheFlushRange(w_dma_src, w_bytes);
+                } else {
+                    int8_t *wt = (int8_t *)W_TILE_BUF;
+                    int inner = kh * kw * L->c_in;
+                    for (int oc = 0; oc < L->c_out; oc++) {
+                        for (int p = 0; p < kh * kw; p++) {
+                            memcpy(wt + (oc * kh * kw + p) * ic_ts,
+                                   weights_ddr + oc * inner + p * L->c_in + ic_base,
+                                   ic_ts);
+                        }
+                    }
+                    w_dma_src = (UINTPTR)wt;
+                    Xil_DCacheFlushRange(w_dma_src, w_bytes);
+                }
 
-                /* TODO: la extraccion de pesos parciales requiere copiar a
-                 * un buffer contiguo si ic_ts < c_in (los canales no son
-                 * contiguos en OHWI). Por ahora, si ic_ts == c_in (cabe
-                 * todo en wb_ram), mandamos directo. */
-                Xil_DCacheInvalidateRange((UINTPTR)weights_ddr, ALIGN_UP(L->c_out * kh * kw * L->c_in, 64));
-                Xil_DCacheFlushRange((UINTPTR)weights_ddr, L->c_out * kh * kw * L->c_in);
-
+                /* --- PASO 1: pesos via DMA_W → FIFO → wb_ram --- */
+                DBGSNAP(0x20, w_bytes);
                 dpu_write(REG_WB_N_BYTES, w_bytes);
                 dpu_write(REG_CTRL, CMD_LOAD_WEIGHTS);
 
                 rc = wait_dma_idle(&g_dma_w, 5000000);
-                if (rc != DPU_OK) return rc;
-                if (XAxiDma_SimpleTransfer(&g_dma_w, (UINTPTR)weights_ddr,
-                                           w_bytes, XAXIDMA_DMA_TO_DEVICE) != XST_SUCCESS)
-                    return DPU_ERR_PARAMS;
+                if (rc != DPU_OK) { DBGSNAP(0xE1, Xil_In32(g_dma_w.RegBase+0x04)); return rc; }
+
+                if (XAxiDma_SimpleTransfer(&g_dma_w, w_dma_src,
+                                           ALIGN_UP(w_bytes, 4), XAXIDMA_DMA_TO_DEVICE) != XST_SUCCESS)
+                    { DBGSNAP(0xE2, 0); return DPU_ERR_PARAMS; }
+
                 rc = wait_done_latch(20000000);
-                if (rc != DPU_OK) return rc;
+                if (rc != DPU_OK) { DBGSNAP(0xE3, 0); return rc; }
+
+                /* Weights loaded — wrapper should be back to IDLE */
+                CHK_STATE(0x23, WRAPPER_IDLE, CE_IDLE);
 
                 /* ============================================ */
                 /* PASO 2: Cargar input+bias via DMA_IN → BRAM   */
@@ -295,7 +366,8 @@ int dpu_exec_conv_v4(const layer_config_t *L,
                 dpu_write(REG_IC_TILE_SIZE, ic_ts);
                 dpu_write(REG_N_WORDS,      TOT / 4);
                 dpu_write(REG_ADDR_INPUT,   IN_OFF);
-                dpu_write(REG_ADDR_WEIGHTS, 0);  /* wb_ram empieza en 0 */
+                dpu_write(REG_ADDR_WEIGHTS, 0);
+                dpu_write(REG_SKIP_WL,      1);  /* weights via FIFO, skip BRAM preload */
                 dpu_write(REG_ADDR_BIAS,    B_OFF);
                 dpu_write(REG_PAD_TOP,      pad_t);
                 dpu_write(REG_PAD_BOTTOM,   pad_b);
@@ -304,38 +376,41 @@ int dpu_exec_conv_v4(const layer_config_t *L,
                 dpu_write(REG_NO_CLEAR,     is_first ? 0 : 1);
                 dpu_write(REG_NO_REQUANTIZE, is_last ? 0 : 1);
 
-                /* LOAD input+bias → BRAM */
+                /* --- PASO 2: input+bias via DMA_IN → BRAM --- */
+                DBGSNAP(0x30, TOT);
                 dpu_write(REG_CTRL, CMD_LOAD);
                 rc = wait_dma_idle(&g_dma_in, 5000000);
-                if (rc != DPU_OK) return rc;
+                if (rc != DPU_OK) { DBGSNAP(0xE4, Xil_In32(g_dma_in.RegBase+0x04)); return rc; }
                 if (XAxiDma_SimpleTransfer(&g_dma_in, (UINTPTR)tile_buf,
                                            TOT, XAXIDMA_DMA_TO_DEVICE) != XST_SUCCESS)
-                    return DPU_ERR_PARAMS;
+                    { DBGSNAP(0xE4, 1); return DPU_ERR_PARAMS; }
                 rc = wait_dma_idle(&g_dma_in, 10000000);
-                if (rc != DPU_OK) return rc;
+                if (rc != DPU_OK) { DBGSNAP(0xE4, 2); return rc; }
                 /* Wait wrapper idle after LOAD */
                 int tm = 0;
                 while (((dpu_read(REG_CTRL) >> 10) & 0x3) != 0) {
-                    if (++tm > 1000000) return DPU_ERR_TIMEOUT;
+                    if (++tm > 1000000) { DBGSNAP(0xE5, 0); return DPU_ERR_TIMEOUT; }
                 }
+                /* Input loaded — wrapper and conv should be IDLE */
+                CHK_STATE(0x35, WRAPPER_IDLE, CE_IDLE);
 
-                /* ============================================ */
-                /* PASO 3: START → conv procesa                  */
-                /* ============================================ */
+                /* --- PASO 3: START conv --- */
+                DBGSNAP(0x40, total_tiles);
                 dpu_write(REG_CTRL, CMD_START);
                 rc = wait_done_latch(20000000);
-                if (rc != DPU_OK) return rc;
+                if (rc != DPU_OK) { DBGSNAP(0xE6, 0); return rc; }
+                /* Conv done — back to IDLE */
+                CHK_STATE(0x45, WRAPPER_IDLE, CE_IDLE);
 
-                /* ============================================ */
-                /* PASO 4: DRAIN (solo en el ultimo ic_tile)     */
-                /* ============================================ */
+                /* --- PASO 4: DRAIN output (solo ultimo ic_tile) --- */
                 if (is_last) {
                     uint8_t *out_tile = (uint8_t *)TILE_OUT_BUF;
+                    DBGSNAP(0x50, out_bytes_tile);
                     dm_configure((uintptr_t)out_tile, out_bytes_tile);
                     dpu_write(REG_N_WORDS, (out_bytes_tile + 3) / 4);
                     dpu_write(REG_CTRL, CMD_DRAIN);
                     rc = wait_dm_done(20000000);
-                    if (rc != DPU_OK) return DPU_ERR_DM_FAULT;
+                    if (rc != DPU_OK) { DBGSNAP(0xE7, 0); return DPU_ERR_DM_FAULT; }
 
                     /* Copiar tile output al tensor global NCHW */
                     Xil_DCacheInvalidateRange((UINTPTR)out_tile, out_bytes_tile);
@@ -351,6 +426,13 @@ int dpu_exec_conv_v4(const layer_config_t *L,
                 }
 
                 total_tiles++;
+                /* After first tile OK, reduce UART output to errors only */
+                if (total_tiles == 1)
+                    xil_printf("[OK] tile 0 done, quiet mode (errors still print)\r\n");
+                if (total_tiles <= 2 || (total_tiles % 500) == 0)
+                    dbg_verbose = 1;
+                else
+                    dbg_verbose = 0;
             } /* ic_tile loop */
         } /* ow0 */
     } /* oh0 */
@@ -358,5 +440,6 @@ int dpu_exec_conv_v4(const layer_config_t *L,
     Xil_DCacheFlushRange((UINTPTR)out_ddr,
                          (uint32_t)L->c_out * L->h_out * L->w_out);
     if (prof) prof->n_tiles = total_tiles;
+    xil_printf("[DONE] tiles=%d\r\n", total_tiles);
     return DPU_OK;
 }

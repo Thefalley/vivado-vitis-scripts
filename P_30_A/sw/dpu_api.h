@@ -18,7 +18,7 @@
 #define DPU_ERR_TILING   -3
 #define DPU_ERR_PARAMS   -4
 
-#define DPU_BRAM_BYTES        4096
+#define DPU_BRAM_BYTES        8192
 #define DPU_TILE_INPUT_MAX     512
 #define DPU_TILE_STREAM_MAX   1536
 

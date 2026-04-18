@@ -24,6 +24,8 @@ entity fifo_weights is
         s_axis_tdata  : in  std_logic_vector(31 downto 0);
         s_axis_tvalid : in  std_logic;
         s_axis_tready : out std_logic;
+        s_axis_tlast  : in  std_logic;
+        s_axis_tkeep  : in  std_logic_vector(3 downto 0);
 
         -- Output to wb_ram write port (byte-by-byte)
         m_data  : out std_logic_vector(7 downto 0);

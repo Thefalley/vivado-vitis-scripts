@@ -65,6 +65,15 @@
 --   0x5C: n_neg          (LEAKY_RELU) — pendiente fase 2
 --   0x60: b_zp           (ELEM_ADD)   — pendiente fase 4
 --   0x64: M0_b           (ELEM_ADD)   — pendiente fase 4
+--   --- P_30_A new ---
+--   0x68: no_clear       (bit 0, W)  -- '1' = don't clear MAC accumulators
+--   0x6C: no_requantize  (bit 0, W)  -- '1' = skip requantize step
+--   0x70: wb_n_bytes     (17:0, W)   -- number of bytes to load via FIFO
+--   0x74: skip_wl        (bit 0, RW) -- '1' = skip weight preload from BRAM
+--                                       (weights already in wb_ram via FIFO)
+--   0x78: dbg_ce_state   (5:0, RO)   -- conv_engine internal FSM state index
+--                                       (0=IDLE, 14=WL_NEXT, 19=MAC_PAD_REG,
+--                                        27=IC_TILE_ADV, 31=DONE_ST)
 --
 -------------------------------------------------------------------------------
 
@@ -176,6 +185,10 @@ architecture rtl of dpu_stream_wrapper is
     signal reg_no_clear      : std_logic := '0';
     signal reg_no_requantize : std_logic := '0';
     signal reg_wb_n_bytes    : unsigned(17 downto 0) := (others => '0');  -- max 256 KB
+    signal reg_skip_wl       : std_logic := '0';  -- '1' = skip weight preload from BRAM
+
+    -- P_30_A debug: conv_engine FSM state (read-only via AXI-Lite 0x78)
+    signal ce_dbg_state : integer range 0 to 63 := 0;
 
     -- Command bits (self-clearing pulses)
     signal cmd_load    : std_logic := '0';
@@ -190,8 +203,7 @@ architecture rtl of dpu_stream_wrapper is
     signal ext_wb_we   : std_logic := '0';
     signal wb_load_count : unsigned(17 downto 0) := (others => '0');
 
-    -- P_30_A: weight stream — connect entity ports to internal signals
-    signal w_stream_ready : std_logic := '0';
+    -- P_30_A: w_stream_ready_o driven combinationally (see concurrent assignment below)
 
     ---------------------------------------------------------------------------
     -- conv_engine_v3 signals
@@ -336,7 +348,7 @@ architecture rtl of dpu_stream_wrapper is
 begin
 
     -- P_30_A: weight stream port connections
-    w_stream_ready_o <= w_stream_ready;
+    w_stream_ready_o <= '1' when (state = S_LOAD_WEIGHTS and wb_load_count < reg_wb_n_bytes) else '0';
 
     ---------------------------------------------------------------------------
     -- Output assignments
@@ -397,7 +409,8 @@ begin
             ddr_wr_addr      => ddr_wr_addr,
             ddr_wr_data      => ddr_wr_data,
             ddr_wr_en        => ddr_wr_en,
-            dbg_state        => open,
+            cfg_skip_wl      => reg_skip_wl,
+            dbg_state        => ce_dbg_state,
             dbg_oh           => open,
             dbg_ow           => open,
             dbg_kh           => open,
@@ -1118,7 +1131,6 @@ begin
                     ---------------------------------------------------------------
                     when S_LOAD_WEIGHTS =>
                         ext_wb_we <= '0';
-                        w_stream_ready <= '0';
                         if wb_load_count >= reg_wb_n_bytes then
                             done_latch <= '1';
                             state <= S_IDLE;
@@ -1126,7 +1138,6 @@ begin
                             ext_wb_addr <= wb_load_count(14 downto 0);
                             ext_wb_data <= signed(w_stream_data_i);
                             ext_wb_we   <= '1';
-                            w_stream_ready <= '1';
                             wb_load_count <= wb_load_count + 1;
                         end if;
 
@@ -1205,6 +1216,8 @@ begin
                         when 16#68# => reg_no_clear      <= s_axi_wdata(0);
                         when 16#6C# => reg_no_requantize <= s_axi_wdata(0);
                         when 16#70# => reg_wb_n_bytes    <= unsigned(s_axi_wdata(17 downto 0));
+                        -- P_30_A: skip weight preload (use when weights via FIFO)
+                        when 16#74# => reg_skip_wl       <= s_axi_wdata(0);
                         when others => null;
                     end case;
                 end if;
@@ -1271,6 +1284,17 @@ begin
                                 when 16#5C# => reg_rd_data <= reg_n_neg;
                                 when 16#60# => reg_rd_data <= reg_b_zp;
                                 when 16#64# => reg_rd_data <= reg_M0_b;
+                                -- P_30_A new
+                                when 16#74# =>
+                                    reg_rd_data <= (others => '0');
+                                    reg_rd_data(0) <= reg_skip_wl;
+                                -- P_30_A debug: conv_engine internal FSM state
+                                -- 0=IDLE, 7=BL_EMIT, 14=WL_NEXT, 16=WL_EMIT,
+                                -- 19=MAC_PAD_REG, 27=IC_TILE_ADV, 31=DONE_ST
+                                -- (see state_t'pos in conv_engine_v4.vhd)
+                                when 16#78# =>
+                                    reg_rd_data <= std_logic_vector(
+                                        to_unsigned(ce_dbg_state, 32));
                                 when others => reg_rd_data <= (others => '0');
                             end case;
 

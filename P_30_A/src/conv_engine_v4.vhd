@@ -127,6 +127,14 @@ entity conv_engine_v4 is
         cfg_no_clear      : in std_logic;  -- '1' = do NOT clear MAC accumulators at pixel start
         cfg_no_requantize : in std_logic;  -- '1' = skip requantize+DDR write, go straight to DONE
 
+        -- P_30_A: skip internal weight preload from BRAM.
+        -- When '1', the FSM skips the WL_EMIT→WL_CAPTURE loop that copies
+        -- weights from BRAM (ddr_rd) into wb_ram (Port A). Use this when
+        -- weights were already loaded into wb_ram via the ext_wb (Port B)
+        -- path (FIFO from DMA_W). If '0', the conv_engine loads weights
+        -- from BRAM as usual (legacy P_18 behavior).
+        cfg_skip_wl       : in std_logic;
+
         -- Control
         start     : in  std_logic;
         done      : out std_logic;
@@ -778,7 +786,19 @@ begin
                 ---------------------------------------------------------------
                 when WL_STRIDE =>
                     tile_filter_stride <= resize(ic_in_tile_limit * kk_reg, 20);
-                    state <= WL_EMIT;
+                    if cfg_skip_wl = '1' then
+                        -- P_30_A: weights already in wb_ram via ext_wb (FIFO).
+                        -- Skip WL_EMIT→WL_CAPTURE loop. Jump directly to MAC.
+                        kh <= (others => '0');
+                        kw <= (others => '0');
+                        ic <= (others => '0');
+                        w_base_idx_r <= (others => '0');
+                        act_ic_offset <= act_tile_base;
+                        act_kh_offset <= (others => '0');
+                        state <= MAC_PAD_REG;
+                    else
+                        state <= WL_EMIT;
+                    end if;
 
                 when WL_EMIT =>
                     if wl_i < to_unsigned(N_MAC, 6) then
