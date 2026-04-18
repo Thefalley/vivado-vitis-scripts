@@ -306,17 +306,30 @@ int dpu_exec_conv_v4(const layer_config_t *L,
                     Xil_DCacheFlushRange(w_dma_src, w_bytes);
                 }
 
-                /* --- PASO 1: pesos via DMA_W → FIFO → wb_ram --- */
+                /* --- PASO 1: pesos via DMA_W → FIFO → wb_ram ---
+                 * DMA max = 16380 bytes (14-bit length register).
+                 * Wrapper stays in S_LOAD_WEIGHTS counting total bytes.
+                 * ARM sends N chunks, FIFO buffers between DMA and wrapper. */
+                #define DMA_MAX_CHUNK 16380
                 DBGSNAP(0x20, w_bytes);
                 dpu_write(REG_WB_N_BYTES, w_bytes);
                 dpu_write(REG_CTRL, CMD_LOAD_WEIGHTS);
 
-                rc = wait_dma_idle(&g_dma_w, 5000000);
-                if (rc != DPU_OK) { DBGSNAP(0xE1, Xil_In32(g_dma_w.RegBase+0x04)); return rc; }
-
-                if (XAxiDma_SimpleTransfer(&g_dma_w, w_dma_src,
-                                           ALIGN_UP(w_bytes, 4), XAXIDMA_DMA_TO_DEVICE) != XST_SUCCESS)
-                    { DBGSNAP(0xE2, 0); return DPU_ERR_PARAMS; }
+                {
+                    int remaining = w_bytes;
+                    UINTPTR src = w_dma_src;
+                    while (remaining > 0) {
+                        int chunk = remaining > DMA_MAX_CHUNK ? DMA_MAX_CHUNK : remaining;
+                        chunk = ALIGN_UP(chunk, 4);
+                        rc = wait_dma_idle(&g_dma_w, 5000000);
+                        if (rc != DPU_OK) { DBGSNAP(0xE1, Xil_In32(g_dma_w.RegBase+0x04)); return rc; }
+                        if (XAxiDma_SimpleTransfer(&g_dma_w, src, chunk,
+                                                   XAXIDMA_DMA_TO_DEVICE) != XST_SUCCESS)
+                            { DBGSNAP(0xE2, remaining); return DPU_ERR_PARAMS; }
+                        src += chunk;
+                        remaining -= chunk;
+                    }
+                }
 
                 rc = wait_done_latch(20000000);
                 if (rc != DPU_OK) { DBGSNAP(0xE3, 0); return rc; }
