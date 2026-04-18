@@ -789,10 +789,13 @@ begin
                     if cfg_skip_wl = '1' then
                         -- P_30_A: weights already in wb_ram via ext_wb (FIFO).
                         -- Skip WL_EMIT→WL_CAPTURE loop. Jump directly to MAC.
+                        -- FIFO loaded ALL weights linearly (OHWI), so for OC tile N
+                        -- the weights start at oc_tile_base * tile_filter_stride.
+                        -- Without skip_wl, preload always puts current tile at addr 0.
                         kh <= (others => '0');
                         kw <= (others => '0');
                         ic <= (others => '0');
-                        w_base_idx_r <= (others => '0');
+                        w_base_idx_r <= resize(oc_tile_base * tile_filter_stride, 20);
                         act_ic_offset <= act_tile_base;
                         act_kh_offset <= (others => '0');
                         state <= MAC_PAD_REG;
