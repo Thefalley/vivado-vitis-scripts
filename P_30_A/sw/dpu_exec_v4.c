@@ -223,6 +223,11 @@ int dpu_exec_conv_v4(const layer_config_t *L,
     /* --- Entry: wrapper and conv_engine should both be IDLE --- */
     CHK_STATE(0x10, WRAPPER_IDLE, CE_IDLE);
 
+    /* Invalidate input+bias DDR once (not per-tile!) so ARM reads fresh data */
+    Xil_DCacheInvalidateRange((UINTPTR)in_ddr,
+        ALIGN_UP((uint32_t)L->c_in * L->h_in * L->w_in, 64));
+    Xil_DCacheInvalidateRange((UINTPTR)bias_ddr, ALIGN_UP(L->c_out * 4, 64));
+
     const int kh = L->kernel;
     const int kw = L->kernel;
     const int stride = (L->stride == 2) ? 2 : 1;
@@ -375,9 +380,7 @@ int dpu_exec_conv_v4(const layer_config_t *L,
 
                 memset(tile_buf, 0, TOT);
 
-                /* Extraer input NCHW para este ic_tile */
-                Xil_DCacheInvalidateRange((UINTPTR)in_ddr,
-                    ALIGN_UP((uint32_t)L->c_in * L->h_in * L->w_in, 64));
+                /* Extraer input NCHW para este ic_tile (cache already invalidated above) */
                 for (int c = 0; c < ic_ts; c++) {
                     for (int rr = 0; rr < in_h_real; rr++) {
                         const uint8_t *src = in_ddr
@@ -390,9 +393,8 @@ int dpu_exec_conv_v4(const layer_config_t *L,
                     }
                 }
 
-                /* Bias (solo en el primer ic_tile) */
+                /* Bias (solo en el primer ic_tile, cache already invalidated above) */
                 if (is_first) {
-                    Xil_DCacheInvalidateRange((UINTPTR)bias_ddr, ALIGN_UP(b_bytes, 64));
                     memcpy(tile_buf + B_OFF, bias_ddr, b_bytes);
                 }
 
