@@ -1,0 +1,33 @@
+timestamp=[2026-04-18 11:52:38], mode=PLATFORM_REPOSITORY_INIT, duration=0:00:20.716, duration_ms=20716, data={}
+timestamp=[2026-04-18 11:54:28], mode=APP_CREATION, duration=0:00:20.682, duration_ms=20682, data={name=dpu_app, project_type=sdk, os=standalone, processor=cortex-a9, runtime=C/C++, platform=dpu_platform, application_type=application}
+timestamp=[2026-04-18 11:54:59], mode=PLATFORM_GENERATION, duration=0:00:30.779, duration_ms=30779, data={name=dpu_platform}
+timestamp=[2026-04-18 11:55:10], mode=BUILD, duration=0:00:10.735, duration_ms=10735, data={name=dpu_app, configuration=Debug, clean_build=false}
+timestamp=[2026-04-18 13:04:19], mode=PLATFORM_REPOSITORY_INIT, duration=0:00:14.827, duration_ms=14827, data={}
+timestamp=[2026-04-18 13:04:52], mode=PLATFORM_GENERATION, duration=0:00:46.829, duration_ms=46829, data={name=dpu_platform}
+timestamp=[2026-04-18 13:05:03], mode=BUILD, duration=0:00:04.679, duration_ms=4679, data={name=dpu_app, configuration=Debug, clean_build=false}
+timestamp=[2026-04-18 13:21:42], mode=PLATFORM_REPOSITORY_INIT, duration=0:00:23.074, duration_ms=23074, data={}
+timestamp=[2026-04-18 13:22:30], mode=PLATFORM_GENERATION, duration=0:01:09.561, duration_ms=69561, data={name=dpu_platform}
+timestamp=[2026-04-18 13:22:46], mode=BUILD, duration=0:00:07.486, duration_ms=7486, data={name=dpu_app, configuration=Debug, clean_build=false}
+timestamp=[2026-04-18 14:22:45], mode=PLATFORM_REPOSITORY_INIT, duration=0:00:13.651, duration_ms=13651, data={}
+timestamp=[2026-04-18 14:23:20], mode=PLATFORM_GENERATION, duration=0:00:46.012, duration_ms=46012, data={name=dpu_platform}
+timestamp=[2026-04-18 14:23:30], mode=BUILD, duration=0:00:04.590, duration_ms=4590, data={name=dpu_app, configuration=Debug, clean_build=false}
+timestamp=[2026-04-18 14:26:47], mode=PLATFORM_REPOSITORY_INIT, duration=0:00:13.967, duration_ms=13967, data={}
+timestamp=[2026-04-18 14:27:12], mode=PLATFORM_GENERATION, duration=0:00:37.262, duration_ms=37262, data={name=dpu_platform}
+timestamp=[2026-04-18 14:27:21], mode=BUILD, duration=0:00:03.520, duration_ms=3520, data={name=dpu_app, configuration=Debug, clean_build=false}
+timestamp=[2026-04-18 14:31:44], mode=PLATFORM_REPOSITORY_INIT, duration=0:00:14.396, duration_ms=14396, data={}
+timestamp=[2026-04-18 14:32:16], mode=PLATFORM_GENERATION, duration=0:00:43.844, duration_ms=43844, data={name=dpu_platform}
+timestamp=[2026-04-18 14:32:25], mode=BUILD, duration=0:00:03.536, duration_ms=3536, data={name=dpu_app, configuration=Debug, clean_build=false}
+timestamp=[2026-04-18 14:43:01], mode=PLATFORM_REPOSITORY_INIT, duration=0:00:13.027, duration_ms=13027, data={}
+timestamp=[2026-04-18 14:43:24], mode=PLATFORM_GENERATION, duration=0:00:33.944, duration_ms=33944, data={name=dpu_platform}
+timestamp=[2026-04-18 14:43:32], mode=BUILD, duration=0:00:02.966, duration_ms=2966, data={name=dpu_app, configuration=Debug, clean_build=false}
+timestamp=[2026-04-18 14:50:25], mode=PLATFORM_REPOSITORY_INIT, duration=0:00:13.513, duration_ms=13513, data={}
+timestamp=[2026-04-18 14:50:48], mode=PLATFORM_GENERATION, duration=0:00:34.552, duration_ms=34552, data={name=dpu_platform}
+timestamp=[2026-04-18 14:50:56], mode=BUILD, duration=0:00:02.966, duration_ms=2966, data={name=dpu_app, configuration=Debug, clean_build=false}
+timestamp=[2026-04-18 14:54:51], mode=PLATFORM_REPOSITORY_INIT, duration=0:00:14.242, duration_ms=14242, data={}
+timestamp=[2026-04-18 14:55:05], mode=PLATFORM_GENERATION, duration=0:00:25.799, duration_ms=25799, data={name=dpu_platform}
+timestamp=[2026-04-18 14:55:05], mode=BUILD, duration=0:00:00.264, duration_ms=264, data={name=dpu_app, configuration=Debug, clean_build=true}
+timestamp=[2026-04-18 14:55:51], mode=PLATFORM_GENERATION, duration=0:00:44.909, duration_ms=44909, data={name=dpu_platform}
+timestamp=[2026-04-18 14:56:04], mode=BUILD, duration=0:00:06.304, duration_ms=6304, data={name=dpu_app, configuration=Debug, clean_build=false}
+timestamp=[2026-04-18 14:56:46], mode=PLATFORM_REPOSITORY_INIT, duration=0:00:12.999, duration_ms=12999, data={}
+timestamp=[2026-04-18 14:57:10], mode=PLATFORM_GENERATION, duration=0:00:35.316, duration_ms=35316, data={name=dpu_platform}
+timestamp=[2026-04-18 14:57:18], mode=BUILD, duration=0:00:02.716, duration_ms=2716, data={name=dpu_app, configuration=Debug, clean_build=false}

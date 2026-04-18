@@ -1,0 +1,2087 @@
+!SESSION 2026-04-18 11:51:41.539 -----------------------------------------------
+eclipse.buildId=2024.2
+java.version=21.0.5
+java.vendor=Eclipse Adoptium
+BootLoader constants: OS=win32, ARCH=x86_64, WS=win32, NL=es_ES
+Framework arguments:  -application com.xilinx.sdx.cmdline.service 59940
+Command-line arguments:  -os win32 -ws win32 -arch x86_64 -application com.xilinx.sdx.cmdline.service 59940 -data C:/project/vivado/P_30_A/vitis_ws_new
+
+!ENTRY org.eclipse.cdt.core 1 0 2026-04-18 11:52:45.407
+!MESSAGE Indexed 'dpu_platform' (576 sources, 565 headers) in 25,9 sec: 21.692 declarations; 110.811 references; 350 unresolved inclusions; 90 syntax errors; 2.013 unresolved names (1,5 %)
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 11:54:00.259
+!MESSAGE XSCT Command: [::hsi::utils::get_all_app_details -json], Thread: Thread-22
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 11:54:00.433
+!MESSAGE XSCT command with result: [::hsi::utils::get_all_app_details -json], Result: [null, {"ddr_self_refresh": {"userdefname": "DDR self refresh"
+,"description": "This DDR self refresh application provides a simple demonstration of how to enter to/exit from DDR self refresh mode. This application runs on R5 out of TCM."
+,"supp_proc": "psu_cortexr5"
+,"supp_os": "standalone"
+,"path": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/lib/sw_apps/ddr_self_refresh"
+,"os": "linux"
+,"platform_required": NO
+,"bsp_constraints": "true"
+}
+,"dhrystone": {"userdefname": "Dhrystone"
+,"description": "Dhrystone synthetic benchmark program for baremetal environment."
+,"supp_proc": "microblaze psu_cortexa53 ps7_cortexa9 psv_cortexa72 psu_cortexr5 psv_cortexr5 microblaze_riscv"
+,"supp_os": "standalone"
+,"path": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/lib/sw_apps/dhrystone"
+,"os": "linux"
+,"platform_required": NO
+,"bsp_constraints": "false"
+}
+,"empty_application": {"userdefname": "Empty Application(C)"
+,"description": "A blank C project."
+,"supp_proc": "microblaze ps7_cortexa9 psu_cortexa53 psu_cortexr5 psu_cortexa72 psv_cortexr5 psv_cortexa72 psxl_cortexa78 psxl_cortexr52 psx_cortexa78 psx_cortexr52 microblaze_riscv"
+,"supp_os": "standalone xilkernel freertos10_xilinx"
+,"path": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/lib/sw_apps/empty_application"
+,"os": "linux"
+,"platform_required": NO
+,"bsp_constraints": "false"
+}
+,"freertos_hello_world": {"userdefname": "FreeRTOS Hello World"
+,"description": " FreeRTOS Hello World application"
+,"supp_proc": "psu_cortexr5 psv_cortexr5 ps7_cortexa9 psu_cortexa53 microblaze psv_cortexa72 psxl_cortexr52 psx_cortexr52 psx_cortexa78 psxl_cortexa78"
+,"supp_os": "freertos10_xilinx"
+,"path": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/lib/sw_apps/freertos_hello_world"
+,"os": "linux"
+,"platform_required": NO
+,"bsp_constraints": "true"
+}
+,"freertos_lwip_echo_server": {"userdefname": "FreeRTOS lwIP Echo Server"
+,"description": "The FreeRTOS lwIP Echo Server application provides a simple demonstration of how to use the light-weight IP stack (lwIP) with FreeRTOS. This application sets up the board to use IP address 192.168.1.10 or IPv6 address FE80:0:0:0:20A:35FF:FE00:102, with MAC address 00:0a:35:00:01:02. The server listens for input at port 7 and simply echoes back whatever data is sent to that port."
+,"supp_proc": "psx_cortexa78 psx_cortexr52 psv_cortexa72 psv_cortexr5 psu_cortexa53 psu_cortexr5 ps7_cortexa9 microblaze"
+,"supp_os": "freertos10_xilinx"
+,"path": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/lib/sw_apps/freertos_lwip_echo_server"
+,"os": "linux"
+,"platform_required": NO
+,"bsp_constraints": "true"
+}
+,"freertos_lwip_tcp_perf_client": {"userdefname": "FreeRTOS lwIP TCP Perf Client"
+,"description": "The FreeRTOS LwIP TCP Perf Client application is used for creating TCP client and measure TCP uplink performance using light-weight IP stack (lwIP). This application sets up the board to use default IP address 192.168.1.10 and IPv6 link local address whenipv6_enable is true, with MAC address 00:0a:35:00:01:02. This application creates TCP client on board and make connection with TCP server running on host machine. It will display connection information along with interim and average TCP statistics for data transfer."
+,"supp_proc": "psx_cortexa78 psx_cortexr52 psv_cortexa72 psv_cortexr5 psu_cortexa53 psu_cortexr5 ps7_cortexa9 microblaze"
+,"supp_os": "freertos10_xilinx"
+,"path": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/lib/sw_apps/freertos_lwip_tcp_perf_client"
+,"os": "linux"
+,"platform_required": NO
+,"bsp_constraints": "true"
+}
+,"freertos_lwip_tcp_perf_server": {"userdefname": "FreeRTOS lwIP TCP Perf Server"
+,"description": "The FreeRTOS LwIP TCP Server application is used for creating TCP server using light-weight IP stack (lwIP). This application sets up the board to use default IP address 192.168.1.10 and IPv6 link local address when ipv6_enable is true, with MAC address 00:0a:35:00:01:02. The application creates TCP server on board and starts listening for TCP client connections. It will display client connection info and also display interim and average TCP statistics for data transfer. This application handles only 1 client connection at a time."
+,"supp_proc": "psx_cortexa78 psx_cortexr52 psv_cortexa72 psv_cortexr5 psu_cortexa53 psu_cortexr5 ps7_cortexa9 microblaze"
+,"supp_os": "freertos10_xilinx"
+,"path": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/lib/sw_apps/freertos_lwip_tcp_perf_server"
+,"os": "linux"
+,"platform_required": NO
+,"bsp_constraints": "true"
+}
+,"freertos_lwip_udp_perf_client": {"userdefname": "FreeRTOS lwIP UDP Perf Client"
+,"description": "The FreeRTOS LwIP UDP Perf Client application is used for creating UDP client and measure UDP uplink performance using light-weight IP stack (lwIP). This application sets up the board to use default IP address 192.168.1.10, with MAC address 00:0a:35:00:01:02. This application creates UDP client on board and make connection with UDP server running on host machine. It will display connection information along with interim and average UDP statistics for data transfer."
+,"supp_proc": "psx_cortexa78 psx_cortexr52 psv_cortexa72 psv_cortexr5 psu_cortexa53 psu_cortexr5 ps7_cortexa9 microblaze"
+,"supp_os": "freertos10_xilinx"
+,"path": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/lib/sw_apps/freertos_lwip_udp_perf_client"
+,"os": "linux"
+,"platform_required": NO
+,"bsp_constraints": "true"
+}
+,"freertos_lwip_udp_perf_server": {"userdefname": "FreeRTOS lwIP UDP Perf Server"
+,"description": "The FreeRTOS LwIP UDP Perf Server application is used for creating UDP server and measure downlink performance using light-weight IP stack (lwIP). This application sets up the board to use default IP address 192.168.1.10, with MAC address 00:0a:35:00:01:02. The application creates UDP server on board and starts listening for UDP client connections. It will display client connection information with interim and average UDP statistics for data transfer."
+,"supp_proc": "psx_cortexa78 psx_cortexr52 psv_cortexa72 psv_cortexr5 psu_cortexa53 psu_cortexr5 ps7_cortexa9 microblaze"
+,"supp_os": "freertos10_xilinx"
+,"path": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/lib/sw_apps/freertos_lwip_udp_perf_server"
+,"os": "linux"
+,"platform_required": NO
+,"bsp_constraints": "true"
+}
+,"hello_world": {"userdefname": "Hello World"
+,"description": "Let's say 'Hello World' in C."
+,"supp_proc": "microblaze ps7_cortexa9 psu_cortexa53 psu_cortexr5 psu_cortexa72 psv_cortexr5 psv_cortexa72 psxl_cortexa78 psxl_cortexr52 psx_cortexa78 psx_cortexr52 microblaze_riscv"
+,"supp_os": "standalone xilkernel"
+,"path": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/lib/sw_apps/hello_world"
+,"os": "linux"
+,"platform_required": NO
+,"bsp_constraints": "false"
+}
+,"img_rcvry": {"userdefname": "Image Recovery"
+,"description": "Image Recovery tool which writes  user selected images on the board."
+,"supp_proc": "psu_cortexa53"
+,"supp_os": "standalone"
+,"path": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/lib/sw_apps/img_rcvry"
+,"os": "linux"
+,"platform_required": NO
+,"bsp_constraints": "true"
+}
+,"libmetal_echo_demo": {"userdefname": "Libmetal AMP Demo"
+,"description": "Libmetal AMP Application"
+,"supp_proc": "psu_cortexr5 psv_cortexr5 psxl_cortexr52 psx_cortexr52"
+,"supp_os": "freertos10_xilinx standalone"
+,"path": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/lib/sw_apps/libmetal_echo_demo"
+,"os": "linux"
+,"platform_required": NO
+,"bsp_constraints": "true"
+}
+,"lwip_echo_server": {"userdefname": "lwIP Echo Server"
+,"description": "The lwIP Echo Server application provides a simple demonstration of how to use the light-weight IP stack (lwIP). This application sets up the board to use IP address 192.168.1.10 or IPv6 FE80:0:0:0:20A:35FF:FE00:102, with MAC address 00:0a:35:00:01:02. The server listens for input at port 7 and simply echoes back whatever data is sent to that port."
+,"supp_proc": "psx_cortexa78 psx_cortexr52 psv_cortexa72 psv_cortexr5 psu_cortexa53 psu_cortexr5 ps7_cortexa9 microblaze"
+,"supp_os": "standalone"
+,"path": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/lib/sw_apps/lwip_echo_server"
+,"os": "linux"
+,"platform_required": NO
+,"bsp_constraints": "true"
+}
+,"lwip_tcp_perf_client": {"userdefname": "lwIP TCP Perf Client"
+,"description": "The LwIP TCP Perf Client application is used for creating TCP client and measure TCP uplink performance using light-weight IP stack (lwIP). This application sets up the board to use default IP address 192.168.1.10 and IPv6 link local address when ipv6_enable is true, with MAC address 00:0a:35:00:01:02. This application creates TCP client on board and make connection with TCP server running on host machine. It will display connection information along with interim and average TCP statistics for data transfer."
+,"supp_proc": "psx_cortexa78 psx_cortexr52 psv_cortexa72 psv_cortexr5 psu_cortexa53 psu_cortexr5 ps7_cortexa9 microblaze"
+,"supp_os": "standalone"
+,"path": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/lib/sw_apps/lwip_tcp_perf_client"
+,"os": "linux"
+,"platform_required": NO
+,"bsp_constraints": "true"
+}
+,"lwip_tcp_perf_server": {"userdefname": "lwIP TCP Perf Server"
+,"description": "The LwIP TCP Perf Server application is used for creating TCP server and measure downlink performance using light-weight IP stack (lwIP). This application sets up the board to use default IPv4 address 192.168.1.10 and IPv6 link local address when ipv6_enable is true, with MAC address 00:0a:35:00:01:02. The application creates TCP server on board and starts listening for TCP client connections. It will display client connection information with interim and average TCP statistics for data transfer."
+,"supp_proc": "psx_cortexa78 psx_cortexr52 psv_cortexa72 psv_cortexr5 psu_cortexa53 psu_cortexr5 ps7_cortexa9 microblaze"
+,"supp_os": "standalone"
+,"path": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/lib/sw_apps/lwip_tcp_perf_server"
+,"os": "linux"
+,"platform_required": NO
+,"bsp_constraints": "true"
+}
+,"lwip_udp_perf_client": {"userdefname": "lwIP UDP Perf Client"
+,"description": "The LwIP UDP Perf Client application is used for creating UDP client and measure UDP uplink performance using light-weight IP stack (lwIP). This application sets up the board to use default IP address 192.168.1.10, with MAC address 00:0a:35:00:01:02. This application creates UDP client on board and make connection with UDP server running on host machine. It will display connection information along with interim and average UDP statistics for data transfer."
+,"supp_proc": "psx_cortexa78 psx_cortexr52 psv_cortexa72 psv_cortexr5 psu_cortexa53 psu_cortexr5 ps7_cortexa9 microblaze"
+,"supp_os": "standalone"
+,"path": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/lib/sw_apps/lwip_udp_perf_client"
+,"os": "linux"
+,"platform_required": NO
+,"bsp_constraints": "true"
+}
+,"lwip_udp_perf_server": {"userdefname": "lwIP UDP Perf Server"
+,"description": "The LwIP UDP Perf Server application is used for creating UDP server and measure downlink performance using light-weight IP stack (lwIP). This application sets up the board to use default IP address 192.168.1.10, with MAC address 00:0a:35:00:01:02. The application creates UDP server on board and starts listening for UDP client connections. It will display client connection information with interim and average UDP statistics for data transfer."
+,"supp_proc": "psx_cortexa78 psx_cortexr52 psv_cortexa72 psv_cortexr5 psu_cortexa53 psu_cortexr5 ps7_cortexa9 microblaze"
+,"supp_os": "standalone"
+,"path": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/lib/sw_apps/lwip_udp_perf_server"
+,"os": "linux"
+,"platform_required": NO
+,"bsp_constraints": "true"
+}
+,"mba_fs_boot": {"userdefname": "mba_fs_boot"
+,"description": "fs-boot for microblaze by Xilinx Inc.."
+,"supp_proc": "microblaze"
+,"supp_os": "standalone"
+,"path": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/lib/sw_apps/mba_fs_boot"
+,"os": "linux"
+,"platform_required": NO
+,"bsp_constraints": "true"
+}
+,"memory_tests": {"userdefname": "Memory Tests"
+,"description": "This application tests Memory Regions present in the hardware."
+,"supp_proc": "microblaze ps7_cortexa9 psu_cortexa53 psu_cortexr5 psv_cortexa72 psv_cortexr5 psxl_cortexa78 psxl_cortexr52 psx_cortexa78 psx_cortexr52 microblaze_riscv"
+,"supp_os": "standalone"
+,"path": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/lib/sw_apps/memory_tests"
+,"os": "linux"
+,"platform_required": NO
+,"bsp_constraints": "false"
+}
+,"openamp_echo_test": {"userdefname": "OpenAMP echo-test"
+,"description": " OpenAMP echo-test application "
+,"supp_proc": "psu_cortexr5 psv_cortexr5 psxl_cortexr52 psx_cortexr52"
+,"supp_os": "freertos10_xilinx standalone"
+,"path": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/lib/sw_apps/openamp_echo_test"
+,"os": "linux"
+,"platform_required": NO
+,"bsp_constraints": "true"
+}
+,"openamp_matrix_multiply": {"userdefname": "OpenAMP matrix multiplication Demo"
+,"description": " OpenAMP matrix multiplication application "
+,"supp_proc": "psu_cortexr5 psv_cortexr5 psxl_cortexr52 psx_cortexr52"
+,"supp_os": "freertos10_xilinx standalone"
+,"path": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/lib/sw_apps/openamp_matrix_multiply"
+,"os": "linux"
+,"platform_required": NO
+,"bsp_constraints": "true"
+}
+,"openamp_rpc_demo": {"userdefname": "OpenAMP RPC Demo"
+,"description": " OpenAMP rpc-demo application "
+,"supp_proc": "psu_cortexr5 psv_cortexr5 psxl_cortexr52 psx_cortexr52"
+,"supp_os": "freertos10_xilinx standalone"
+,"path": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/lib/sw_apps/openamp_rpc_demo"
+,"os": "linux"
+,"platform_required": NO
+,"bsp_constraints": "true"
+}
+,"peripheral_tests": {"userdefname": "Peripheral Tests"
+,"description": "Simple test routines for all peripherals in the hardware."
+,"supp_proc": "ps7_cortexa9 psu_cortexa53 psu_cortexr5 microblaze psv_cortexa72 psv_cortexr5 psxl_cortexa78 psxl_cortexr52 psx_cortexa78 psx_cortexr52 microblaze_riscv"
+,"supp_os": "standalone xilkernel"
+,"path": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/lib/sw_apps/peripheral_tests"
+,"os": "linux"
+,"platform_required": NO
+,"bsp_constraints": "false"
+}
+,"rsa_auth_app": {"userdefname": "RSA Authentication App"
+,"description": "Used to RSA authenticate a user application"
+,"supp_proc": "ps7_cortexa9"
+,"supp_os": "standalone"
+,"path": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/lib/sw_apps/rsa_auth_app"
+,"os": "linux"
+,"platform_required": NO
+,"bsp_constraints": "true"
+}
+,"srec_bootloader": {"userdefname": "SREC Bootloader"
+,"description": "Simple bootloader for loading SREC images from non volatile memory. This program assumes that you have an SREC image programmed into BPI flash. The program also assumes that the target SREC image is an application for this processor that does not overlap the bootloader and resides in separate physical memory in the hardware. Typically this application is initialized into BRAM so that it bootloads the SREC image when the FPGA is powered up.
+
+Don't forget to modify blconfig.h to reflect the physical address where your SREC image resides in non-volatile memory!"
+,"supp_proc": "microblaze microblaze_riscv"
+,"supp_os": "standalone"
+,"path": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/lib/sw_apps/srec_bootloader"
+,"os": "linux"
+,"platform_required": NO
+,"bsp_constraints": "false"
+}
+,"srec_spi_bootloader": {"userdefname": "SREC SPI Bootloader"
+,"description": "Simple bootloader for loading SREC images from non volatile memory (SPI). This program assumes that you have an SREC image programmed into SPI flash already. The program also assumes that the target SREC image is an application for this processor that does not overlap the bootloader and resides in separate physical memory in the hardware. Typically this application is initialized into BRAM so that it bootloads the SREC image when the FPGA is powered up.
+
+Don't forget to modify blconfig.h to reflect the offset where your SREC image resides in non-volatile memory!"
+,"supp_proc": "microblaze microblaze_riscv"
+,"supp_os": "standalone"
+,"path": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/lib/sw_apps/srec_spi_bootloader"
+,"os": "linux"
+,"platform_required": NO
+,"bsp_constraints": "true"
+}
+,"versal_plm": {"userdefname": "versal PLM"
+,"description": "Platform Loader and Manager for versal and versal net."
+,"supp_proc": "psu_pmc psv_pmc psxl_pmc psx_pmc"
+,"supp_os": "standalone"
+,"path": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/lib/sw_apps/versal_plm"
+,"os": "linux"
+,"platform_required": NO
+,"bsp_constraints": "true"
+}
+,"versal_psmfw": {"userdefname": "versal PSM Firmware"
+,"description": "Processing System Management Unit Firmware for versal."
+,"supp_proc": "psu_psm psv_psm psxl_psm psx_psm"
+,"supp_os": "standalone"
+,"path": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/lib/sw_apps/versal_psmfw"
+,"os": "linux"
+,"platform_required": NO
+,"bsp_constraints": "true"
+}
+,"zynqmp_dram_test": {"userdefname": "Zynq MP DRAM tests"
+,"description": "This application runs out of OCM and performs memory tests on Zynq MP DRAM.  For more information about the test, refer to ZYNQMP_DRAM_DIAGNOSTICS_TEST.docx, in the src directory of the application"
+,"supp_proc": "psu_cortexa53"
+,"supp_os": "standalone"
+,"path": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/lib/sw_apps/zynqmp_dram_test"
+,"os": "linux"
+,"platform_required": NO
+,"bsp_constraints": "false"
+}
+,"zynqmp_fsbl": {"userdefname": "Zynq MP FSBL"
+,"description": "First Stage Bootloader (FSBL) for Zynq Ultrascale+ MPSoC. The FSBL configures the FPGA with HW bit stream (if it exists)  and loads the Operating System (OS) Image or Standalone (SA) Image or 2nd Stage Boot Loader image from the  non-volatile memory (NAND/SD/QSPI) to RAM (DDR) and takes A53/R5 out of reset.  It supports multiple partitions,  and each partition can be a code image or a bit stream."
+,"supp_proc": "psu_cortexa53 psu_cortexr5"
+,"supp_os": "standalone"
+,"path": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/lib/sw_apps/zynqmp_fsbl"
+,"os": "linux"
+,"platform_required": NO
+,"bsp_constraints": "true"
+}
+,"zynqmp_pmufw": {"userdefname": "ZynqMP PMU Firmware"
+,"description": "Platform Management Unit Firmware for ZynqMP."
+,"supp_proc": "psu_pmu"
+,"supp_os": "standalone"
+,"path": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/lib/sw_apps/zynqmp_pmufw"
+,"os": "linux"
+,"platform_required": NO
+,"bsp_constraints": "true"
+}
+,"zynq_dram_test": {"userdefname": "Zynq DRAM tests"
+,"description": "This application runs out of OCM and performs memory tests and read/write eye measurements on Zynq DRAM.  For more information about the test, refer to ZYNQ_DRAM_DIAGNOSTICS_TEST.docx, in the src directory of the application"
+,"supp_proc": "ps7_cortexa9"
+,"supp_os": "standalone"
+,"path": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/lib/sw_apps/zynq_dram_test"
+,"os": "linux"
+,"platform_required": NO
+,"bsp_constraints": "false"
+}
+,"zynq_fsbl": {"userdefname": "Zynq FSBL"
+,"description": "First Stage Bootloader (FSBL) for Zynq. The FSBL configures the FPGA with HW bit stream (if it exists)  and loads the Operating System (OS) Image or Standalone (SA) Image or 2nd Stage Boot Loader image from the  non-volatile memory (NAND/NOR/QSPI) to RAM (DDR) and starts executing it.  It supports multiple partitions,  and each partition can be a code image or a bit stream."
+,"supp_proc": "ps7_cortexa9"
+,"supp_os": "standalone"
+,"path": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/lib/sw_apps/zynq_fsbl"
+,"os": "linux"
+,"platform_required": NO
+,"bsp_constraints": "true"
+}
+,"linux_empty_app": {"userdefname": "Linux Empty Application"
+,"description": "A blank Linux C project."
+,"supp_proc": "ps7_cortexa9 psu_cortexa53 microblaze psv_cortexa72"
+,"supp_os": "linux"
+,"path": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/lib/sw_apps_linux/linux_empty_app"
+,"os": "linux"
+,"platform_required": NO
+,"bsp_constraints": "false"
+}
+,"linux_hello_world": {"userdefname": "Linux Hello World"
+,"description": "Let's say 'Hello World' in C."
+,"supp_proc": "ps7_cortexa9 psu_cortexa53 microblaze psv_cortexa72"
+,"supp_os": "linux"
+,"path": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/lib/sw_apps_linux/linux_hello_world"
+,"os": "linux"
+,"platform_required": NO
+,"bsp_constraints": "false"
+}
+}]. Thread: Thread-22
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 11:54:00.479
+!MESSAGE XSCT Command: [::hsi::utils::openhw C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/hw/p30a_dpu.xsa], Thread: Thread-22
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 11:54:07.574
+!MESSAGE XSCT command with result: [::hsi::utils::openhw C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/hw/p30a_dpu.xsa], Result: [null, ]. Thread: Thread-22
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 11:54:07.576
+!MESSAGE XSCT Command: [::hsi::utils::get_all_periphs -json C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/hw/p30a_dpu.xsa], Thread: Thread-22
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 11:54:07.656
+!MESSAGE XSCT command with result: [::hsi::utils::get_all_periphs -json C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/hw/p30a_dpu.xsa], Result: [null, {"axi_datamover_0": {"hier_name": "axi_datamover_0"
+,"type": "axi_datamover"
+,"version": "5.1"
+,"ip_type": "PERIPHERAL"
+}
+,"axi_dma_0": {"hier_name": "axi_dma_0"
+,"type": "axi_dma"
+,"version": "7.1"
+,"ip_type": "PERIPHERAL"
+}
+,"axi_dma_w": {"hier_name": "axi_dma_w"
+,"type": "axi_dma"
+,"version": "7.1"
+,"ip_type": "PERIPHERAL"
+}
+,"axi_ic_gp0": {"hier_name": "axi_ic_gp0"
+,"type": "axi_interconnect"
+,"version": "2.1"
+,"ip_type": "BUS"
+}
+,"axi_ic_hp0": {"hier_name": "axi_ic_hp0"
+,"type": "axi_interconnect"
+,"version": "2.1"
+,"ip_type": "BUS"
+}
+,"axi_ic_hp1": {"hier_name": "axi_ic_hp1"
+,"type": "axi_interconnect"
+,"version": "2.1"
+,"ip_type": "BUS"
+}
+,"dm_s2mm_ctrl_0": {"hier_name": "dm_s2mm_ctrl_0"
+,"type": "dm_s2mm_ctrl"
+,"version": "1.0"
+,"ip_type": "PERIPHERAL"
+}
+,"dpu_stream_wrapper_0": {"hier_name": "dpu_stream_wrapper_0"
+,"type": "dpu_stream_wrapper"
+,"version": "1.0"
+,"ip_type": "PERIPHERAL"
+}
+,"fifo_weights_0": {"hier_name": "fifo_weights_0"
+,"type": "fifo_weights"
+,"version": "1.0"
+,"ip_type": "PERIPHERAL"
+}
+,"gpio_addr": {"hier_name": "gpio_addr"
+,"type": "axi_gpio"
+,"version": "2.0"
+,"ip_type": "PERIPHERAL"
+}
+,"gpio_ctrl": {"hier_name": "gpio_ctrl"
+,"type": "axi_gpio"
+,"version": "2.0"
+,"ip_type": "PERIPHERAL"
+}
+,"proc_sys_reset_0": {"hier_name": "proc_sys_reset_0"
+,"type": "proc_sys_reset"
+,"version": "5.0"
+,"ip_type": "PERIPHERAL"
+}
+,"ps7": {"hier_name": "ps7"
+,"type": "processing_system7"
+,"version": "5.5"
+,"ip_type": ""
+}
+,"xlconcat_0": {"hier_name": "xlconcat_0"
+,"type": "xlconcat"
+,"version": "2.1"
+,"ip_type": "PERIPHERAL"
+}
+,"ps7_clockc_0": {"hier_name": "ps7_clockc_0"
+,"type": "ps7_clockc"
+,"version": "1.00.a"
+,"ip_type": "PERIPHERAL"
+}
+,"ps7_uart_1": {"hier_name": "ps7_uart_1"
+,"type": "ps7_uart"
+,"version": "1.00.a"
+,"ip_type": "PERIPHERAL"
+}
+,"ps7_pl310_0": {"hier_name": "ps7_pl310_0"
+,"type": "ps7_pl310"
+,"version": "1.00.a"
+,"ip_type": "PERIPHERAL"
+}
+,"ps7_pmu_0": {"hier_name": "ps7_pmu_0"
+,"type": "ps7_pmu"
+,"version": "1.00.a"
+,"ip_type": "PERIPHERAL"
+}
+,"ps7_qspi_0": {"hier_name": "ps7_qspi_0"
+,"type": "ps7_qspi"
+,"version": "1.00.a"
+,"ip_type": "PERIPHERAL"
+}
+,"ps7_qspi_linear_0": {"hier_name": "ps7_qspi_linear_0"
+,"type": "ps7_qspi_linear"
+,"version": "1.00.a"
+,"ip_type": "MEMORY_CNTLR"
+}
+,"ps7_axi_interconnect_0": {"hier_name": "ps7_axi_interconnect_0"
+,"type": "ps7_axi_interconnect"
+,"version": "1.00.a"
+,"ip_type": "BUS"
+}
+,"ps7_cortexa9_0": {"hier_name": "ps7_cortexa9_0"
+,"type": "ps7_cortexa9"
+,"version": "5.2"
+,"ip_type": "PROCESSOR"
+}
+,"ps7_cortexa9_1": {"hier_name": "ps7_cortexa9_1"
+,"type": "ps7_cortexa9"
+,"version": "5.2"
+,"ip_type": "PROCESSOR"
+}
+,"ps7_ddr_0": {"hier_name": "ps7_ddr_0"
+,"type": "ps7_ddr"
+,"version": "1.00.a"
+,"ip_type": "MEMORY_CNTLR"
+}
+,"ps7_ethernet_0": {"hier_name": "ps7_ethernet_0"
+,"type": "ps7_ethernet"
+,"version": "1.00.a"
+,"ip_type": "PERIPHERAL"
+}
+,"ps7_usb_0": {"hier_name": "ps7_usb_0"
+,"type": "ps7_usb"
+,"version": "1.00.a"
+,"ip_type": "PERIPHERAL"
+}
+,"ps7_sd_0": {"hier_name": "ps7_sd_0"
+,"type": "ps7_sdio"
+,"version": "1.00.a"
+,"ip_type": "PERIPHERAL"
+}
+,"ps7_ttc_0": {"hier_name": "ps7_ttc_0"
+,"type": "ps7_ttc"
+,"version": "1.00.a"
+,"ip_type": "PERIPHERAL"
+}
+,"ps7_gpio_0": {"hier_name": "ps7_gpio_0"
+,"type": "ps7_gpio"
+,"version": "1.00.a"
+,"ip_type": "PERIPHERAL"
+}
+,"ps7_ddrc_0": {"hier_name": "ps7_ddrc_0"
+,"type": "ps7_ddrc"
+,"version": "1.00.a"
+,"ip_type": "PERIPHERAL"
+}
+,"ps7_dev_cfg_0": {"hier_name": "ps7_dev_cfg_0"
+,"type": "ps7_dev_cfg"
+,"version": "1.00.a"
+,"ip_type": "PERIPHERAL"
+}
+,"ps7_xadc_0": {"hier_name": "ps7_xadc_0"
+,"type": "ps7_xadc"
+,"version": "1.00.a"
+,"ip_type": "PERIPHERAL"
+}
+,"ps7_ocmc_0": {"hier_name": "ps7_ocmc_0"
+,"type": "ps7_ocmc"
+,"version": "1.00.a"
+,"ip_type": "PERIPHERAL"
+}
+,"ps7_coresight_comp_0": {"hier_name": "ps7_coresight_comp_0"
+,"type": "ps7_coresight_comp"
+,"version": "1.00.a"
+,"ip_type": "PERIPHERAL"
+}
+,"ps7_gpv_0": {"hier_name": "ps7_gpv_0"
+,"type": "ps7_gpv"
+,"version": "1.00.a"
+,"ip_type": "PERIPHERAL"
+}
+,"ps7_scuc_0": {"hier_name": "ps7_scuc_0"
+,"type": "ps7_scuc"
+,"version": "1.00.a"
+,"ip_type": "PERIPHERAL"
+}
+,"ps7_globaltimer_0": {"hier_name": "ps7_globaltimer_0"
+,"type": "ps7_globaltimer"
+,"version": "1.00.a"
+,"ip_type": "PERIPHERAL"
+}
+,"ps7_intc_dist_0": {"hier_name": "ps7_intc_dist_0"
+,"type": "ps7_intc_dist"
+,"version": "1.00.a"
+,"ip_type": "PERIPHERAL"
+}
+,"ps7_l2cachec_0": {"hier_name": "ps7_l2cachec_0"
+,"type": "ps7_l2cachec"
+,"version": "1.00.a"
+,"ip_type": "PERIPHERAL"
+}
+,"ps7_dma_s": {"hier_name": "ps7_dma_s"
+,"type": "ps7_dma"
+,"version": "1.00.a"
+,"ip_type": "PERIPHERAL"
+}
+,"ps7_iop_bus_config_0": {"hier_name": "ps7_iop_bus_config_0"
+,"type": "ps7_iop_bus_config"
+,"version": "1.00.a"
+,"ip_type": "PERIPHERAL"
+}
+,"ps7_ram_0": {"hier_name": "ps7_ram_0"
+,"type": "ps7_ram"
+,"version": "1.00.a"
+,"ip_type": "MEMORY_CNTLR"
+}
+,"ps7_ram_1": {"hier_name": "ps7_ram_1"
+,"type": "ps7_ram"
+,"version": "1.00.a"
+,"ip_type": "MEMORY_CNTLR"
+}
+,"ps7_scugic_0": {"hier_name": "ps7_scugic_0"
+,"type": "ps7_scugic"
+,"version": "1.00.a"
+,"ip_type": "INTERRUPT_CNTLR"
+}
+,"ps7_scutimer_0": {"hier_name": "ps7_scutimer_0"
+,"type": "ps7_scutimer"
+,"version": "1.00.a"
+,"ip_type": "PERIPHERAL"
+}
+,"ps7_scuwdt_0": {"hier_name": "ps7_scuwdt_0"
+,"type": "ps7_scuwdt"
+,"version": "1.00.a"
+,"ip_type": "PERIPHERAL"
+}
+,"ps7_slcr_0": {"hier_name": "ps7_slcr_0"
+,"type": "ps7_slcr"
+,"version": "1.00.a"
+,"ip_type": "PERIPHERAL"
+}
+,"ps7_dma_ns": {"hier_name": "ps7_dma_ns"
+,"type": "ps7_dma"
+,"version": "1.00.a"
+,"ip_type": "PERIPHERAL"
+}
+,"ps7_afi_0": {"hier_name": "ps7_afi_0"
+,"type": "ps7_afi"
+,"version": "1.00.a"
+,"ip_type": "PERIPHERAL"
+}
+,"ps7_afi_1": {"hier_name": "ps7_afi_1"
+,"type": "ps7_afi"
+,"version": "1.00.a"
+,"ip_type": "PERIPHERAL"
+}
+,"ps7_afi_2": {"hier_name": "ps7_afi_2"
+,"type": "ps7_afi"
+,"version": "1.00.a"
+,"ip_type": "PERIPHERAL"
+}
+,"ps7_afi_3": {"hier_name": "ps7_afi_3"
+,"type": "ps7_afi"
+,"version": "1.00.a"
+,"ip_type": "PERIPHERAL"
+}
+,"ps7_m_axi_gp0": {"hier_name": "ps7_m_axi_gp0"
+,"type": "ps7_m_axi_gp"
+,"version": "1.00.a"
+,"ip_type": "PERIPHERAL"
+}
+}]. Thread: Thread-22
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 11:54:07.850
+!MESSAGE XSCT Command: [::hsi::utils::is_app_supported_on_hw_sw  -hw C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/hw/p30a_dpu.xsa -os standalone -processor ps7_cortexa9_0 -app empty_application -sw C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/sw/dpu_platform/standalone_domain/system.mss -arch {}], Thread: Thread-22
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 11:54:07.890
+!MESSAGE XSCT command with result: [::hsi::utils::is_app_supported_on_hw_sw  -hw C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/hw/p30a_dpu.xsa -os standalone -processor ps7_cortexa9_0 -app empty_application -sw C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/sw/dpu_platform/standalone_domain/system.mss -arch {}], Result: [null, 1]. Thread: Thread-22
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 11:54:08.426
+!MESSAGE XSCT Command: [plnx-install-path  ; ::scw::scw_mode batch], Thread: Thread-27
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 11:54:08.430
+!MESSAGE XSCT command with result: [plnx-install-path  ; ::scw::scw_mode batch], Result: [null, ]. Thread: Thread-27
+
+!ENTRY org.eclipse.cdt.core 1 0 2026-04-18 11:54:08.772
+!MESSAGE Indexed 'dpu_app_system' (0 sources, 0 headers) in 0 sec: 0 declarations; 0 references; 0 unresolved inclusions; 0 syntax errors; 0 unresolved names (0 %)
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 11:54:08.824
+!MESSAGE XSCT Command: [ ::hsi::utils::set_current_hw_sw C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/hw/p30a_dpu.xsa C:/project/vivado/P_30_A/vitis_ws_new/dpu_app/system.mss ], Thread: Thread-22
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 11:54:08.840
+!MESSAGE XSCT command with result: [ ::hsi::utils::set_current_hw_sw C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/hw/p30a_dpu.xsa C:/project/vivado/P_30_A/vitis_ws_new/dpu_app/system.mss ], Result: [null, ]. Thread: Thread-22
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 11:54:08.843
+!MESSAGE XSCT Command: [::hsi::utils::get_hw_sw_details -json C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/hw/p30a_dpu.xsa C:/project/vivado/P_30_A/vitis_ws_new/dpu_app/system.mss], Thread: Thread-22
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 11:54:08.854
+!MESSAGE XSCT command with result: [::hsi::utils::get_hw_sw_details -json C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/hw/p30a_dpu.xsa C:/project/vivado/P_30_A/vitis_ws_new/dpu_app/system.mss], Result: [null, {"procname": "ps7_cortexa9_0"
+,"osname": "standalone"
+,"osver": "9.4"
+}]. Thread: Thread-22
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 11:54:09.703
+!MESSAGE XSCT Command: [::hsi::utils::init_repo], Thread: Thread-22
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 11:54:09.954
+!MESSAGE XSCT command with result: [::hsi::utils::init_repo], Result: [null, ]. Thread: Thread-22
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 11:54:09.955
+!MESSAGE XSCT Command: [set query_var1 $::env(RDI_DATADIR)], Thread: Thread-22
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 11:54:09.957
+!MESSAGE XSCT command with result: [set query_var1 $::env(RDI_DATADIR)], Result: [null, C:/AMDDesignTools/2025.2/Vitis/data]. Thread: Thread-22
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 11:54:09.960
+!MESSAGE XSCT Command: [hsi::utils::get_supported_os -json C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/hw/p30a_dpu.xsa], Thread: Thread-22
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 11:54:10.088
+!MESSAGE XSCT command with result: [hsi::utils::get_supported_os -json C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/hw/p30a_dpu.xsa], Result: [null, {"ps7_cortexa9_0": {"freertos10_xilinx_v1_18": {"name": "freertos10_xilinx"
+,"version": "1.18"
+,"desc": "This Xilinx FreeRTOS port is based on FreeRTOS kernel version 10.6.1"
+,"compilerflags": ""
+,"linkerflags": "-Wl,--start-group,-lxil,-lfreertos,-lgcc,-lc,--end-group"
+,"repo": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/ThirdParty/bsp/freertos10_xilinx_v1_18"
+}
+,"standalone_v9_4": {"name": "standalone"
+,"version": "9.4"
+,"desc": "Standalone is a simple, low-level software layer. It provides access to basic processor features such as caches, interrupts and exceptions as well as the basic features of a hosted environment, such as standard input and output, profiling, abort and exit."
+,"compilerflags": ""
+,"linkerflags": "-Wl,--start-group,-lxil,-lgcc,-lc,--end-group"
+,"repo": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/lib/bsp/standalone_v9_4"
+}
+}
+,"ps7_cortexa9_1": {"freertos10_xilinx_v1_18": {"name": "freertos10_xilinx"
+,"version": "1.18"
+,"desc": "This Xilinx FreeRTOS port is based on FreeRTOS kernel version 10.6.1"
+,"compilerflags": ""
+,"linkerflags": "-Wl,--start-group,-lxil,-lfreertos,-lgcc,-lc,--end-group"
+,"repo": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/ThirdParty/bsp/freertos10_xilinx_v1_18"
+}
+,"standalone_v9_4": {"name": "standalone"
+,"version": "9.4"
+,"desc": "Standalone is a simple, low-level software layer. It provides access to basic processor features such as caches, interrupts and exceptions as well as the basic features of a hosted environment, such as standard input and output, profiling, abort and exit."
+,"compilerflags": ""
+,"linkerflags": "-Wl,--start-group,-lxil,-lgcc,-lc,--end-group"
+,"repo": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/lib/bsp/standalone_v9_4"
+}
+}
+}]. Thread: Thread-22
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 11:54:10.090
+!MESSAGE XSCT Command: [::hsi::utils::get_libs_from_sw C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/hw/p30a_dpu.xsa C:/project/vivado/P_30_A/vitis_ws_new/dpu_app/system.mss], Thread: Thread-22
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 11:54:10.097
+!MESSAGE XSCT command with result: [::hsi::utils::get_libs_from_sw C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/hw/p30a_dpu.xsa C:/project/vivado/P_30_A/vitis_ws_new/dpu_app/system.mss], Result: [null, lwip220]. Thread: Thread-22
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 11:54:10.097
+!MESSAGE XSCT Command: [::hsi::utils::get_sw_libs -json C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/hw/p30a_dpu.xsa C:/project/vivado/P_30_A/vitis_ws_new/dpu_app/system.mss], Thread: Thread-22
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 11:54:10.101
+!MESSAGE XSCT command with result: [::hsi::utils::get_sw_libs -json C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/hw/p30a_dpu.xsa C:/project/vivado/P_30_A/vitis_ws_new/dpu_app/system.mss], Result: [null, {"lwip220": "1.3"
+}]. Thread: Thread-22
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 11:54:10.102
+!MESSAGE XSCT Command: [hsi::utils::get_all_libs -json], Thread: Thread-22
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 11:54:10.184
+!MESSAGE XSCT command with result: [hsi::utils::get_all_libs -json], Result: [null, {"libmetal_v2_9": {"name": "libmetal"
+,"version": "2.9"
+,"desc": "Libmetal Library"
+,"compilerflags": ""
+,"linkerflags": "-Wl,--start-group,-lxil,-lmetal,-lgcc,-lc,--end-group"
+,"repo": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/ThirdParty/sw_services/libmetal_v2_9"
+,"os": "standalone freertos10_xilinx"
+,"proc": "ps7_cortexa9 psu_cortexa53 psu_cortexr5 psv_cortexr5 psx_cortexr52 cortexr52 psu_pmu microblaze psu_cortexa72 psv_cortexa72 psx_cortexa78 cortexa78 psv_psm psv_pmc psx_psm psm psx_pmc pmc"
+}
+,"lwip220_v1_3": {"name": "lwip220"
+,"version": "1.3"
+,"desc": "lwip220 library: lwIP (light weight IP) is an open source TCP/IP stack configured for Xilinx hard and soft Ethernet MACs"
+,"compilerflags": ""
+,"linkerflags": "-Wl,--start-group,-lxil,-llwip4,-lgcc,-lc,--end-group"
+,"repo": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/ThirdParty/sw_services/lwip220_v1_3"
+,"os": "standalone freertos10_xilinx"
+,"proc": "ps7_cortexa9 psu_cortexa53 psu_cortexr5 psv_cortexr5 psx_cortexr52 cortexr52 psu_pmu microblaze psu_cortexa72 psv_cortexa72 psx_cortexa78 cortexa78 psv_psm psv_pmc psx_psm psm psx_pmc pmc"
+}
+,"openamp_v1_12": {"name": "openamp"
+,"version": "1.12"
+,"desc": "OpenAmp Library"
+,"compilerflags": "-Os"
+,"linkerflags": "-Wl,--start-group,-lxil,-lmetal,-lopen_amp,-lgcc,-lc,--end-group"
+,"repo": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/ThirdParty/sw_services/openamp_v1_12"
+,"os": "standalone freertos10_xilinx"
+,"proc": "psu_cortexr5 psv_cortexr5 psx_cortexr52"
+}
+,"xilcert_v1_5": {"name": "xilcert"
+,"version": "1.5"
+,"desc": "Xilinx X.509 certificate generation library. Supported only for Versal Net"
+,"compilerflags": ""
+,"linkerflags": "-Wl,--start-group,-lxilcert,-lxilplmi,-lxilsecure,-lxil,-lgcc,-lc,--end-group"
+,"repo": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/lib/sw_services/xilcert_v1_5"
+,"os": "standalone"
+,"proc": "psv_pmc psx_pmc"
+}
+,"xilffs_v5_5": {"name": "xilffs"
+,"version": "5.5"
+,"desc": "Generic Fat File System Library R0.15a"
+,"compilerflags": ""
+,"linkerflags": "-Wl,--start-group,-lxilffs,-lxil,-lgcc,-lc,--end-group"
+,"repo": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/lib/sw_services/xilffs_v5_5"
+,"os": "standalone freertos10_xilinx"
+,"proc": "ps7_cortexa9 psu_cortexa53 psu_cortexr5 psv_cortexr5 psx_cortexr52 cortexr52 psu_pmu microblaze psu_cortexa72 psv_cortexa72 psx_cortexa78 cortexa78 psv_psm psv_pmc psx_psm psm psx_pmc pmc"
+}
+,"xilflash_v4_12": {"name": "xilflash"
+,"version": "4.12"
+,"desc": "Xilinx Flash library for Intel/AMD CFI compliant parallel flash"
+,"compilerflags": ""
+,"linkerflags": "-lxilflash"
+,"repo": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/lib/sw_services/xilflash_v4_12"
+,"os": "standalone xilkernel freertos10_xilinx"
+,"proc": "ps7_cortexa9 psu_cortexa53 psu_cortexr5 psv_cortexr5 psx_cortexr52 cortexr52 psu_pmu microblaze psu_cortexa72 psv_cortexa72 psx_cortexa78 cortexa78 psv_psm psv_pmc psx_psm psm psx_pmc pmc"
+}
+,"xilfpga_v6_9": {"name": "xilfpga"
+,"version": "6.9"
+,"desc": "XilFPGA library provides an interface to the Linux or bare-metal users for configuring the PL over PCAP from PS"
+,"compilerflags": ""
+,"linkerflags": "-Wl,--start-group,-lxilfpga,-lxil,-lgcc,-lc,--end-group"
+,"repo": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/lib/sw_services/xilfpga_v6_9"
+,"os": "standalone freertos10_xilinx"
+,"proc": "psv_cortexa72 psx_cortexa78 psv_cortexr5 psu_cortexa53 psu_cortexr5 psx_cortexr52 psu_pmu"
+}
+,"xilloader_v2_3": {"name": "xilloader"
+,"version": "2.3"
+,"desc": "Xilinx Versal Platform Loader Library"
+,"compilerflags": ""
+,"linkerflags": "-Wl,--start-group,-lxilloader,-lxil,-lgcc,-lc,--end-group"
+,"repo": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/lib/sw_services/xilloader_v2_3"
+,"os": "standalone freertos10_xilinx"
+,"proc": "psu_cortexa72 psv_pmc psv_cortexa72 psv_cortexr5 microblaze psx_pmc psx_cortexa78 psx_cortexr52"
+}
+,"xilmailbox_v1_12": {"name": "xilmailbox"
+,"version": "1.12"
+,"desc": "Xilinx IPI Mailbox Library"
+,"compilerflags": ""
+,"linkerflags": "-Wl,--start-group,-lxilmailbox,-lxil,-lgcc,-lc,--end-group"
+,"repo": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/lib/sw_services/xilmailbox_v1_12"
+,"os": "standalone freertos10_xilinx"
+,"proc": "psv_cortexa72 psx_cortexa78 psv_cortexr5 psu_cortexa72 psu_cortexa53 psu_cortexr5 psx_cortexr52 psu_pmu psv_pmc psx_pmc microblaze"
+}
+,"xilnvm_v3_6": {"name": "xilnvm"
+,"version": "3.6"
+,"desc": "Xilinx NVM Library provides interface to accessing eFUSE and BBRAM of Versal"
+,"compilerflags": ""
+,"linkerflags": "-Wl,--start-group,-lxilnvm,-lxil,-lgcc,-lc,--end-group"
+,"repo": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/lib/sw_services/xilnvm_v3_6"
+,"os": "standalone freertos10_xilinx"
+,"proc": "psu_cortexa72 psv_pmc psv_cortexa72 psv_cortexr5 microblaze psx_pmc psx_cortexa78 psx_cortexr52"
+}
+,"xilocp_v1_6": {"name": "xilocp"
+,"version": "1.6"
+,"desc": "Xilinx Open Compute Platform(OCP) support Library. Supported only for Versal Net"
+,"compilerflags": ""
+,"linkerflags": "-Wl,--start-group,-lxilocp,-lxil,-lgcc,-lc,--end-group"
+,"repo": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/lib/sw_services/xilocp_v1_6"
+,"os": "standalone freertos10_xilinx"
+,"proc": "psv_pmc psx_pmc psx_cortexa78 psx_cortexr52 microblaze"
+}
+,"xilpdi_v1_12": {"name": "xilpdi"
+,"version": "1.12"
+,"desc": "Xilinx Programmable Device Image (PDI) Library"
+,"compilerflags": ""
+,"linkerflags": "-Wl,--start-group,-lxilpdi,-lxil,-lgcc,-lc,--end-group"
+,"repo": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/lib/sw_services/xilpdi_v1_12"
+,"os": "standalone freertos10_xilinx"
+,"proc": "psv_pmc psx_pmc"
+}
+,"xilpki_v2_3": {"name": "xilpki"
+,"version": "2.3"
+,"desc": "XilPKI library provides an interface to the PKI engine to perform the secure operations"
+,"compilerflags": ""
+,"linkerflags": "-Wl,--start-group,-lxilpki,-lxil,-lgcc,-lc,--end-group"
+,"repo": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/lib/sw_services/xilpki_v2_3"
+,"os": "standalone"
+,"proc": "psx_cortexa78"
+}
+,"xilplmi_v2_3": {"name": "xilplmi"
+,"version": "2.3"
+,"desc": "Xilinx Versal Platform Loader and Manager Interface Library"
+,"compilerflags": ""
+,"linkerflags": "-Wl,--start-group,-lxilplmi,-lxil,-lgcc,-lc,--end-group"
+,"repo": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/lib/sw_services/xilplmi_v2_3"
+,"os": "standalone freertos10_xilinx"
+,"proc": "psu_cortexa72 psv_pmc psv_cortexa72 psv_cortexr5 microblaze psx_pmc psx_cortexa78 psx_cortexr52"
+}
+,"xilpm_v6_1": {"name": "xilpm"
+,"version": "6.1"
+,"desc": "Platform Management API Library for ZynqMP and Versal"
+,"compilerflags": ""
+,"linkerflags": "-Wl,--start-group,-lxilpm,-lxil,-lgcc,-lc,--end-group"
+,"repo": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/lib/sw_services/xilpm_v6_1"
+,"os": "standalone freertos10_xilinx"
+,"proc": "ps7_cortexa9 psu_cortexa53 psu_cortexr5 psv_cortexr5 psx_cortexr52 cortexr52 psu_pmu microblaze psu_cortexa72 psv_cortexa72 psx_cortexa78 cortexa78 psv_psm psv_pmc psx_psm psm psx_pmc pmc"
+}
+,"xilpuf_v2_6": {"name": "xilpuf"
+,"version": "2.6"
+,"desc": "Xilinx PUF Library provides interface for registration and regeneration"
+,"compilerflags": ""
+,"linkerflags": "-Wl,--start-group,-lxilpuf,-lxil,-lgcc,-lc,--end-group"
+,"repo": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/lib/sw_services/xilpuf_v2_6"
+,"os": "standalone freertos10_xilinx"
+,"proc": "psv_pmc psv_cortexa72 psv_cortexr5 microblaze psx_cortexa78 psx_cortexr52"
+}
+,"xilrsa_v1_8": {"name": "xilrsa"
+,"version": "1.8"
+,"desc": "Xilinx RSA Library to access RSA and SHA software algorithms on Zynq"
+,"compilerflags": ""
+,"linkerflags": "-Wl,--start-group,-lrsa,-lxil,-lgcc,-lc,--end-group"
+,"repo": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/lib/sw_services/xilrsa_v1_8"
+,"os": "standalone freertos10_xilinx"
+,"proc": "ps7_cortexa9"
+}
+,"xilsecure_v5_6": {"name": "xilsecure"
+,"version": "5.6"
+,"desc": "Xilinx Secure Library provides interface to AES, RSA and SHA hardware engines on ZynqMP Soc and Versal"
+,"compilerflags": ""
+,"linkerflags": "-Wl,--start-group,-lxilsecure,-lxil,-lgcc,-lc,--end-group"
+,"repo": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/lib/sw_services/xilsecure_v5_6"
+,"os": "standalone freertos10_xilinx"
+,"proc": "psu_cortexa53 psu_cortexr5 psu_pmu psu_cortexa72 psv_pmc psv_cortexa72 psv_cortexr5 microblaze psx_pmc psx_cortexa78 psx_cortexr52"
+}
+,"xilsem_v1_12": {"name": "xilsem"
+,"version": "1.12"
+,"desc": "Xilinx Versal Soft Error Mitigation Library"
+,"compilerflags": ""
+,"linkerflags": "-Wl,--start-group,-lxilsem,-lxil,-lgcc,-lc,--end-group"
+,"repo": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/lib/sw_services/xilsem_v1_12"
+,"os": "standalone freertos10_xilinx"
+,"proc": "psv_pmc psx_pmc psv_cortexr5 psx_cortexr52 psu_cortexa72 psv_cortexa72 microblaze psx_cortexa78"
+}
+,"xilsfl_v1_2": {"name": "xilsfl"
+,"version": "1.2"
+,"desc": "Serial NOR Flash Library"
+,"compilerflags": ""
+,"linkerflags": "-Wl,--start-group,-lxilsfl,-lxil,-lgcc,-lc,--end-group"
+,"repo": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/lib/sw_services/xilsfl_v1_2"
+,"os": "standalone freertos10_xilinx"
+,"proc": "ps7_cortexa9 psu_cortexa53 psu_cortexr5 psv_cortexr5 psx_cortexr52 cortexr52 psu_pmu microblaze psu_cortexa72 psv_cortexa72 psx_cortexa78 cortexa78 psv_psm psv_pmc psx_psm psm psx_pmc pmc"
+}
+,"xilskey_v7_8": {"name": "xilskey"
+,"version": "7.8"
+,"desc": "Xilinx Secure Key Library supports programming efuse and bbram"
+,"compilerflags": ""
+,"linkerflags": "-Wl,--start-group,-lxilskey,-lxil,-lgcc,-lc,--end-group"
+,"repo": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/lib/sw_services/xilskey_v7_8"
+,"os": "standalone freertos10_xilinx"
+,"proc": "ps7_cortexa9 psu_pmu psu_cortexa53 psu_cortexr5 microblaze"
+}
+,"xiltimer_v2_3": {"name": "xiltimer"
+,"version": "2.3"
+,"desc": "Xiltimer library provides generic timer interface for the timer IP's"
+,"compilerflags": ""
+,"linkerflags": "-Wl,--start-group,-lxiltimer,-lxil,-lgcc,-lc,--end-group"
+,"repo": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/lib/sw_services/xiltimer_v2_3"
+,"os": "standalone freertos10_xilinx"
+,"proc": "ps7_cortexa9 psu_cortexa53 psu_cortexr5 psv_cortexr5 psx_cortexr52 cortexr52 psu_pmu microblaze psu_cortexa72 psv_cortexa72 psx_cortexa78 cortexa78 psv_psm psv_pmc psx_psm psm psx_pmc pmc"
+}
+,"xiltpm_v1_1": {"name": "xiltpm"
+,"version": "1.1"
+,"desc": "tpm. Supported for Versal only"
+,"compilerflags": ""
+,"linkerflags": "-Wl,--start-group,-lxiltpm,-lxilplmi,-lxilsecure,-lxil,-lgcc,-lc,--end-group"
+,"repo": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/lib/sw_services/xiltpm_v1_1"
+,"os": "standalone"
+,"proc": "psv_pmc microblaze"
+}
+}]. Thread: Thread-22
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 11:54:10.187
+!MESSAGE XSCT Command: [::hsi::utils::get_connected_periphs C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/hw/p30a_dpu.xsa ps7_cortexa9_0], Thread: Thread-22
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 11:54:10.194
+!MESSAGE XSCT command with result: [::hsi::utils::get_connected_periphs C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/hw/p30a_dpu.xsa ps7_cortexa9_0], Result: [null, axi_dma_0 axi_dma_w dpu_stream_wrapper_0 gpio_addr gpio_ctrl ps7_afi_0 ps7_afi_1 ps7_afi_2 ps7_afi_3 ps7_coresight_comp_0 ps7_ddr_0 ps7_ddrc_0 ps7_dev_cfg_0 ps7_dma_ns ps7_dma_s ps7_ethernet_0 ps7_globaltimer_0 ps7_gpio_0 ps7_gpv_0 ps7_intc_dist_0 ps7_iop_bus_config_0 ps7_l2cachec_0 ps7_ocmc_0 ps7_pl310_0 ps7_pmu_0 ps7_qspi_0 ps7_qspi_linear_0 ps7_ram_0 ps7_ram_1 ps7_scuc_0 ps7_scugic_0 ps7_scutimer_0 ps7_scuwdt_0 ps7_sd_0 ps7_slcr_0 ps7_ttc_0 ps7_uart_1 ps7_usb_0 ps7_xadc_0]. Thread: Thread-22
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 11:54:10.196
+!MESSAGE XSCT Command: [::hsi::utils::get_drivers_for_sw -json C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/hw/p30a_dpu.xsa C:/project/vivado/P_30_A/vitis_ws_new/dpu_app/system.mss], Thread: Thread-22
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 11:54:10.228
+!MESSAGE XSCT command with result: [::hsi::utils::get_drivers_for_sw -json C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/hw/p30a_dpu.xsa C:/project/vivado/P_30_A/vitis_ws_new/dpu_app/system.mss], Result: [null, {"axi_dma_0": {"name": "axidma"
+,"ver": "9.20"
+}
+,"axi_dma_w": {"name": "axidma"
+,"ver": "9.20"
+}
+,"dpu_stream_wrapper_0": {"name": "generic"
+,"ver": "3.1"
+}
+,"gpio_addr": {"name": "gpio"
+,"ver": "4.12"
+}
+,"gpio_ctrl": {"name": "gpio"
+,"ver": "4.12"
+}
+,"ps7_afi_0": {"name": "generic"
+,"ver": "3.1"
+}
+,"ps7_afi_1": {"name": "generic"
+,"ver": "3.1"
+}
+,"ps7_afi_2": {"name": "generic"
+,"ver": "3.1"
+}
+,"ps7_afi_3": {"name": "generic"
+,"ver": "3.1"
+}
+,"ps7_coresight_comp_0": {"name": "coresightps_dcc"
+,"ver": "1.13"
+}
+,"ps7_ddr_0": {"name": "ddrps"
+,"ver": "1.2"
+}
+,"ps7_ddrc_0": {"name": "generic"
+,"ver": "3.1"
+}
+,"ps7_dev_cfg_0": {"name": "devcfg"
+,"ver": "3.9"
+}
+,"ps7_dma_ns": {"name": "dmaps"
+,"ver": "2.11"
+}
+,"ps7_dma_s": {"name": "dmaps"
+,"ver": "2.11"
+}
+,"ps7_ethernet_0": {"name": "emacps"
+,"ver": "3.23"
+}
+,"ps7_globaltimer_0": {"name": "generic"
+,"ver": "3.1"
+}
+,"ps7_gpio_0": {"name": "gpiops"
+,"ver": "3.14"
+}
+,"ps7_gpv_0": {"name": "generic"
+,"ver": "3.1"
+}
+,"ps7_intc_dist_0": {"name": "generic"
+,"ver": "3.1"
+}
+,"ps7_iop_bus_config_0": {"name": "generic"
+,"ver": "3.1"
+}
+,"ps7_l2cachec_0": {"name": "generic"
+,"ver": "3.1"
+}
+,"ps7_ocmc_0": {"name": "generic"
+,"ver": "3.1"
+}
+,"ps7_pl310_0": {"name": "generic"
+,"ver": "3.1"
+}
+,"ps7_pmu_0": {"name": "generic"
+,"ver": "3.1"
+}
+,"ps7_qspi_0": {"name": "qspips"
+,"ver": "3.14"
+}
+,"ps7_qspi_linear_0": {"name": "generic"
+,"ver": "3.1"
+}
+,"ps7_ram_0": {"name": "generic"
+,"ver": "3.1"
+}
+,"ps7_ram_1": {"name": "generic"
+,"ver": "3.1"
+}
+,"ps7_scuc_0": {"name": "generic"
+,"ver": "3.1"
+}
+,"ps7_scugic_0": {"name": "scugic"
+,"ver": "5.6"
+}
+,"ps7_scutimer_0": {"name": "scutimer"
+,"ver": "2.7"
+}
+,"ps7_scuwdt_0": {"name": "scuwdt"
+,"ver": "2.6"
+}
+,"ps7_sd_0": {"name": "sdps"
+,"ver": "4.5"
+}
+,"ps7_slcr_0": {"name": "generic"
+,"ver": "3.1"
+}
+,"ps7_ttc_0": {"name": "ttcps"
+,"ver": "3.22"
+}
+,"ps7_uart_1": {"name": "uartps"
+,"ver": "3.17"
+}
+,"ps7_usb_0": {"name": "usbps"
+,"ver": "2.10"
+}
+,"ps7_xadc_0": {"name": "xadcps"
+,"ver": "2.7"
+}
+,"ps7_cortexa9_0": {"name": "cpu_cortexa9"
+,"ver": "2.13"
+}
+}]. Thread: Thread-22
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 11:54:10.230
+!MESSAGE XSCT Command: [hsi::utils::get_drivers_for_hw -json C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/hw/p30a_dpu.xsa], Thread: Thread-22
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 11:54:12.320
+!MESSAGE XSCT command with result: [hsi::utils::get_drivers_for_hw -json C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/hw/p30a_dpu.xsa], Result: [null, {"axi_datamover_0": {"version": "5.1"
+,"driver_info": {"generic": {"name": "generic"
+,"version": "3.1"
+,"repo": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/XilinxProcessorIPLib/drivers/generic_v3_1"
+}
+}
+}
+,"axi_dma_0": {"version": "7.1"
+,"driver_info": {"generic": {"name": "generic"
+,"version": "3.1"
+,"repo": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/XilinxProcessorIPLib/drivers/generic_v3_1"
+}
+,"axidma_v9_20": {"name": "axidma"
+,"version": "9.20"
+,"repo": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/XilinxProcessorIPLib/drivers/axidma_v9_20"
+,"compilerflags": ""
+,"linkerflags": ""
+}
+}
+}
+,"axi_dma_w": {"version": "7.1"
+,"driver_info": {"generic": {"name": "generic"
+,"version": "3.1"
+,"repo": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/XilinxProcessorIPLib/drivers/generic_v3_1"
+}
+,"axidma_v9_20": {"name": "axidma"
+,"version": "9.20"
+,"repo": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/XilinxProcessorIPLib/drivers/axidma_v9_20"
+,"compilerflags": ""
+,"linkerflags": ""
+}
+}
+}
+,"axi_ic_gp0": {"version": "2.1"
+,"driver_info": {"generic": {"name": "generic"
+,"version": "3.1"
+,"repo": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/XilinxProcessorIPLib/drivers/generic_v3_1"
+}
+}
+}
+,"axi_ic_hp0": {"version": "2.1"
+,"driver_info": {"generic": {"name": "generic"
+,"version": "3.1"
+,"repo": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/XilinxProcessorIPLib/drivers/generic_v3_1"
+}
+}
+}
+,"axi_ic_hp1": {"version": "2.1"
+,"driver_info": {"generic": {"name": "generic"
+,"version": "3.1"
+,"repo": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/XilinxProcessorIPLib/drivers/generic_v3_1"
+}
+}
+}
+,"dm_s2mm_ctrl_0": {"version": "1.0"
+,"driver_info": {"generic": {"name": "generic"
+,"version": "3.1"
+,"repo": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/XilinxProcessorIPLib/drivers/generic_v3_1"
+}
+}
+}
+,"dpu_stream_wrapper_0": {"version": "1.0"
+,"driver_info": {"generic": {"name": "generic"
+,"version": "3.1"
+,"repo": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/XilinxProcessorIPLib/drivers/generic_v3_1"
+}
+}
+}
+,"fifo_weights_0": {"version": "1.0"
+,"driver_info": {"generic": {"name": "generic"
+,"version": "3.1"
+,"repo": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/XilinxProcessorIPLib/drivers/generic_v3_1"
+}
+}
+}
+,"gpio_addr": {"version": "2.0"
+,"driver_info": {"generic": {"name": "generic"
+,"version": "3.1"
+,"repo": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/XilinxProcessorIPLib/drivers/generic_v3_1"
+}
+,"gpio_v4_12": {"name": "gpio"
+,"version": "4.12"
+,"repo": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/XilinxProcessorIPLib/drivers/gpio_v4_12"
+,"compilerflags": ""
+,"linkerflags": ""
+}
+}
+}
+,"gpio_ctrl": {"version": "2.0"
+,"driver_info": {"generic": {"name": "generic"
+,"version": "3.1"
+,"repo": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/XilinxProcessorIPLib/drivers/generic_v3_1"
+}
+,"gpio_v4_12": {"name": "gpio"
+,"version": "4.12"
+,"repo": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/XilinxProcessorIPLib/drivers/gpio_v4_12"
+,"compilerflags": ""
+,"linkerflags": ""
+}
+}
+}
+,"proc_sys_reset_0": {"version": "5.0"
+,"driver_info": {"generic": {"name": "generic"
+,"version": "3.1"
+,"repo": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/XilinxProcessorIPLib/drivers/generic_v3_1"
+}
+}
+}
+,"ps7": {"version": "5.5"
+,"driver_info": {"generic": {"name": "generic"
+,"version": "3.1"
+,"repo": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/XilinxProcessorIPLib/drivers/generic_v3_1"
+}
+}
+}
+,"xlconcat_0": {"version": "2.1"
+,"driver_info": {"generic": {"name": "generic"
+,"version": "3.1"
+,"repo": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/XilinxProcessorIPLib/drivers/generic_v3_1"
+}
+}
+}
+,"ps7_clockc_0": {"version": "1.00.a"
+,"driver_info": {"generic": {"name": "generic"
+,"version": "3.1"
+,"repo": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/XilinxProcessorIPLib/drivers/generic_v3_1"
+}
+}
+}
+,"ps7_uart_1": {"version": "1.00.a"
+,"driver_info": {"generic": {"name": "generic"
+,"version": "3.1"
+,"repo": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/XilinxProcessorIPLib/drivers/generic_v3_1"
+}
+,"uartps_v3_17": {"name": "uartps"
+,"version": "3.17"
+,"repo": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/XilinxProcessorIPLib/drivers/uartps_v3_17"
+,"compilerflags": ""
+,"linkerflags": ""
+}
+}
+}
+,"ps7_pl310_0": {"version": "1.00.a"
+,"driver_info": {"generic": {"name": "generic"
+,"version": "3.1"
+,"repo": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/XilinxProcessorIPLib/drivers/generic_v3_1"
+}
+}
+}
+,"ps7_pmu_0": {"version": "1.00.a"
+,"driver_info": {"generic": {"name": "generic"
+,"version": "3.1"
+,"repo": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/XilinxProcessorIPLib/drivers/generic_v3_1"
+}
+}
+}
+,"ps7_qspi_0": {"version": "1.00.a"
+,"driver_info": {"generic": {"name": "generic"
+,"version": "3.1"
+,"repo": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/XilinxProcessorIPLib/drivers/generic_v3_1"
+}
+,"qspips_v3_14": {"name": "qspips"
+,"version": "3.14"
+,"repo": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/XilinxProcessorIPLib/drivers/qspips_v3_14"
+,"compilerflags": ""
+,"linkerflags": ""
+}
+}
+}
+,"ps7_qspi_linear_0": {"version": "1.00.a"
+,"driver_info": {"generic": {"name": "generic"
+,"version": "3.1"
+,"repo": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/XilinxProcessorIPLib/drivers/generic_v3_1"
+}
+}
+}
+,"ps7_axi_interconnect_0": {"version": "1.00.a"
+,"driver_info": {"generic": {"name": "generic"
+,"version": "3.1"
+,"repo": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/XilinxProcessorIPLib/drivers/generic_v3_1"
+}
+}
+}
+,"ps7_cortexa9_0": {"version": "5.2"
+,"driver_info": {"generic": {"name": "generic"
+,"version": "3.1"
+,"repo": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/XilinxProcessorIPLib/drivers/generic_v3_1"
+}
+,"cpu_cortexa9_v2_13": {"name": "cpu_cortexa9"
+,"version": "2.13"
+,"repo": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/XilinxProcessorIPLib/drivers/cpu_cortexa9_v2_13"
+,"compilerflags": ""
+,"linkerflags": ""
+}
+}
+}
+,"ps7_cortexa9_1": {"version": "5.2"
+,"driver_info": {"generic": {"name": "generic"
+,"version": "3.1"
+,"repo": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/XilinxProcessorIPLib/drivers/generic_v3_1"
+}
+,"cpu_cortexa9_v2_13": {"name": "cpu_cortexa9"
+,"version": "2.13"
+,"repo": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/XilinxProcessorIPLib/drivers/cpu_cortexa9_v2_13"
+,"compilerflags": ""
+,"linkerflags": ""
+}
+}
+}
+,"ps7_ddr_0": {"version": "1.00.a"
+,"driver_info": {"generic": {"name": "generic"
+,"version": "3.1"
+,"repo": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/XilinxProcessorIPLib/drivers/generic_v3_1"
+}
+,"ddrps_v1_2": {"name": "ddrps"
+,"version": "1.2"
+,"repo": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/XilinxProcessorIPLib/drivers/ddrps_v1_2"
+,"compilerflags": ""
+,"linkerflags": ""
+}
+}
+}
+,"ps7_ethernet_0": {"version": "1.00.a"
+,"driver_info": {"generic": {"name": "generic"
+,"version": "3.1"
+,"repo": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/XilinxProcessorIPLib/drivers/generic_v3_1"
+}
+,"emacps_v3_23": {"name": "emacps"
+,"version": "3.23"
+,"repo": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/XilinxProcessorIPLib/drivers/emacps_v3_23"
+,"compilerflags": ""
+,"linkerflags": ""
+}
+}
+}
+,"ps7_usb_0": {"version": "1.00.a"
+,"driver_info": {"generic": {"name": "generic"
+,"version": "3.1"
+,"repo": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/XilinxProcessorIPLib/drivers/generic_v3_1"
+}
+,"usbps_v2_10": {"name": "usbps"
+,"version": "2.10"
+,"repo": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/XilinxProcessorIPLib/drivers/usbps_v2_10"
+,"compilerflags": ""
+,"linkerflags": ""
+}
+}
+}
+,"ps7_sd_0": {"version": "1.00.a"
+,"driver_info": {"generic": {"name": "generic"
+,"version": "3.1"
+,"repo": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/XilinxProcessorIPLib/drivers/generic_v3_1"
+}
+,"sdps_v4_5": {"name": "sdps"
+,"version": "4.5"
+,"repo": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/XilinxProcessorIPLib/drivers/sdps_v4_5"
+,"compilerflags": ""
+,"linkerflags": ""
+}
+}
+}
+,"ps7_ttc_0": {"version": "1.00.a"
+,"driver_info": {"generic": {"name": "generic"
+,"version": "3.1"
+,"repo": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/XilinxProcessorIPLib/drivers/generic_v3_1"
+}
+,"ttcps_v3_22": {"name": "ttcps"
+,"version": "3.22"
+,"repo": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/XilinxProcessorIPLib/drivers/ttcps_v3_22"
+,"compilerflags": ""
+,"linkerflags": ""
+}
+}
+}
+,"ps7_gpio_0": {"version": "1.00.a"
+,"driver_info": {"generic": {"name": "generic"
+,"version": "3.1"
+,"repo": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/XilinxProcessorIPLib/drivers/generic_v3_1"
+}
+,"gpiops_v3_14": {"name": "gpiops"
+,"version": "3.14"
+,"repo": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/XilinxProcessorIPLib/drivers/gpiops_v3_14"
+,"compilerflags": ""
+,"linkerflags": ""
+}
+}
+}
+,"ps7_ddrc_0": {"version": "1.00.a"
+,"driver_info": {"generic": {"name": "generic"
+,"version": "3.1"
+,"repo": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/XilinxProcessorIPLib/drivers/generic_v3_1"
+}
+}
+}
+,"ps7_dev_cfg_0": {"version": "1.00.a"
+,"driver_info": {"generic": {"name": "generic"
+,"version": "3.1"
+,"repo": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/XilinxProcessorIPLib/drivers/generic_v3_1"
+}
+,"devcfg_v3_9": {"name": "devcfg"
+,"version": "3.9"
+,"repo": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/XilinxProcessorIPLib/drivers/devcfg_v3_9"
+,"compilerflags": ""
+,"linkerflags": ""
+}
+}
+}
+,"ps7_xadc_0": {"version": "1.00.a"
+,"driver_info": {"generic": {"name": "generic"
+,"version": "3.1"
+,"repo": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/XilinxProcessorIPLib/drivers/generic_v3_1"
+}
+,"xadcps_v2_7": {"name": "xadcps"
+,"version": "2.7"
+,"repo": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/XilinxProcessorIPLib/drivers/xadcps_v2_7"
+,"compilerflags": ""
+,"linkerflags": ""
+}
+}
+}
+,"ps7_ocmc_0": {"version": "1.00.a"
+,"driver_info": {"generic": {"name": "generic"
+,"version": "3.1"
+,"repo": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/XilinxProcessorIPLib/drivers/generic_v3_1"
+}
+}
+}
+,"ps7_coresight_comp_0": {"version": "1.00.a"
+,"driver_info": {"generic": {"name": "generic"
+,"version": "3.1"
+,"repo": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/XilinxProcessorIPLib/drivers/generic_v3_1"
+}
+,"coresightps_dcc_v1_13": {"name": "coresightps_dcc"
+,"version": "1.13"
+,"repo": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/XilinxProcessorIPLib/drivers/coresightps_dcc_v1_13"
+,"compilerflags": ""
+,"linkerflags": ""
+}
+}
+}
+,"ps7_gpv_0": {"version": "1.00.a"
+,"driver_info": {"generic": {"name": "generic"
+,"version": "3.1"
+,"repo": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/XilinxProcessorIPLib/drivers/generic_v3_1"
+}
+}
+}
+,"ps7_scuc_0": {"version": "1.00.a"
+,"driver_info": {"generic": {"name": "generic"
+,"version": "3.1"
+,"repo": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/XilinxProcessorIPLib/drivers/generic_v3_1"
+}
+}
+}
+,"ps7_globaltimer_0": {"version": "1.00.a"
+,"driver_info": {"generic": {"name": "generic"
+,"version": "3.1"
+,"repo": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/XilinxProcessorIPLib/drivers/generic_v3_1"
+}
+}
+}
+,"ps7_intc_dist_0": {"version": "1.00.a"
+,"driver_info": {"generic": {"name": "generic"
+,"version": "3.1"
+,"repo": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/XilinxProcessorIPLib/drivers/generic_v3_1"
+}
+}
+}
+,"ps7_l2cachec_0": {"version": "1.00.a"
+,"driver_info": {"generic": {"name": "generic"
+,"version": "3.1"
+,"repo": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/XilinxProcessorIPLib/drivers/generic_v3_1"
+}
+}
+}
+,"ps7_dma_s": {"version": "1.00.a"
+,"driver_info": {"generic": {"name": "generic"
+,"version": "3.1"
+,"repo": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/XilinxProcessorIPLib/drivers/generic_v3_1"
+}
+,"dmaps_v2_11": {"name": "dmaps"
+,"version": "2.11"
+,"repo": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/XilinxProcessorIPLib/drivers/dmaps_v2_11"
+,"compilerflags": ""
+,"linkerflags": ""
+}
+}
+}
+,"ps7_iop_bus_config_0": {"version": "1.00.a"
+,"driver_info": {"generic": {"name": "generic"
+,"version": "3.1"
+,"repo": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/XilinxProcessorIPLib/drivers/generic_v3_1"
+}
+}
+}
+,"ps7_ram_0": {"version": "1.00.a"
+,"driver_info": {"generic": {"name": "generic"
+,"version": "3.1"
+,"repo": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/XilinxProcessorIPLib/drivers/generic_v3_1"
+}
+}
+}
+,"ps7_ram_1": {"version": "1.00.a"
+,"driver_info": {"generic": {"name": "generic"
+,"version": "3.1"
+,"repo": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/XilinxProcessorIPLib/drivers/generic_v3_1"
+}
+}
+}
+,"ps7_scugic_0": {"version": "1.00.a"
+,"driver_info": {"generic": {"name": "generic"
+,"version": "3.1"
+,"repo": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/XilinxProcessorIPLib/drivers/generic_v3_1"
+}
+,"scugic_v5_6": {"name": "scugic"
+,"version": "5.6"
+,"repo": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/XilinxProcessorIPLib/drivers/scugic_v5_6"
+,"compilerflags": ""
+,"linkerflags": ""
+}
+}
+}
+,"ps7_scutimer_0": {"version": "1.00.a"
+,"driver_info": {"generic": {"name": "generic"
+,"version": "3.1"
+,"repo": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/XilinxProcessorIPLib/drivers/generic_v3_1"
+}
+,"scutimer_v2_7": {"name": "scutimer"
+,"version": "2.7"
+,"repo": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/XilinxProcessorIPLib/drivers/scutimer_v2_7"
+,"compilerflags": ""
+,"linkerflags": ""
+}
+}
+}
+,"ps7_scuwdt_0": {"version": "1.00.a"
+,"driver_info": {"generic": {"name": "generic"
+,"version": "3.1"
+,"repo": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/XilinxProcessorIPLib/drivers/generic_v3_1"
+}
+,"scuwdt_v2_6": {"name": "scuwdt"
+,"version": "2.6"
+,"repo": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/XilinxProcessorIPLib/drivers/scuwdt_v2_6"
+,"compilerflags": ""
+,"linkerflags": ""
+}
+}
+}
+,"ps7_slcr_0": {"version": "1.00.a"
+,"driver_info": {"generic": {"name": "generic"
+,"version": "3.1"
+,"repo": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/XilinxProcessorIPLib/drivers/generic_v3_1"
+}
+}
+}
+,"ps7_dma_ns": {"version": "1.00.a"
+,"driver_info": {"generic": {"name": "generic"
+,"version": "3.1"
+,"repo": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/XilinxProcessorIPLib/drivers/generic_v3_1"
+}
+,"dmaps_v2_11": {"name": "dmaps"
+,"version": "2.11"
+,"repo": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/XilinxProcessorIPLib/drivers/dmaps_v2_11"
+,"compilerflags": ""
+,"linkerflags": ""
+}
+}
+}
+,"ps7_afi_0": {"version": "1.00.a"
+,"driver_info": {"generic": {"name": "generic"
+,"version": "3.1"
+,"repo": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/XilinxProcessorIPLib/drivers/generic_v3_1"
+}
+}
+}
+,"ps7_afi_1": {"version": "1.00.a"
+,"driver_info": {"generic": {"name": "generic"
+,"version": "3.1"
+,"repo": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/XilinxProcessorIPLib/drivers/generic_v3_1"
+}
+}
+}
+,"ps7_afi_2": {"version": "1.00.a"
+,"driver_info": {"generic": {"name": "generic"
+,"version": "3.1"
+,"repo": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/XilinxProcessorIPLib/drivers/generic_v3_1"
+}
+}
+}
+,"ps7_afi_3": {"version": "1.00.a"
+,"driver_info": {"generic": {"name": "generic"
+,"version": "3.1"
+,"repo": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/XilinxProcessorIPLib/drivers/generic_v3_1"
+}
+}
+}
+,"ps7_m_axi_gp0": {"version": "1.00.a"
+,"driver_info": {"generic": {"name": "generic"
+,"version": "3.1"
+,"repo": "C:/AMDDesignTools/2025.2/Vitis/data/embeddedsw/XilinxProcessorIPLib/drivers/generic_v3_1"
+}
+}
+}
+}]. Thread: Thread-22
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 11:54:12.324
+!MESSAGE XSCT Command: [::hsi::utils::get_libs_from_sw C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/hw/p30a_dpu.xsa C:/project/vivado/P_30_A/vitis_ws_new/dpu_app/system.mss], Thread: Thread-22
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 11:54:12.330
+!MESSAGE XSCT command with result: [::hsi::utils::get_libs_from_sw C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/hw/p30a_dpu.xsa C:/project/vivado/P_30_A/vitis_ws_new/dpu_app/system.mss], Result: [null, lwip220]. Thread: Thread-22
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 11:54:12.408
+!MESSAGE XSCT Command: [::hsi::utils::openhw C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/hw/p30a_dpu.xsa], Thread: Thread-22
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 11:54:12.412
+!MESSAGE XSCT command with result: [::hsi::utils::openhw C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/hw/p30a_dpu.xsa], Result: [null, ]. Thread: Thread-22
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 11:54:12.413
+!MESSAGE XSCT Command: [::hsi::utils::opensw C:/project/vivado/P_30_A/vitis_ws_new/dpu_app/system.mss], Thread: Thread-22
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 11:54:12.416
+!MESSAGE XSCT command with result: [::hsi::utils::opensw C:/project/vivado/P_30_A/vitis_ws_new/dpu_app/system.mss], Result: [null, ]. Thread: Thread-22
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 11:54:12.417
+!MESSAGE XSCT Command: [::hsi::utils::generate_app_template -hw C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/hw/p30a_dpu.xsa -sw C:/project/vivado/P_30_A/vitis_ws_new/dpu_app/system.mss -app empty_application -processor ps7_cortexa9_0 -os standalone -dir C:/project/vivado/P_30_A/vitis_ws_new/dpu_app/src], Thread: Thread-22
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 11:54:12.641
+!MESSAGE XSCT command with result: [::hsi::utils::generate_app_template -hw C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/hw/p30a_dpu.xsa -sw C:/project/vivado/P_30_A/vitis_ws_new/dpu_app/system.mss -app empty_application -processor ps7_cortexa9_0 -os standalone -dir C:/project/vivado/P_30_A/vitis_ws_new/dpu_app/src], Result: [null, ]. Thread: Thread-22
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 11:54:12.845
+!MESSAGE XSCT Command: [hsi::internal::extract_hw_files -quiet bit mmi bmm -dir {C:\project\vivado\P_30_A\vitis_ws_new\dpu_app\_ide\bitstream}], Thread: Thread-22
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 11:54:12.929
+!MESSAGE XSCT command with result: [hsi::internal::extract_hw_files -quiet bit mmi bmm -dir {C:\project\vivado\P_30_A\vitis_ws_new\dpu_app\_ide\bitstream}], Result: [null, ]. Thread: Thread-22
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 11:54:12.931
+!MESSAGE XSCT Command: [::hsi::utils::get_design_properties -json C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/hw/p30a_dpu.xsa], Thread: Thread-22
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 11:54:12.940
+!MESSAGE XSCT command with result: [::hsi::utils::get_design_properties -json C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/hw/p30a_dpu.xsa], Result: [null, {"device": "7z020"
+,"family": "zynq"
+,"timestamp": "Sat Apr 18 11:29:50 2026"
+,"vivado_version": "2025.2"
+,"part": "xc7z020clg484-1"
+}]. Thread: Thread-22
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 11:54:12.943
+!MESSAGE XSCT Command: [::hsi::generate_target {psinit} [ ::hsi::get_cells -filter { CONFIGURABLE == true } -hierarchical] -dir {C:/project/vivado/P_30_A/vitis_ws_new/dpu_app/_ide/psinit} -quiet], Thread: Thread-22
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 11:54:27.737
+!MESSAGE XSCT command with result: [::hsi::generate_target {psinit} [ ::hsi::get_cells -filter { CONFIGURABLE == true } -hierarchical] -dir {C:/project/vivado/P_30_A/vitis_ws_new/dpu_app/_ide/psinit} -quiet], Result: [null, ]. Thread: Thread-22
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 11:54:28.141
+!MESSAGE XSCT Command: [::hsi::utils::closesw C:/project/vivado/P_30_A/vitis_ws_new/dpu_app/system.mss], Thread: Thread-22
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 11:54:28.145
+!MESSAGE XSCT command with result: [::hsi::utils::closesw C:/project/vivado/P_30_A/vitis_ws_new/dpu_app/system.mss], Result: [null, ]. Thread: Thread-22
+
+!ENTRY com.xilinx.sdk.utils 1 0 2026-04-18 11:54:28.201
+!MESSAGE Generating MD5 hash for file: C:\project\vivado\P_30_A\vitis_ws_new\dpu_platform\export\dpu_platform\sw\dpu_platform\standalone_domain\system.mss ...
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 11:54:59.994
+!MESSAGE XSCT Command: [ ::hsi::utils::set_current_hw_sw C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/hw/p30a_dpu.xsa C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/sw/dpu_platform/standalone_domain/system.mss ], Thread: Worker-6: Building selected projects in workspace
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 11:55:00.051
+!MESSAGE XSCT command with result: [ ::hsi::utils::set_current_hw_sw C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/hw/p30a_dpu.xsa C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/sw/dpu_platform/standalone_domain/system.mss ], Result: [null, ]. Thread: Worker-6: Building selected projects in workspace
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 11:55:00.055
+!MESSAGE XSCT Command: [::hsi::utils::get_hw_sw_details -json C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/hw/p30a_dpu.xsa C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/sw/dpu_platform/standalone_domain/system.mss], Thread: Worker-6: Building selected projects in workspace
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 11:55:00.082
+!MESSAGE XSCT command with result: [::hsi::utils::get_hw_sw_details -json C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/hw/p30a_dpu.xsa C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/sw/dpu_platform/standalone_domain/system.mss], Result: [null, {"procname": "ps7_cortexa9_0"
+,"osname": "standalone"
+,"osver": "9.4"
+}]. Thread: Worker-6: Building selected projects in workspace
+
+!ENTRY com.xilinx.sdk.utils 1 0 2026-04-18 11:55:00.083
+!MESSAGE Generating MD5 hash for file: C:\project\vivado\P_30_A\vitis_ws_new\dpu_platform\export\dpu_platform\sw\dpu_platform\standalone_domain\system.mss ...
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 11:55:00.088
+!MESSAGE XSCT Command: [::hsi::utils::closesw C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/sw/dpu_platform/standalone_domain/system.mss], Thread: Worker-6: Building selected projects in workspace
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 11:55:00.093
+!MESSAGE XSCT command with result: [::hsi::utils::closesw C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/sw/dpu_platform/standalone_domain/system.mss], Result: [null, ]. Thread: Worker-6: Building selected projects in workspace
+
+!ENTRY org.eclipse.core.resources 2 10035 2026-04-18 11:55:12.487
+!MESSAGE The workspace will exit with unsaved changes in this session.
+!SESSION 2026-04-18 13:03:54.557 -----------------------------------------------
+eclipse.buildId=2024.2
+java.version=21.0.5
+java.vendor=Eclipse Adoptium
+BootLoader constants: OS=win32, ARCH=x86_64, WS=win32, NL=es_ES
+Framework arguments:  -application com.xilinx.sdx.cmdline.service 59657
+Command-line arguments:  -os win32 -ws win32 -arch x86_64 -application com.xilinx.sdx.cmdline.service 59657 -data C:/project/vivado/P_30_A/vitis_ws_new
+
+!ENTRY org.eclipse.core.resources 2 10035 2026-04-18 13:03:56.856
+!MESSAGE The workspace exited with unsaved changes in the previous session; refreshing workspace to recover changes.
+
+!ENTRY org.eclipse.cdt.core 1 0 2026-04-18 13:04:04.376
+!MESSAGE Indexed 'dpu_app' (8 sources, 119 headers) in 3,84 sec: 4.189 declarations; 9.577 references; 0 unresolved inclusions; 2 syntax errors; 0 unresolved names (0 %)
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 13:04:05.749
+!MESSAGE XSCT Command: [plnx-install-path  ; ::scw::scw_mode batch], Thread: Thread-12
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 13:04:05.752
+!MESSAGE XSCT command with result: [plnx-install-path  ; ::scw::scw_mode batch], Result: [null, ]. Thread: Thread-12
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 13:04:52.635
+!MESSAGE XSCT Command: [::hsi::utils::openhw C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/hw/p30a_dpu.xsa], Thread: Worker-0: Building selected projects in workspace
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 13:04:58.596
+!MESSAGE XSCT command with result: [::hsi::utils::openhw C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/hw/p30a_dpu.xsa], Result: [null, ]. Thread: Worker-0: Building selected projects in workspace
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 13:04:58.632
+!MESSAGE XSCT Command: [ ::hsi::utils::set_current_hw_sw C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/hw/p30a_dpu.xsa C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/sw/dpu_platform/standalone_domain/system.mss ], Thread: Worker-0: Building selected projects in workspace
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 13:04:58.656
+!MESSAGE XSCT command with result: [ ::hsi::utils::set_current_hw_sw C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/hw/p30a_dpu.xsa C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/sw/dpu_platform/standalone_domain/system.mss ], Result: [null, ]. Thread: Worker-0: Building selected projects in workspace
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 13:04:58.658
+!MESSAGE XSCT Command: [::hsi::utils::get_hw_sw_details -json C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/hw/p30a_dpu.xsa C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/sw/dpu_platform/standalone_domain/system.mss], Thread: Worker-0: Building selected projects in workspace
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 13:04:58.668
+!MESSAGE XSCT command with result: [::hsi::utils::get_hw_sw_details -json C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/hw/p30a_dpu.xsa C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/sw/dpu_platform/standalone_domain/system.mss], Result: [null, {"procname": "ps7_cortexa9_0"
+,"osname": "standalone"
+,"osver": "9.4"
+}]. Thread: Worker-0: Building selected projects in workspace
+
+!ENTRY com.xilinx.sdk.utils 1 0 2026-04-18 13:04:58.672
+!MESSAGE Generating MD5 hash for file: C:\project\vivado\P_30_A\vitis_ws_new\dpu_platform\export\dpu_platform\sw\dpu_platform\standalone_domain\system.mss ...
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 13:04:58.684
+!MESSAGE XSCT Command: [::hsi::utils::closesw C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/sw/dpu_platform/standalone_domain/system.mss], Thread: Worker-0: Building selected projects in workspace
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 13:04:58.692
+!MESSAGE XSCT command with result: [::hsi::utils::closesw C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/sw/dpu_platform/standalone_domain/system.mss], Result: [null, ]. Thread: Worker-0: Building selected projects in workspace
+
+!ENTRY org.eclipse.core.resources 2 10035 2026-04-18 13:05:05.415
+!MESSAGE The workspace will exit with unsaved changes in this session.
+!SESSION 2026-04-18 13:20:42.075 -----------------------------------------------
+eclipse.buildId=2024.2
+java.version=21.0.5
+java.vendor=Eclipse Adoptium
+BootLoader constants: OS=win32, ARCH=x86_64, WS=win32, NL=es_ES
+Framework arguments:  -application com.xilinx.sdx.cmdline.service 60516
+Command-line arguments:  -os win32 -ws win32 -arch x86_64 -application com.xilinx.sdx.cmdline.service 60516 -data C:/project/vivado/P_30_A/vitis_ws_new
+
+!ENTRY org.eclipse.core.resources 2 10035 2026-04-18 13:21:10.582
+!MESSAGE The workspace exited with unsaved changes in the previous session; refreshing workspace to recover changes.
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 13:21:20.854
+!MESSAGE XSCT Command: [plnx-install-path  ; ::scw::scw_mode batch], Thread: Thread-12
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 13:21:20.858
+!MESSAGE XSCT command with result: [plnx-install-path  ; ::scw::scw_mode batch], Result: [null, ]. Thread: Thread-12
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 13:22:30.519
+!MESSAGE XSCT Command: [::hsi::utils::openhw C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/hw/p30a_dpu.xsa], Thread: Worker-0: Building selected projects in workspace
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 13:22:38.967
+!MESSAGE XSCT command with result: [::hsi::utils::openhw C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/hw/p30a_dpu.xsa], Result: [null, ]. Thread: Worker-0: Building selected projects in workspace
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 13:22:38.984
+!MESSAGE XSCT Command: [ ::hsi::utils::set_current_hw_sw C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/hw/p30a_dpu.xsa C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/sw/dpu_platform/standalone_domain/system.mss ], Thread: Worker-0: Building selected projects in workspace
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 13:22:39.007
+!MESSAGE XSCT command with result: [ ::hsi::utils::set_current_hw_sw C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/hw/p30a_dpu.xsa C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/sw/dpu_platform/standalone_domain/system.mss ], Result: [null, ]. Thread: Worker-0: Building selected projects in workspace
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 13:22:39.010
+!MESSAGE XSCT Command: [::hsi::utils::get_hw_sw_details -json C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/hw/p30a_dpu.xsa C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/sw/dpu_platform/standalone_domain/system.mss], Thread: Worker-0: Building selected projects in workspace
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 13:22:39.022
+!MESSAGE XSCT command with result: [::hsi::utils::get_hw_sw_details -json C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/hw/p30a_dpu.xsa C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/sw/dpu_platform/standalone_domain/system.mss], Result: [null, {"procname": "ps7_cortexa9_0"
+,"osname": "standalone"
+,"osver": "9.4"
+}]. Thread: Worker-0: Building selected projects in workspace
+
+!ENTRY com.xilinx.sdk.utils 1 0 2026-04-18 13:22:39.024
+!MESSAGE Generating MD5 hash for file: C:\project\vivado\P_30_A\vitis_ws_new\dpu_platform\export\dpu_platform\sw\dpu_platform\standalone_domain\system.mss ...
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 13:22:39.033
+!MESSAGE XSCT Command: [::hsi::utils::closesw C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/sw/dpu_platform/standalone_domain/system.mss], Thread: Worker-0: Building selected projects in workspace
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 13:22:39.037
+!MESSAGE XSCT command with result: [::hsi::utils::closesw C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/sw/dpu_platform/standalone_domain/system.mss], Result: [null, ]. Thread: Worker-0: Building selected projects in workspace
+
+!ENTRY org.eclipse.core.resources 2 10035 2026-04-18 13:22:51.134
+!MESSAGE The workspace will exit with unsaved changes in this session.
+!SESSION 2026-04-18 14:21:55.942 -----------------------------------------------
+eclipse.buildId=2024.2
+java.version=21.0.5
+java.vendor=Eclipse Adoptium
+BootLoader constants: OS=win32, ARCH=x86_64, WS=win32, NL=es_ES
+Framework arguments:  -application com.xilinx.sdx.cmdline.service 52353
+Command-line arguments:  -os win32 -ws win32 -arch x86_64 -application com.xilinx.sdx.cmdline.service 52353 -data C:/project/vivado/P_30_A/vitis_ws_new
+
+!ENTRY org.eclipse.core.resources 2 10035 2026-04-18 14:22:30.413
+!MESSAGE The workspace exited with unsaved changes in the previous session; refreshing workspace to recover changes.
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 14:22:34.269
+!MESSAGE XSCT Command: [plnx-install-path  ; ::scw::scw_mode batch], Thread: Thread-12
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 14:22:34.276
+!MESSAGE XSCT command with result: [plnx-install-path  ; ::scw::scw_mode batch], Result: [null, ]. Thread: Thread-12
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 14:23:20.402
+!MESSAGE XSCT Command: [::hsi::utils::openhw C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/hw/p30a_dpu.xsa], Thread: Worker-4: Building selected projects in workspace
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 14:23:25.402
+!MESSAGE XSCT command with result: [::hsi::utils::openhw C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/hw/p30a_dpu.xsa], Result: [null, ]. Thread: Worker-4: Building selected projects in workspace
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 14:23:25.413
+!MESSAGE XSCT Command: [ ::hsi::utils::set_current_hw_sw C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/hw/p30a_dpu.xsa C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/sw/dpu_platform/standalone_domain/system.mss ], Thread: Worker-4: Building selected projects in workspace
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 14:23:25.430
+!MESSAGE XSCT command with result: [ ::hsi::utils::set_current_hw_sw C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/hw/p30a_dpu.xsa C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/sw/dpu_platform/standalone_domain/system.mss ], Result: [null, ]. Thread: Worker-4: Building selected projects in workspace
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 14:23:25.434
+!MESSAGE XSCT Command: [::hsi::utils::get_hw_sw_details -json C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/hw/p30a_dpu.xsa C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/sw/dpu_platform/standalone_domain/system.mss], Thread: Worker-4: Building selected projects in workspace
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 14:23:25.462
+!MESSAGE XSCT command with result: [::hsi::utils::get_hw_sw_details -json C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/hw/p30a_dpu.xsa C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/sw/dpu_platform/standalone_domain/system.mss], Result: [null, {"procname": "ps7_cortexa9_0"
+,"osname": "standalone"
+,"osver": "9.4"
+}]. Thread: Worker-4: Building selected projects in workspace
+
+!ENTRY com.xilinx.sdk.utils 1 0 2026-04-18 14:23:25.463
+!MESSAGE Generating MD5 hash for file: C:\project\vivado\P_30_A\vitis_ws_new\dpu_platform\export\dpu_platform\sw\dpu_platform\standalone_domain\system.mss ...
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 14:23:25.470
+!MESSAGE XSCT Command: [::hsi::utils::closesw C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/sw/dpu_platform/standalone_domain/system.mss], Thread: Worker-4: Building selected projects in workspace
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 14:23:25.473
+!MESSAGE XSCT command with result: [::hsi::utils::closesw C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/sw/dpu_platform/standalone_domain/system.mss], Result: [null, ]. Thread: Worker-4: Building selected projects in workspace
+
+!ENTRY org.eclipse.core.resources 2 10035 2026-04-18 14:23:32.937
+!MESSAGE The workspace will exit with unsaved changes in this session.
+!SESSION 2026-04-18 14:26:29.814 -----------------------------------------------
+eclipse.buildId=2024.2
+java.version=21.0.5
+java.vendor=Eclipse Adoptium
+BootLoader constants: OS=win32, ARCH=x86_64, WS=win32, NL=es_ES
+Framework arguments:  -application com.xilinx.sdx.cmdline.service 63646
+Command-line arguments:  -os win32 -ws win32 -arch x86_64 -application com.xilinx.sdx.cmdline.service 63646 -data C:/project/vivado/P_30_A/vitis_ws_new
+
+!ENTRY org.eclipse.core.resources 2 10035 2026-04-18 14:26:32.226
+!MESSAGE The workspace exited with unsaved changes in the previous session; refreshing workspace to recover changes.
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 14:26:35.711
+!MESSAGE XSCT Command: [plnx-install-path  ; ::scw::scw_mode batch], Thread: Thread-12
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 14:26:35.734
+!MESSAGE XSCT command with result: [plnx-install-path  ; ::scw::scw_mode batch], Result: [null, ]. Thread: Thread-12
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 14:27:13.028
+!MESSAGE XSCT Command: [::hsi::utils::openhw C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/hw/p30a_dpu.xsa], Thread: Worker-0: Building selected projects in workspace
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 14:27:17.840
+!MESSAGE XSCT command with result: [::hsi::utils::openhw C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/hw/p30a_dpu.xsa], Result: [null, ]. Thread: Worker-0: Building selected projects in workspace
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 14:27:17.847
+!MESSAGE XSCT Command: [ ::hsi::utils::set_current_hw_sw C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/hw/p30a_dpu.xsa C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/sw/dpu_platform/standalone_domain/system.mss ], Thread: Worker-0: Building selected projects in workspace
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 14:27:17.857
+!MESSAGE XSCT command with result: [ ::hsi::utils::set_current_hw_sw C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/hw/p30a_dpu.xsa C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/sw/dpu_platform/standalone_domain/system.mss ], Result: [null, ]. Thread: Worker-0: Building selected projects in workspace
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 14:27:17.858
+!MESSAGE XSCT Command: [::hsi::utils::get_hw_sw_details -json C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/hw/p30a_dpu.xsa C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/sw/dpu_platform/standalone_domain/system.mss], Thread: Worker-0: Building selected projects in workspace
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 14:27:17.864
+!MESSAGE XSCT command with result: [::hsi::utils::get_hw_sw_details -json C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/hw/p30a_dpu.xsa C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/sw/dpu_platform/standalone_domain/system.mss], Result: [null, {"procname": "ps7_cortexa9_0"
+,"osname": "standalone"
+,"osver": "9.4"
+}]. Thread: Worker-0: Building selected projects in workspace
+
+!ENTRY com.xilinx.sdk.utils 1 0 2026-04-18 14:27:17.866
+!MESSAGE Generating MD5 hash for file: C:\project\vivado\P_30_A\vitis_ws_new\dpu_platform\export\dpu_platform\sw\dpu_platform\standalone_domain\system.mss ...
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 14:27:17.871
+!MESSAGE XSCT Command: [::hsi::utils::closesw C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/sw/dpu_platform/standalone_domain/system.mss], Thread: Worker-0: Building selected projects in workspace
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 14:27:17.874
+!MESSAGE XSCT command with result: [::hsi::utils::closesw C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/sw/dpu_platform/standalone_domain/system.mss], Result: [null, ]. Thread: Worker-0: Building selected projects in workspace
+
+!ENTRY org.eclipse.core.resources 2 10035 2026-04-18 14:27:23.702
+!MESSAGE The workspace will exit with unsaved changes in this session.
+!SESSION 2026-04-18 14:31:26.700 -----------------------------------------------
+eclipse.buildId=2024.2
+java.version=21.0.5
+java.vendor=Eclipse Adoptium
+BootLoader constants: OS=win32, ARCH=x86_64, WS=win32, NL=es_ES
+Framework arguments:  -application com.xilinx.sdx.cmdline.service 52454
+Command-line arguments:  -os win32 -ws win32 -arch x86_64 -application com.xilinx.sdx.cmdline.service 52454 -data C:/project/vivado/P_30_A/vitis_ws_new
+
+!ENTRY org.eclipse.core.resources 2 10035 2026-04-18 14:31:29.353
+!MESSAGE The workspace exited with unsaved changes in the previous session; refreshing workspace to recover changes.
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 14:31:33.109
+!MESSAGE XSCT Command: [plnx-install-path  ; ::scw::scw_mode batch], Thread: Thread-12
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 14:31:33.137
+!MESSAGE XSCT command with result: [plnx-install-path  ; ::scw::scw_mode batch], Result: [null, ]. Thread: Thread-12
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 14:32:17.020
+!MESSAGE XSCT Command: [::hsi::utils::openhw C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/hw/p30a_dpu.xsa], Thread: Worker-5: Building selected projects in workspace
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 14:32:22.207
+!MESSAGE XSCT command with result: [::hsi::utils::openhw C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/hw/p30a_dpu.xsa], Result: [null, ]. Thread: Worker-5: Building selected projects in workspace
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 14:32:22.217
+!MESSAGE XSCT Command: [ ::hsi::utils::set_current_hw_sw C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/hw/p30a_dpu.xsa C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/sw/dpu_platform/standalone_domain/system.mss ], Thread: Worker-5: Building selected projects in workspace
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 14:32:22.231
+!MESSAGE XSCT command with result: [ ::hsi::utils::set_current_hw_sw C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/hw/p30a_dpu.xsa C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/sw/dpu_platform/standalone_domain/system.mss ], Result: [null, ]. Thread: Worker-5: Building selected projects in workspace
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 14:32:22.233
+!MESSAGE XSCT Command: [::hsi::utils::get_hw_sw_details -json C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/hw/p30a_dpu.xsa C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/sw/dpu_platform/standalone_domain/system.mss], Thread: Worker-5: Building selected projects in workspace
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 14:32:22.238
+!MESSAGE XSCT command with result: [::hsi::utils::get_hw_sw_details -json C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/hw/p30a_dpu.xsa C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/sw/dpu_platform/standalone_domain/system.mss], Result: [null, {"procname": "ps7_cortexa9_0"
+,"osname": "standalone"
+,"osver": "9.4"
+}]. Thread: Worker-5: Building selected projects in workspace
+
+!ENTRY com.xilinx.sdk.utils 1 0 2026-04-18 14:32:22.240
+!MESSAGE Generating MD5 hash for file: C:\project\vivado\P_30_A\vitis_ws_new\dpu_platform\export\dpu_platform\sw\dpu_platform\standalone_domain\system.mss ...
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 14:32:22.246
+!MESSAGE XSCT Command: [::hsi::utils::closesw C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/sw/dpu_platform/standalone_domain/system.mss], Thread: Worker-5: Building selected projects in workspace
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 14:32:22.250
+!MESSAGE XSCT command with result: [::hsi::utils::closesw C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/sw/dpu_platform/standalone_domain/system.mss], Result: [null, ]. Thread: Worker-5: Building selected projects in workspace
+
+!ENTRY org.eclipse.core.resources 2 10035 2026-04-18 14:32:28.627
+!MESSAGE The workspace will exit with unsaved changes in this session.
+!SESSION 2026-04-18 14:42:44.249 -----------------------------------------------
+eclipse.buildId=2024.2
+java.version=21.0.5
+java.vendor=Eclipse Adoptium
+BootLoader constants: OS=win32, ARCH=x86_64, WS=win32, NL=es_ES
+Framework arguments:  -application com.xilinx.sdx.cmdline.service 55208
+Command-line arguments:  -os win32 -ws win32 -arch x86_64 -application com.xilinx.sdx.cmdline.service 55208 -data C:/project/vivado/P_30_A/vitis_ws_new
+
+!ENTRY org.eclipse.core.resources 2 10035 2026-04-18 14:42:46.941
+!MESSAGE The workspace exited with unsaved changes in the previous session; refreshing workspace to recover changes.
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 14:42:50.524
+!MESSAGE XSCT Command: [plnx-install-path  ; ::scw::scw_mode batch], Thread: Thread-12
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 14:42:50.528
+!MESSAGE XSCT command with result: [plnx-install-path  ; ::scw::scw_mode batch], Result: [null, ]. Thread: Thread-12
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 14:43:24.523
+!MESSAGE XSCT Command: [::hsi::utils::openhw C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/hw/p30a_dpu.xsa], Thread: Worker-2: Building selected projects in workspace
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 14:43:29.233
+!MESSAGE XSCT command with result: [::hsi::utils::openhw C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/hw/p30a_dpu.xsa], Result: [null, ]. Thread: Worker-2: Building selected projects in workspace
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 14:43:29.243
+!MESSAGE XSCT Command: [ ::hsi::utils::set_current_hw_sw C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/hw/p30a_dpu.xsa C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/sw/dpu_platform/standalone_domain/system.mss ], Thread: Worker-2: Building selected projects in workspace
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 14:43:29.261
+!MESSAGE XSCT command with result: [ ::hsi::utils::set_current_hw_sw C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/hw/p30a_dpu.xsa C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/sw/dpu_platform/standalone_domain/system.mss ], Result: [null, ]. Thread: Worker-2: Building selected projects in workspace
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 14:43:29.264
+!MESSAGE XSCT Command: [::hsi::utils::get_hw_sw_details -json C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/hw/p30a_dpu.xsa C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/sw/dpu_platform/standalone_domain/system.mss], Thread: Worker-2: Building selected projects in workspace
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 14:43:29.269
+!MESSAGE XSCT command with result: [::hsi::utils::get_hw_sw_details -json C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/hw/p30a_dpu.xsa C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/sw/dpu_platform/standalone_domain/system.mss], Result: [null, {"procname": "ps7_cortexa9_0"
+,"osname": "standalone"
+,"osver": "9.4"
+}]. Thread: Worker-2: Building selected projects in workspace
+
+!ENTRY com.xilinx.sdk.utils 1 0 2026-04-18 14:43:29.271
+!MESSAGE Generating MD5 hash for file: C:\project\vivado\P_30_A\vitis_ws_new\dpu_platform\export\dpu_platform\sw\dpu_platform\standalone_domain\system.mss ...
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 14:43:29.278
+!MESSAGE XSCT Command: [::hsi::utils::closesw C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/sw/dpu_platform/standalone_domain/system.mss], Thread: Worker-2: Building selected projects in workspace
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 14:43:29.282
+!MESSAGE XSCT command with result: [::hsi::utils::closesw C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/sw/dpu_platform/standalone_domain/system.mss], Result: [null, ]. Thread: Worker-2: Building selected projects in workspace
+
+!ENTRY org.eclipse.core.resources 2 10035 2026-04-18 14:43:34.502
+!MESSAGE The workspace will exit with unsaved changes in this session.
+!SESSION 2026-04-18 14:50:08.126 -----------------------------------------------
+eclipse.buildId=2024.2
+java.version=21.0.5
+java.vendor=Eclipse Adoptium
+BootLoader constants: OS=win32, ARCH=x86_64, WS=win32, NL=es_ES
+Framework arguments:  -application com.xilinx.sdx.cmdline.service 62878
+Command-line arguments:  -os win32 -ws win32 -arch x86_64 -application com.xilinx.sdx.cmdline.service 62878 -data C:/project/vivado/P_30_A/vitis_ws_new
+
+!ENTRY org.eclipse.core.resources 2 10035 2026-04-18 14:50:10.457
+!MESSAGE The workspace exited with unsaved changes in the previous session; refreshing workspace to recover changes.
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 14:50:13.967
+!MESSAGE XSCT Command: [plnx-install-path  ; ::scw::scw_mode batch], Thread: Thread-12
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 14:50:13.971
+!MESSAGE XSCT command with result: [plnx-install-path  ; ::scw::scw_mode batch], Result: [null, ]. Thread: Thread-12
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 14:50:48.594
+!MESSAGE XSCT Command: [::hsi::utils::openhw C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/hw/p30a_dpu.xsa], Thread: Worker-5: Building selected projects in workspace
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 14:50:53.759
+!MESSAGE XSCT command with result: [::hsi::utils::openhw C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/hw/p30a_dpu.xsa], Result: [null, ]. Thread: Worker-5: Building selected projects in workspace
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 14:50:53.769
+!MESSAGE XSCT Command: [ ::hsi::utils::set_current_hw_sw C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/hw/p30a_dpu.xsa C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/sw/dpu_platform/standalone_domain/system.mss ], Thread: Worker-5: Building selected projects in workspace
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 14:50:53.782
+!MESSAGE XSCT command with result: [ ::hsi::utils::set_current_hw_sw C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/hw/p30a_dpu.xsa C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/sw/dpu_platform/standalone_domain/system.mss ], Result: [null, ]. Thread: Worker-5: Building selected projects in workspace
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 14:50:53.784
+!MESSAGE XSCT Command: [::hsi::utils::get_hw_sw_details -json C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/hw/p30a_dpu.xsa C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/sw/dpu_platform/standalone_domain/system.mss], Thread: Worker-5: Building selected projects in workspace
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 14:50:53.791
+!MESSAGE XSCT command with result: [::hsi::utils::get_hw_sw_details -json C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/hw/p30a_dpu.xsa C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/sw/dpu_platform/standalone_domain/system.mss], Result: [null, {"procname": "ps7_cortexa9_0"
+,"osname": "standalone"
+,"osver": "9.4"
+}]. Thread: Worker-5: Building selected projects in workspace
+
+!ENTRY com.xilinx.sdk.utils 1 0 2026-04-18 14:50:53.793
+!MESSAGE Generating MD5 hash for file: C:\project\vivado\P_30_A\vitis_ws_new\dpu_platform\export\dpu_platform\sw\dpu_platform\standalone_domain\system.mss ...
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 14:50:53.798
+!MESSAGE XSCT Command: [::hsi::utils::closesw C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/sw/dpu_platform/standalone_domain/system.mss], Thread: Worker-5: Building selected projects in workspace
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 14:50:53.801
+!MESSAGE XSCT command with result: [::hsi::utils::closesw C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/sw/dpu_platform/standalone_domain/system.mss], Result: [null, ]. Thread: Worker-5: Building selected projects in workspace
+
+!ENTRY org.eclipse.core.resources 2 10035 2026-04-18 14:50:59.225
+!MESSAGE The workspace will exit with unsaved changes in this session.
+!SESSION 2026-04-18 14:54:33.215 -----------------------------------------------
+eclipse.buildId=2024.2
+java.version=21.0.5
+java.vendor=Eclipse Adoptium
+BootLoader constants: OS=win32, ARCH=x86_64, WS=win32, NL=es_ES
+Framework arguments:  -application com.xilinx.sdx.cmdline.service 52254
+Command-line arguments:  -os win32 -ws win32 -arch x86_64 -application com.xilinx.sdx.cmdline.service 52254 -data C:/project/vivado/P_30_A/vitis_ws_new
+
+!ENTRY org.eclipse.core.resources 2 10035 2026-04-18 14:54:35.621
+!MESSAGE The workspace exited with unsaved changes in the previous session; refreshing workspace to recover changes.
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 14:54:39.275
+!MESSAGE XSCT Command: [plnx-install-path  ; ::scw::scw_mode batch], Thread: Thread-12
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 14:54:39.281
+!MESSAGE XSCT command with result: [plnx-install-path  ; ::scw::scw_mode batch], Result: [null, ]. Thread: Thread-12
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 14:55:51.895
+!MESSAGE XSCT Command: [::hsi::utils::openhw C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/hw/p30a_dpu.xsa], Thread: Worker-0: Building selected projects in workspace
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 14:55:57.879
+!MESSAGE XSCT command with result: [::hsi::utils::openhw C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/hw/p30a_dpu.xsa], Result: [null, ]. Thread: Worker-0: Building selected projects in workspace
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 14:55:57.889
+!MESSAGE XSCT Command: [ ::hsi::utils::set_current_hw_sw C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/hw/p30a_dpu.xsa C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/sw/dpu_platform/standalone_domain/system.mss ], Thread: Worker-0: Building selected projects in workspace
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 14:55:57.906
+!MESSAGE XSCT command with result: [ ::hsi::utils::set_current_hw_sw C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/hw/p30a_dpu.xsa C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/sw/dpu_platform/standalone_domain/system.mss ], Result: [null, ]. Thread: Worker-0: Building selected projects in workspace
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 14:55:57.907
+!MESSAGE XSCT Command: [::hsi::utils::get_hw_sw_details -json C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/hw/p30a_dpu.xsa C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/sw/dpu_platform/standalone_domain/system.mss], Thread: Worker-0: Building selected projects in workspace
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 14:55:57.915
+!MESSAGE XSCT command with result: [::hsi::utils::get_hw_sw_details -json C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/hw/p30a_dpu.xsa C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/sw/dpu_platform/standalone_domain/system.mss], Result: [null, {"procname": "ps7_cortexa9_0"
+,"osname": "standalone"
+,"osver": "9.4"
+}]. Thread: Worker-0: Building selected projects in workspace
+
+!ENTRY com.xilinx.sdk.utils 1 0 2026-04-18 14:55:57.916
+!MESSAGE Generating MD5 hash for file: C:\project\vivado\P_30_A\vitis_ws_new\dpu_platform\export\dpu_platform\sw\dpu_platform\standalone_domain\system.mss ...
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 14:55:57.926
+!MESSAGE XSCT Command: [::hsi::utils::closesw C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/sw/dpu_platform/standalone_domain/system.mss], Thread: Worker-0: Building selected projects in workspace
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 14:55:57.931
+!MESSAGE XSCT command with result: [::hsi::utils::closesw C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/sw/dpu_platform/standalone_domain/system.mss], Result: [null, ]. Thread: Worker-0: Building selected projects in workspace
+
+!ENTRY com.xilinx.sdx.core 1 0 2026-04-18 14:56:04.310
+!MESSAGE Build step failed, canceling full build chain.
+
+!ENTRY org.eclipse.core.resources 2 10035 2026-04-18 14:56:06.258
+!MESSAGE The workspace will exit with unsaved changes in this session.
+!SESSION 2026-04-18 14:56:29.616 -----------------------------------------------
+eclipse.buildId=2024.2
+java.version=21.0.5
+java.vendor=Eclipse Adoptium
+BootLoader constants: OS=win32, ARCH=x86_64, WS=win32, NL=es_ES
+Framework arguments:  -application com.xilinx.sdx.cmdline.service 53033
+Command-line arguments:  -os win32 -ws win32 -arch x86_64 -application com.xilinx.sdx.cmdline.service 53033 -data C:/project/vivado/P_30_A/vitis_ws_new
+
+!ENTRY org.eclipse.core.resources 2 10035 2026-04-18 14:56:31.924
+!MESSAGE The workspace exited with unsaved changes in the previous session; refreshing workspace to recover changes.
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 14:56:35.422
+!MESSAGE XSCT Command: [plnx-install-path  ; ::scw::scw_mode batch], Thread: Thread-12
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 14:56:35.427
+!MESSAGE XSCT command with result: [plnx-install-path  ; ::scw::scw_mode batch], Result: [null, ]. Thread: Thread-12
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 14:57:10.802
+!MESSAGE XSCT Command: [::hsi::utils::openhw C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/hw/p30a_dpu.xsa], Thread: Worker-2: Building selected projects in workspace
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 14:57:15.655
+!MESSAGE XSCT command with result: [::hsi::utils::openhw C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/hw/p30a_dpu.xsa], Result: [null, ]. Thread: Worker-2: Building selected projects in workspace
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 14:57:15.667
+!MESSAGE XSCT Command: [ ::hsi::utils::set_current_hw_sw C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/hw/p30a_dpu.xsa C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/sw/dpu_platform/standalone_domain/system.mss ], Thread: Worker-2: Building selected projects in workspace
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 14:57:15.680
+!MESSAGE XSCT command with result: [ ::hsi::utils::set_current_hw_sw C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/hw/p30a_dpu.xsa C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/sw/dpu_platform/standalone_domain/system.mss ], Result: [null, ]. Thread: Worker-2: Building selected projects in workspace
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 14:57:15.682
+!MESSAGE XSCT Command: [::hsi::utils::get_hw_sw_details -json C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/hw/p30a_dpu.xsa C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/sw/dpu_platform/standalone_domain/system.mss], Thread: Worker-2: Building selected projects in workspace
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 14:57:15.687
+!MESSAGE XSCT command with result: [::hsi::utils::get_hw_sw_details -json C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/hw/p30a_dpu.xsa C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/sw/dpu_platform/standalone_domain/system.mss], Result: [null, {"procname": "ps7_cortexa9_0"
+,"osname": "standalone"
+,"osver": "9.4"
+}]. Thread: Worker-2: Building selected projects in workspace
+
+!ENTRY com.xilinx.sdk.utils 1 0 2026-04-18 14:57:15.689
+!MESSAGE Generating MD5 hash for file: C:\project\vivado\P_30_A\vitis_ws_new\dpu_platform\export\dpu_platform\sw\dpu_platform\standalone_domain\system.mss ...
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 14:57:15.698
+!MESSAGE XSCT Command: [::hsi::utils::closesw C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/sw/dpu_platform/standalone_domain/system.mss], Thread: Worker-2: Building selected projects in workspace
+
+!ENTRY com.xilinx.sdk.utils 0 0 2026-04-18 14:57:15.701
+!MESSAGE XSCT command with result: [::hsi::utils::closesw C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/sw/dpu_platform/standalone_domain/system.mss], Result: [null, ]. Thread: Worker-2: Building selected projects in workspace
+
+!ENTRY org.eclipse.core.resources 2 10035 2026-04-18 14:57:21.194
+!MESSAGE The workspace will exit with unsaved changes in this session.

@@ -1,0 +1,188 @@
+11:52:16 DEBUG : Logs will be stored at 'C:/project/vivado/P_30_A/vitis_ws_new/IDE.log'.
+11:52:17 INFO  : Registering command handlers for Vitis TCF services
+11:52:30 INFO  : Result from executing command 'getProjects': dpu_platform
+11:52:38 INFO  : Platform repository initialization has completed.
+11:52:38 INFO  : Result from executing command 'getPlatforms': vek385_base|C:/AMDDesignTools/2025.2/Vitis/base_platforms/vek385_base/vek385_base.xpfm;vrk160_base|C:/AMDDesignTools/2025.2/Vitis/base_platforms/vrk160_base/vrk160_base.xpfm;xilinx_kv260_base_202520_1|C:/AMDDesignTools/2025.2/Vitis/base_platforms/xilinx_kv260_base_202520_1/xilinx_kv260_base_202520_1.xpfm;xilinx_vck190_base_202520_1|C:/AMDDesignTools/2025.2/Vitis/base_platforms/xilinx_vck190_base_202520_1/xilinx_vck190_base_202520_1.xpfm;xilinx_vck190_base_dfx_202520_1|C:/AMDDesignTools/2025.2/Vitis/base_platforms/xilinx_vck190_base_dfx_202520_1/xilinx_vck190_base_dfx_202520_1.xpfm;xilinx_vek280_base_202520_1|C:/AMDDesignTools/2025.2/Vitis/base_platforms/xilinx_vek280_base_202520_1/xilinx_vek280_base_202520_1.xpfm;xilinx_vmk180_base_202520_1|C:/AMDDesignTools/2025.2/Vitis/base_platforms/xilinx_vmk180_base_202520_1/xilinx_vmk180_base_202520_1.xpfm
+11:53:58 INFO  : Result from executing command 'getProjects': dpu_platform
+11:53:58 INFO  : Result from executing command 'getPlatforms': dpu_platform|C:/project/vivado/P_30_A/vitis_ws_new/dpu_platform/export/dpu_platform/dpu_platform.xpfm;vek385_base|C:/AMDDesignTools/2025.2/Vitis/base_platforms/vek385_base/vek385_base.xpfm;vrk160_base|C:/AMDDesignTools/2025.2/Vitis/base_platforms/vrk160_base/vrk160_base.xpfm;xilinx_kv260_base_202520_1|C:/AMDDesignTools/2025.2/Vitis/base_platforms/xilinx_kv260_base_202520_1/xilinx_kv260_base_202520_1.xpfm;xilinx_vck190_base_202520_1|C:/AMDDesignTools/2025.2/Vitis/base_platforms/xilinx_vck190_base_202520_1/xilinx_vck190_base_202520_1.xpfm;xilinx_vck190_base_dfx_202520_1|C:/AMDDesignTools/2025.2/Vitis/base_platforms/xilinx_vck190_base_dfx_202520_1/xilinx_vck190_base_dfx_202520_1.xpfm;xilinx_vek280_base_202520_1|C:/AMDDesignTools/2025.2/Vitis/base_platforms/xilinx_vek280_base_202520_1/xilinx_vek280_base_202520_1.xpfm;xilinx_vmk180_base_202520_1|C:/AMDDesignTools/2025.2/Vitis/base_platforms/xilinx_vmk180_base_202520_1/xilinx_vmk180_base_202520_1.xpfm
+11:54:00 INFO  : Result from executing command 'reportPlatform': {dpu_platform={standalone_domain={Os=standalone, DomainName=standalone_domain, CpuType=cortex-a9, CpuInstance=ps7_cortexa9_0}}}
+11:54:00 INFO  : Result from executing command 'reportPlatform': {dpu_platform={standalone_domain={Os=standalone, DomainName=standalone_domain, CpuType=cortex-a9, CpuInstance=ps7_cortexa9_0}}}
+11:54:00 INFO  : Result from executing command 'reportPlatform': {dpu_platform={standalone_domain={Os=standalone, DomainName=standalone_domain, CpuType=cortex-a9, CpuInstance=ps7_cortexa9_0}}}
+11:54:08 INFO  : plnx-install-location is set to ''
+11:54:09 INFO  : Successfully done query RDI_DATADIR 
+11:54:59 INFO  : Checking for BSP changes to sync application flags for project 'dpu_app'...
+11:55:12 ERROR : xsct server communication channel has closed unexpectedly.
+java.net.SocketException: Connection reset
+	at sun.nio.ch.NioSocketImpl.implRead(NioSocketImpl.java:318) ~[?:?]
+	at sun.nio.ch.NioSocketImpl.read(NioSocketImpl.java:346) ~[?:?]
+	at sun.nio.ch.NioSocketImpl$1.read(NioSocketImpl.java:796) ~[?:?]
+	at java.net.Socket$SocketInputStream.read(Socket.java:1099) ~[?:?]
+	at java.io.BufferedInputStream.read1(BufferedInputStream.java:345) ~[?:?]
+	at java.io.BufferedInputStream.implRead(BufferedInputStream.java:420) ~[?:?]
+	at java.io.BufferedInputStream.read(BufferedInputStream.java:399) ~[?:?]
+	at java.io.FilterInputStream.read(FilterInputStream.java:95) ~[?:?]
+	at org.eclipse.tcf.core.ChannelTCP.get(ChannelTCP.java:186) ~[org.eclipse.tcf.core_1.7.0.202511071507.jar:?]
+	at org.eclipse.tcf.core.StreamChannel.read(StreamChannel.java:85) ~[org.eclipse.tcf.core_1.7.0.202511071507.jar:?]
+	at org.eclipse.tcf.core.AbstractChannel$1.run(AbstractChannel.java:329) ~[org.eclipse.tcf.core_1.7.0.202511071507.jar:?]
+13:03:57 DEBUG : Logs will be stored at 'C:/project/vivado/P_30_A/vitis_ws_new/IDE.log'.
+13:04:04 INFO  : Registering command handlers for Vitis TCF services
+13:04:05 INFO  : plnx-install-location is set to ''
+13:04:19 INFO  : Platform repository initialization has completed.
+13:04:52 INFO  : Checking for BSP changes to sync application flags for project 'dpu_app'...
+13:05:05 ERROR : xsct server communication channel has closed unexpectedly.
+java.net.SocketException: Connection reset
+	at sun.nio.ch.NioSocketImpl.implRead(NioSocketImpl.java:318) ~[?:?]
+	at sun.nio.ch.NioSocketImpl.read(NioSocketImpl.java:346) ~[?:?]
+	at sun.nio.ch.NioSocketImpl$1.read(NioSocketImpl.java:796) ~[?:?]
+	at java.net.Socket$SocketInputStream.read(Socket.java:1099) ~[?:?]
+	at java.io.BufferedInputStream.read1(BufferedInputStream.java:345) ~[?:?]
+	at java.io.BufferedInputStream.implRead(BufferedInputStream.java:420) ~[?:?]
+	at java.io.BufferedInputStream.read(BufferedInputStream.java:399) ~[?:?]
+	at java.io.FilterInputStream.read(FilterInputStream.java:95) ~[?:?]
+	at org.eclipse.tcf.core.ChannelTCP.get(ChannelTCP.java:186) ~[org.eclipse.tcf.core_1.7.0.202511071507.jar:?]
+	at org.eclipse.tcf.core.StreamChannel.read(StreamChannel.java:85) ~[org.eclipse.tcf.core_1.7.0.202511071507.jar:?]
+	at org.eclipse.tcf.core.AbstractChannel$1.run(AbstractChannel.java:329) ~[org.eclipse.tcf.core_1.7.0.202511071507.jar:?]
+13:21:11 DEBUG : Logs will be stored at 'C:/project/vivado/P_30_A/vitis_ws_new/IDE.log'.
+13:21:20 INFO  : Registering command handlers for Vitis TCF services
+13:21:20 INFO  : plnx-install-location is set to ''
+13:21:42 INFO  : Platform repository initialization has completed.
+13:22:30 INFO  : Checking for BSP changes to sync application flags for project 'dpu_app'...
+13:22:50 ERROR : xsct server communication channel has closed unexpectedly.
+java.net.SocketException: Connection reset
+	at sun.nio.ch.NioSocketImpl.implRead(NioSocketImpl.java:318) ~[?:?]
+	at sun.nio.ch.NioSocketImpl.read(NioSocketImpl.java:346) ~[?:?]
+	at sun.nio.ch.NioSocketImpl$1.read(NioSocketImpl.java:796) ~[?:?]
+	at java.net.Socket$SocketInputStream.read(Socket.java:1099) ~[?:?]
+	at java.io.BufferedInputStream.read1(BufferedInputStream.java:345) ~[?:?]
+	at java.io.BufferedInputStream.implRead(BufferedInputStream.java:420) ~[?:?]
+	at java.io.BufferedInputStream.read(BufferedInputStream.java:399) ~[?:?]
+	at java.io.FilterInputStream.read(FilterInputStream.java:95) ~[?:?]
+	at org.eclipse.tcf.core.ChannelTCP.get(ChannelTCP.java:186) ~[org.eclipse.tcf.core_1.7.0.202511071507.jar:?]
+	at org.eclipse.tcf.core.StreamChannel.read(StreamChannel.java:85) ~[org.eclipse.tcf.core_1.7.0.202511071507.jar:?]
+	at org.eclipse.tcf.core.AbstractChannel$1.run(AbstractChannel.java:329) ~[org.eclipse.tcf.core_1.7.0.202511071507.jar:?]
+14:22:30 DEBUG : Logs will be stored at 'C:/project/vivado/P_30_A/vitis_ws_new/IDE.log'.
+14:22:31 INFO  : Registering command handlers for Vitis TCF services
+14:22:34 INFO  : plnx-install-location is set to ''
+14:22:45 INFO  : Platform repository initialization has completed.
+14:23:20 INFO  : Checking for BSP changes to sync application flags for project 'dpu_app'...
+14:23:32 ERROR : xsct server communication channel has closed unexpectedly.
+java.net.SocketException: Connection reset
+	at sun.nio.ch.NioSocketImpl.implRead(NioSocketImpl.java:318) ~[?:?]
+	at sun.nio.ch.NioSocketImpl.read(NioSocketImpl.java:346) ~[?:?]
+	at sun.nio.ch.NioSocketImpl$1.read(NioSocketImpl.java:796) ~[?:?]
+	at java.net.Socket$SocketInputStream.read(Socket.java:1099) ~[?:?]
+	at java.io.BufferedInputStream.read1(BufferedInputStream.java:345) ~[?:?]
+	at java.io.BufferedInputStream.implRead(BufferedInputStream.java:420) ~[?:?]
+	at java.io.BufferedInputStream.read(BufferedInputStream.java:399) ~[?:?]
+	at java.io.FilterInputStream.read(FilterInputStream.java:95) ~[?:?]
+	at org.eclipse.tcf.core.ChannelTCP.get(ChannelTCP.java:186) ~[org.eclipse.tcf.core_1.7.0.202511071507.jar:?]
+	at org.eclipse.tcf.core.StreamChannel.read(StreamChannel.java:85) ~[org.eclipse.tcf.core_1.7.0.202511071507.jar:?]
+	at org.eclipse.tcf.core.AbstractChannel$1.run(AbstractChannel.java:329) ~[org.eclipse.tcf.core_1.7.0.202511071507.jar:?]
+14:26:32 DEBUG : Logs will be stored at 'C:/project/vivado/P_30_A/vitis_ws_new/IDE.log'.
+14:26:33 INFO  : Registering command handlers for Vitis TCF services
+14:26:35 INFO  : plnx-install-location is set to ''
+14:26:47 INFO  : Platform repository initialization has completed.
+14:27:13 INFO  : Checking for BSP changes to sync application flags for project 'dpu_app'...
+14:27:23 ERROR : xsct server communication channel has closed unexpectedly.
+java.net.SocketException: Connection reset
+	at sun.nio.ch.NioSocketImpl.implRead(NioSocketImpl.java:318) ~[?:?]
+	at sun.nio.ch.NioSocketImpl.read(NioSocketImpl.java:346) ~[?:?]
+	at sun.nio.ch.NioSocketImpl$1.read(NioSocketImpl.java:796) ~[?:?]
+	at java.net.Socket$SocketInputStream.read(Socket.java:1099) ~[?:?]
+	at java.io.BufferedInputStream.read1(BufferedInputStream.java:345) ~[?:?]
+	at java.io.BufferedInputStream.implRead(BufferedInputStream.java:420) ~[?:?]
+	at java.io.BufferedInputStream.read(BufferedInputStream.java:399) ~[?:?]
+	at java.io.FilterInputStream.read(FilterInputStream.java:95) ~[?:?]
+	at org.eclipse.tcf.core.ChannelTCP.get(ChannelTCP.java:186) ~[org.eclipse.tcf.core_1.7.0.202511071507.jar:?]
+	at org.eclipse.tcf.core.StreamChannel.read(StreamChannel.java:85) ~[org.eclipse.tcf.core_1.7.0.202511071507.jar:?]
+	at org.eclipse.tcf.core.AbstractChannel$1.run(AbstractChannel.java:329) ~[org.eclipse.tcf.core_1.7.0.202511071507.jar:?]
+14:31:29 DEBUG : Logs will be stored at 'C:/project/vivado/P_30_A/vitis_ws_new/IDE.log'.
+14:31:30 INFO  : Registering command handlers for Vitis TCF services
+14:31:33 INFO  : plnx-install-location is set to ''
+14:31:44 INFO  : Platform repository initialization has completed.
+14:32:16 INFO  : Checking for BSP changes to sync application flags for project 'dpu_app'...
+14:32:28 ERROR : xsct server communication channel has closed unexpectedly.
+java.net.SocketException: Connection reset
+	at sun.nio.ch.NioSocketImpl.implRead(NioSocketImpl.java:318) ~[?:?]
+	at sun.nio.ch.NioSocketImpl.read(NioSocketImpl.java:346) ~[?:?]
+	at sun.nio.ch.NioSocketImpl$1.read(NioSocketImpl.java:796) ~[?:?]
+	at java.net.Socket$SocketInputStream.read(Socket.java:1099) ~[?:?]
+	at java.io.BufferedInputStream.read1(BufferedInputStream.java:345) ~[?:?]
+	at java.io.BufferedInputStream.implRead(BufferedInputStream.java:420) ~[?:?]
+	at java.io.BufferedInputStream.read(BufferedInputStream.java:399) ~[?:?]
+	at java.io.FilterInputStream.read(FilterInputStream.java:95) ~[?:?]
+	at org.eclipse.tcf.core.ChannelTCP.get(ChannelTCP.java:186) ~[org.eclipse.tcf.core_1.7.0.202511071507.jar:?]
+	at org.eclipse.tcf.core.StreamChannel.read(StreamChannel.java:85) ~[org.eclipse.tcf.core_1.7.0.202511071507.jar:?]
+	at org.eclipse.tcf.core.AbstractChannel$1.run(AbstractChannel.java:329) ~[org.eclipse.tcf.core_1.7.0.202511071507.jar:?]
+14:42:47 DEBUG : Logs will be stored at 'C:/project/vivado/P_30_A/vitis_ws_new/IDE.log'.
+14:42:48 INFO  : Registering command handlers for Vitis TCF services
+14:42:50 INFO  : plnx-install-location is set to ''
+14:43:01 INFO  : Platform repository initialization has completed.
+14:43:24 INFO  : Checking for BSP changes to sync application flags for project 'dpu_app'...
+14:43:34 ERROR : xsct server communication channel has closed unexpectedly.
+java.net.SocketException: Connection reset
+	at sun.nio.ch.NioSocketImpl.implRead(NioSocketImpl.java:318) ~[?:?]
+	at sun.nio.ch.NioSocketImpl.read(NioSocketImpl.java:346) ~[?:?]
+	at sun.nio.ch.NioSocketImpl$1.read(NioSocketImpl.java:796) ~[?:?]
+	at java.net.Socket$SocketInputStream.read(Socket.java:1099) ~[?:?]
+	at java.io.BufferedInputStream.read1(BufferedInputStream.java:345) ~[?:?]
+	at java.io.BufferedInputStream.implRead(BufferedInputStream.java:420) ~[?:?]
+	at java.io.BufferedInputStream.read(BufferedInputStream.java:399) ~[?:?]
+	at java.io.FilterInputStream.read(FilterInputStream.java:95) ~[?:?]
+	at org.eclipse.tcf.core.ChannelTCP.get(ChannelTCP.java:186) ~[org.eclipse.tcf.core_1.7.0.202511071507.jar:?]
+	at org.eclipse.tcf.core.StreamChannel.read(StreamChannel.java:85) ~[org.eclipse.tcf.core_1.7.0.202511071507.jar:?]
+	at org.eclipse.tcf.core.AbstractChannel$1.run(AbstractChannel.java:329) ~[org.eclipse.tcf.core_1.7.0.202511071507.jar:?]
+14:50:10 DEBUG : Logs will be stored at 'C:/project/vivado/P_30_A/vitis_ws_new/IDE.log'.
+14:50:11 INFO  : Registering command handlers for Vitis TCF services
+14:50:13 INFO  : plnx-install-location is set to ''
+14:50:25 INFO  : Platform repository initialization has completed.
+14:50:48 INFO  : Checking for BSP changes to sync application flags for project 'dpu_app'...
+14:50:59 ERROR : xsct server communication channel has closed unexpectedly.
+java.net.SocketException: Connection reset
+	at sun.nio.ch.NioSocketImpl.implRead(NioSocketImpl.java:318) ~[?:?]
+	at sun.nio.ch.NioSocketImpl.read(NioSocketImpl.java:346) ~[?:?]
+	at sun.nio.ch.NioSocketImpl$1.read(NioSocketImpl.java:796) ~[?:?]
+	at java.net.Socket$SocketInputStream.read(Socket.java:1099) ~[?:?]
+	at java.io.BufferedInputStream.read1(BufferedInputStream.java:345) ~[?:?]
+	at java.io.BufferedInputStream.implRead(BufferedInputStream.java:420) ~[?:?]
+	at java.io.BufferedInputStream.read(BufferedInputStream.java:399) ~[?:?]
+	at java.io.FilterInputStream.read(FilterInputStream.java:95) ~[?:?]
+	at org.eclipse.tcf.core.ChannelTCP.get(ChannelTCP.java:186) ~[org.eclipse.tcf.core_1.7.0.202511071507.jar:?]
+	at org.eclipse.tcf.core.StreamChannel.read(StreamChannel.java:85) ~[org.eclipse.tcf.core_1.7.0.202511071507.jar:?]
+	at org.eclipse.tcf.core.AbstractChannel$1.run(AbstractChannel.java:329) ~[org.eclipse.tcf.core_1.7.0.202511071507.jar:?]
+14:54:36 DEBUG : Logs will be stored at 'C:/project/vivado/P_30_A/vitis_ws_new/IDE.log'.
+14:54:36 INFO  : Registering command handlers for Vitis TCF services
+14:54:39 INFO  : plnx-install-location is set to ''
+14:54:51 INFO  : Platform repository initialization has completed.
+14:55:51 INFO  : Checking for BSP changes to sync application flags for project 'dpu_app'...
+14:56:06 ERROR : xsct server communication channel has closed unexpectedly.
+java.net.SocketException: Connection reset
+	at sun.nio.ch.NioSocketImpl.implRead(NioSocketImpl.java:318) ~[?:?]
+	at sun.nio.ch.NioSocketImpl.read(NioSocketImpl.java:346) ~[?:?]
+	at sun.nio.ch.NioSocketImpl$1.read(NioSocketImpl.java:796) ~[?:?]
+	at java.net.Socket$SocketInputStream.read(Socket.java:1099) ~[?:?]
+	at java.io.BufferedInputStream.read1(BufferedInputStream.java:345) ~[?:?]
+	at java.io.BufferedInputStream.implRead(BufferedInputStream.java:420) ~[?:?]
+	at java.io.BufferedInputStream.read(BufferedInputStream.java:399) ~[?:?]
+	at java.io.FilterInputStream.read(FilterInputStream.java:95) ~[?:?]
+	at org.eclipse.tcf.core.ChannelTCP.get(ChannelTCP.java:186) ~[org.eclipse.tcf.core_1.7.0.202511071507.jar:?]
+	at org.eclipse.tcf.core.StreamChannel.read(StreamChannel.java:85) ~[org.eclipse.tcf.core_1.7.0.202511071507.jar:?]
+	at org.eclipse.tcf.core.AbstractChannel$1.run(AbstractChannel.java:329) ~[org.eclipse.tcf.core_1.7.0.202511071507.jar:?]
+14:56:32 DEBUG : Logs will be stored at 'C:/project/vivado/P_30_A/vitis_ws_new/IDE.log'.
+14:56:33 INFO  : Registering command handlers for Vitis TCF services
+14:56:35 INFO  : plnx-install-location is set to ''
+14:56:46 INFO  : Platform repository initialization has completed.
+14:57:10 INFO  : Checking for BSP changes to sync application flags for project 'dpu_app'...
+14:57:20 ERROR : xsct server communication channel has closed unexpectedly.
+java.net.SocketException: Connection reset
+	at sun.nio.ch.NioSocketImpl.implRead(NioSocketImpl.java:318) ~[?:?]
+	at sun.nio.ch.NioSocketImpl.read(NioSocketImpl.java:346) ~[?:?]
+	at sun.nio.ch.NioSocketImpl$1.read(NioSocketImpl.java:796) ~[?:?]
+	at java.net.Socket$SocketInputStream.read(Socket.java:1099) ~[?:?]
+	at java.io.BufferedInputStream.read1(BufferedInputStream.java:345) ~[?:?]
+	at java.io.BufferedInputStream.implRead(BufferedInputStream.java:420) ~[?:?]
+	at java.io.BufferedInputStream.read(BufferedInputStream.java:399) ~[?:?]
+	at java.io.FilterInputStream.read(FilterInputStream.java:95) ~[?:?]
+	at org.eclipse.tcf.core.ChannelTCP.get(ChannelTCP.java:186) ~[org.eclipse.tcf.core_1.7.0.202511071507.jar:?]
+	at org.eclipse.tcf.core.StreamChannel.read(StreamChannel.java:85) ~[org.eclipse.tcf.core_1.7.0.202511071507.jar:?]
+	at org.eclipse.tcf.core.AbstractChannel$1.run(AbstractChannel.java:329) ~[org.eclipse.tcf.core_1.7.0.202511071507.jar:?]
