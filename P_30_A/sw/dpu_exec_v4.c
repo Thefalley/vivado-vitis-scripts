@@ -267,7 +267,12 @@ int dpu_exec_conv_v4(const layer_config_t *L,
         if (ic_tile_size < 1) ic_tile_size = 1;
     }
 
-    int needs_ic_tiling = (L->c_out * kh * kw * L->c_in > 32768);
+    /* Force ARM OC grouping if:
+     * - weights > 32KB (need IC tiling), OR
+     * - c_out not multiple of N_MAC (conv_engine internal OC tiling
+     *   always processes N_MAC=32 channels, would overflow for last tile) */
+    int needs_ic_tiling = (L->c_out * kh * kw * L->c_in > 32768)
+                       || (L->c_out % N_MAC != 0);
 
     /* Spatial tiling: find largest tile that fits in BRAM.
      * For IC-tiled layers, use c_out_group=N_MAC (not full c_out)
