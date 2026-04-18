@@ -126,16 +126,26 @@ static void transpose_oihw_to_ohwi(const int8_t *oihw, int8_t *ohwi,
 /* ========================================================================= */
 static int dma_load(uintptr_t src, uint32_t bytes)
 {
-    int timeout;
-    Xil_DCacheFlushRange((UINTPTR)src, bytes);
-    if (XAxiDma_SimpleTransfer(&g_dma, src, bytes,
-                               XAXIDMA_DMA_TO_DEVICE) != XST_SUCCESS)
-        return DPU_ERR_PARAMS;
-    timeout = 0;
-    while (XAxiDma_Busy(&g_dma, XAXIDMA_DMA_TO_DEVICE)) {
-        if (++timeout > 20000000) return DPU_ERR_TIMEOUT;
+    /* Direct register writes — bypasses Xilinx SimpleTransfer which has
+     * a broken busy check (rejects RUNNING+IDLE channels). */
+    Xil_DCacheFlushRange(src, bytes);
+    uint32_t base = g_dma.RegBase;
+    /* Wait for any previous transfer to finish */
+    int t = 0;
+    while (!(Xil_In32(base + 0x04) & 0x03)) {
+        if (++t > 5000000) return DPU_ERR_TIMEOUT;
     }
-    return DPU_OK;
+    uint32_t cr = Xil_In32(base + 0x00);
+    if (!(cr & 1)) Xil_Out32(base + 0x00, cr | 1);  /* set RUNSTOP */
+    Xil_Out32(base + 0x18, (uint32_t)src);            /* source addr */
+    Xil_Out32(base + 0x28, bytes);                     /* length → start */
+    t = 0;
+    for (;;) {
+        uint32_t sr = Xil_In32(base + 0x04);
+        if (sr & 0x01) return DPU_OK;  /* HALTED */
+        if (sr & 0x02) return DPU_OK;  /* IDLE */
+        if (++t > 20000000) return DPU_ERR_TIMEOUT;
+    }
 }
 
 /* Poll wrapper done_latch */
@@ -321,7 +331,7 @@ int dpu_exec_leaky(const layer_config_t *L,
     /* Wait DMA idle + invalidate cache input */
     {
         int wait_t = 0;
-        while (XAxiDma_Busy(&g_dma, XAXIDMA_DMA_TO_DEVICE)) {
+        while (!(Xil_In32(g_dma.RegBase+0x04) & 0x03)) {
             if (++wait_t > 5000000) return DPU_ERR_TIMEOUT;
         }
     }
@@ -348,7 +358,7 @@ int dpu_exec_leaky(const layer_config_t *L,
         /* Wait DMA idle from previous chunk */
         {
             int wait_t = 0;
-            while (XAxiDma_Busy(&g_dma, XAXIDMA_DMA_TO_DEVICE)) {
+            while (!(Xil_In32(g_dma.RegBase+0x04) & 0x03)) {
                 if (++wait_t > 10000000) return DPU_ERR_TIMEOUT;
             }
         }
@@ -359,9 +369,10 @@ int dpu_exec_leaky(const layer_config_t *L,
         dm_configure((uintptr_t)(out_ddr + off), chunk);
         dpu_write(REG_CTRL, 0x02);
 
-        if (XAxiDma_SimpleTransfer(&g_dma, (UINTPTR)(in_ddr + off), chunk,
-                                   XAXIDMA_DMA_TO_DEVICE) != XST_SUCCESS)
-            return DPU_ERR_PARAMS;
+        { uint32_t cr=Xil_In32(g_dma.RegBase);
+          if(!(cr&1)) Xil_Out32(g_dma.RegBase,cr|1);
+          Xil_Out32(g_dma.RegBase+0x18,(uint32_t)(in_ddr+off));
+          Xil_Out32(g_dma.RegBase+0x28,chunk); }
 
         if (wait_done_latch(20000000) != DPU_OK) return DPU_ERR_TIMEOUT;
         if (wait_dm_done(20000000)    != DPU_OK) return DPU_ERR_DM_FAULT;
@@ -388,32 +399,46 @@ int dpu_exec_pool(const layer_config_t *L,
 {
     if (!g_dma_ready) return DPU_ERR_PARAMS;
 
-    /* Numero de ventanas = h_out * w_out * c_in. Cada ventana = 4 bytes */
-    const int n_windows = L->h_out * L->w_out * L->c_in;
-    const int n_input_bytes = n_windows * 4;
-    const int n_output_bytes = n_windows;
-    if (n_input_bytes % 4 != 0) return DPU_ERR_PARAMS;
-
-    if ((uintptr_t)in_ddr != DPU_SRC_ADDR) {
-        memcpy((void *)DPU_SRC_ADDR, in_ddr, n_input_bytes);
-    }
-    Xil_DCacheFlushRange((UINTPTR)DPU_SRC_ADDR, n_input_bytes);
+    /* Each window = 4 input bytes → 1 output byte (2x2 max).
+     * reg_n_words is 11 bits (max 2047). Input is n_words words.
+     * Max chunk = 2047 words = 8188 bytes input = 2047 windows.
+     * We chunk by windows to keep alignment. */
+    const int total_windows = L->h_out * L->w_out * L->c_in;
+    const int max_win_chunk = 2047;  /* max windows per chunk (reg_n_words limit) */
 
     dpu_write(REG_LAYER_TYPE, LAYER_MAXPOOL);
-    dpu_write(REG_N_WORDS,    n_input_bytes / 4);
+    Xil_DCacheInvalidateRange((UINTPTR)in_ddr, total_windows * 4);
 
-    dm_configure((uintptr_t)out_ddr, n_output_bytes);
-    dpu_write(REG_CTRL, 0x02);
+    int total_tiles = 0;
+    uint8_t *src = (uint8_t *)DPU_SRC_ADDR;
 
-    if (XAxiDma_SimpleTransfer(&g_dma, (UINTPTR)DPU_SRC_ADDR, n_input_bytes,
-                               XAXIDMA_DMA_TO_DEVICE) != XST_SUCCESS)
-        return DPU_ERR_PARAMS;
+    for (int win_off = 0; win_off < total_windows; win_off += max_win_chunk) {
+        int win_chunk = total_windows - win_off;
+        if (win_chunk > max_win_chunk) win_chunk = max_win_chunk;
 
-    if (wait_done_latch(20000000) != DPU_OK) return DPU_ERR_TIMEOUT;
-    if (wait_dm_done(20000000) != DPU_OK) return DPU_ERR_DM_FAULT;
+        int in_chunk  = win_chunk * 4;   /* 4 bytes per window input */
+        int out_chunk = win_chunk;       /* 1 byte per window output */
 
-    Xil_DCacheInvalidateRange((UINTPTR)out_ddr, n_output_bytes);
-    if (prof) { prof->n_tiles = 1; }
+        memcpy(src, in_ddr + win_off * 4, in_chunk);
+        Xil_DCacheFlushRange((UINTPTR)src, in_chunk);
+
+        dpu_write(REG_N_WORDS, in_chunk / 4);
+        dm_configure((uintptr_t)(out_ddr + win_off), out_chunk);
+        dpu_write(REG_CTRL, 0x02);
+
+        { uint32_t cr=Xil_In32(g_dma.RegBase);
+          if(!(cr&1)) Xil_Out32(g_dma.RegBase,cr|1);
+          Xil_Out32(g_dma.RegBase+0x18,(uint32_t)src);
+          Xil_Out32(g_dma.RegBase+0x28,in_chunk); }
+
+        if (wait_done_latch(20000000) != DPU_OK) return DPU_ERR_TIMEOUT;
+        if (wait_dm_done(20000000) != DPU_OK) return DPU_ERR_DM_FAULT;
+
+        total_tiles++;
+    }
+
+    Xil_DCacheInvalidateRange((UINTPTR)out_ddr, total_windows);
+    if (prof) { prof->n_tiles = total_tiles; }
     return DPU_OK;
 }
 
@@ -431,38 +456,57 @@ int dpu_exec_add(const layer_config_t *L,
 
     const int n_bytes = L->c_in * L->h_in * L->w_in;
     if (n_bytes % 4 != 0) return DPU_ERR_PARAMS;
-    if (2 * n_bytes > DPU_BRAM_BYTES) return DPU_ERR_TILING;
 
-    uint8_t *src = (uint8_t *)DPU_SRC_ADDR;
-    memcpy(src,             in_a_ddr, n_bytes);
-    memcpy(src + n_bytes,   in_b_ddr, n_bytes);
-    Xil_DCacheFlushRange((UINTPTR)src, 2 * n_bytes);
+    /* Max chunk: A+B must fit in BRAM AND reg_n_words (11 bits, max 2047).
+     * Since n_words = (2*chunk)/4 must be <= 2047: chunk <= 2047*4/2 = 4094.
+     * Align down to 4 bytes. */
+    const int max_chunk = 4092;
 
     dpu_write(REG_LAYER_TYPE,   LAYER_ELEM_ADD);
-    dpu_write(REG_N_WORDS,      (2 * n_bytes) / 4);
-    dpu_write(REG_X_ZP,         (uint32_t)(int32_t)L->x_zp & 0x1FF);  /* = a_zp */
+    dpu_write(REG_X_ZP,         (uint32_t)(int32_t)L->x_zp & 0x1FF);
     dpu_write(REG_B_ZP,         (uint32_t)(int32_t)L->b_zp & 0xFF);
     dpu_write(REG_Y_ZP,         (uint32_t)(int32_t)L->y_zp & 0xFF);
-    dpu_write(REG_M0,           L->M0);    /* M0_a */
+    dpu_write(REG_M0,           L->M0);
     dpu_write(REG_M0_B,         L->M0_b);
     dpu_write(REG_N_SHIFT,      L->n_shift);
-    dpu_write(REG_ADDR_INPUT,   0x000);
-    dpu_write(REG_ADDR_WEIGHTS, n_bytes);
 
-    /* LOAD */
-    dpu_write(REG_CTRL, 0x01);
-    if (dma_load((uintptr_t)src, 2 * n_bytes) != DPU_OK) return DPU_ERR_TIMEOUT;
-    if (wait_idle(1000000) != DPU_OK) return DPU_ERR_TIMEOUT;
+    Xil_DCacheInvalidateRange((UINTPTR)in_a_ddr, n_bytes);
+    Xil_DCacheInvalidateRange((UINTPTR)in_b_ddr, n_bytes);
 
-    /* DataMover + start */
-    dm_configure((uintptr_t)out_ddr, n_bytes);
-    dpu_write(REG_CTRL, 0x02);
+    int total_tiles = 0;
+    uint8_t *src = (uint8_t *)DPU_SRC_ADDR;
 
-    if (wait_done_latch(20000000) != DPU_OK) return DPU_ERR_TIMEOUT;
-    if (wait_dm_done(20000000) != DPU_OK) return DPU_ERR_DM_FAULT;
+    for (int off = 0; off < n_bytes; off += max_chunk) {
+        int chunk = n_bytes - off;
+        if (chunk > max_chunk) chunk = max_chunk;
+
+        /* Concatenate A_chunk + B_chunk in scratch buffer */
+        memcpy(src,         in_a_ddr + off, chunk);
+        memcpy(src + chunk, in_b_ddr + off, chunk);
+        Xil_DCacheFlushRange((UINTPTR)src, 2 * chunk);
+
+        dpu_write(REG_N_WORDS,      (2 * chunk) / 4);
+        dpu_write(REG_ADDR_INPUT,   0x000);
+        dpu_write(REG_ADDR_WEIGHTS, chunk);
+
+        /* LOAD A+B → BRAM */
+        dpu_write(REG_CTRL, 0x01);
+        if (dma_load((uintptr_t)src, 2 * chunk) != DPU_OK) return DPU_ERR_TIMEOUT;
+        if (wait_idle(1000000) != DPU_OK) return DPU_ERR_TIMEOUT;
+
+        /* DataMover dest + START → compute + drain
+         * Don't change N_WORDS — wrapper uses it from LOAD phase */
+        dm_configure((uintptr_t)(out_ddr + off), chunk);
+        dpu_write(REG_CTRL, 0x02);
+
+        if (wait_done_latch(20000000) != DPU_OK) return DPU_ERR_TIMEOUT;
+        if (wait_dm_done(20000000) != DPU_OK) return DPU_ERR_DM_FAULT;
+
+        total_tiles++;
+    }
 
     Xil_DCacheInvalidateRange((UINTPTR)out_ddr, n_bytes);
-    if (prof) { prof->n_tiles = 1; }
+    if (prof) { prof->n_tiles = total_tiles; }
     return DPU_OK;
 }
 

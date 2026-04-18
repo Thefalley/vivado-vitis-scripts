@@ -233,58 +233,118 @@ int dpu_exec_conv_v4(const layer_config_t *L,
     const int stride = (L->stride == 2) ? 2 : 1;
     const int b_bytes = L->c_out * 4;
 
-    /* Calcular ic_tile_size maximo que cabe en wb_ram (32 KB) */
+    /*
+     * IC tiling strategy:
+     *
+     * The conv_engine has N_MAC=32 accumulators (one per output channel).
+     * When c_out > 32, it processes output channels in OC tiles of 32.
+     * Each OC tile OVERWRITES the accumulators from the previous one.
+     *
+     * ARM IC tiling (splitting c_in across CMD_STARTs) requires that
+     * the accumulators survive between IC tiles. This only works if
+     * there is exactly 1 OC tile per CMD_START (c_out_per_start ≤ 32).
+     *
+     * For layers needing IC tiling (total weights > 32KB wb_ram):
+     *   - ARM splits BOTH c_out (into groups of 32) AND c_in (into IC tiles)
+     *   - Each CMD_START: c_out_group ≤ 32, ic_ts channels
+     *   - Weights per start: 32 * kk * ic_ts — always fits in wb_ram
+     *   - Accumulators are preserved between IC tiles (same 32 channels)
+     *   - DRAIN after all IC tiles of one OC group complete
+     *
+     * For layers NOT needing IC tiling (weights ≤ 32KB):
+     *   - Load all weights to wb_ram via FIFO
+     *   - Conv_engine handles OC tiling internally (no ARM split)
+     *   - One CMD_START per spatial tile
+     */
+    #define N_MAC 32
+
+    /* ic_tile_size: max input channels per IC tile.
+     * Constrained so that ONE OC GROUP's weights fit in wb_ram:
+     *   N_MAC * kk * ic_tile_size ≤ 32768 */
     int ic_tile_size = L->c_in;
-    int w_per_tile = L->c_out * kh * kw * ic_tile_size;
-    if (w_per_tile > 32768) {
-        ic_tile_size = 32768 / (L->c_out * kh * kw);
+    if (N_MAC * kh * kw * ic_tile_size > 32768) {
+        ic_tile_size = 32768 / (N_MAC * kh * kw);
         if (ic_tile_size < 1) ic_tile_size = 1;
     }
-    w_per_tile = L->c_out * kh * kw * ic_tile_size;
 
-    /* Spatial tiling: find largest square tile_h=tile_w that fits in BRAM.
-     * BRAM = 8192 bytes. Payload = output + input + bias:
-     *   output = c_out * tile_h * tile_w
-     *   input  = ic_tile_size * ((tile_h-1)*stride+kh) * ((tile_w-1)*stride+kw)
-     *   bias   = c_out * 4   (only first ic_tile)
-     * We search downward from tile=16 until it fits. */
+    /* Force ARM OC grouping if:
+     * - weights > 32KB (need IC tiling), OR
+     * - c_out not multiple of N_MAC (conv_engine internal OC tiling
+     *   always processes N_MAC=32 channels, would overflow for last tile) */
+    int needs_ic_tiling = (L->c_out * kh * kw * L->c_in > 32768)
+                       || (L->c_out % N_MAC != 0);
+
+    /* Spatial tiling.
+     *
+     * CRITICAL: When ic_tile_size < c_in (real IC tiling needed), the ARM
+     * issues separate CMD_STARTs for each IC tile. Between them, the 32 MAC
+     * accumulators retain partial sums. But the accumulators are PER-PIXEL:
+     * after processing all pixels of IC tile 0, only the LAST pixel's
+     * accumulators survive. IC tile 1 then processes pixel (0,0) with the
+     * wrong accumulators.
+     *
+     * FIX: force tile=1x1 when ic_tile_size < c_in. This way each spatial
+     * tile is 1 pixel, so the accumulator always corresponds to that pixel.
+     * Slow (1 pixel per CMD_START) but correct. More transactions, same memory. */
+    int real_ic_tiling = (ic_tile_size < L->c_in);
+    int c_out_bram = needs_ic_tiling ? N_MAC : L->c_out;
     int tile_h, tile_w;
-    for (tile_h = 16; tile_h >= 1; tile_h--) {
-        tile_w = tile_h;
-        int in_h = (tile_h - 1) * stride + kh;
-        int in_w = (tile_w - 1) * stride + kw;
-        int tot = ALIGN_UP(L->c_out * tile_h * tile_w, 64)
-                + ALIGN_UP(ic_tile_size * in_h * in_w, 64)
-                + ALIGN_UP(b_bytes, 64);
-        if (tot <= DPU_BRAM_BYTES) break;
-    }
-    if (tile_h < 1) tile_h = tile_w = 1;
-    xil_printf("tile=%dx%d ic_tile=%d\r\n", tile_h, tile_w, ic_tile_size);
 
-    /* Registros constantes (no cambian entre ic_tiles) */
+    if (real_ic_tiling) {
+        tile_h = 1; tile_w = 1;
+    } else {
+        for (tile_h = 16; tile_h >= 1; tile_h--) {
+            tile_w = tile_h;
+            int in_h = (tile_h - 1) * stride + kh;
+            int in_w = (tile_w - 1) * stride + kw;
+            int tot = ALIGN_UP(c_out_bram * tile_h * tile_w, 64)
+                    + ALIGN_UP(ic_tile_size * in_h * in_w, 64)
+                    + ALIGN_UP(c_out_bram * 4, 64);
+            if (tot <= DPU_BRAM_BYTES) break;
+        }
+        if (tile_h < 1) tile_h = tile_w = 1;
+    }
+
+    xil_printf("tile=%dx%d ic_ts=%d oc_groups=%d%s\r\n",
+               tile_h, tile_w, ic_tile_size,
+               needs_ic_tiling ? (L->c_out + N_MAC - 1) / N_MAC : 1,
+               needs_ic_tiling ? " [ARM IC+OC]" : "");
+
+    /* Registros constantes */
     const uint32_t ksize_enc = (kh == 3) ? 2 : 0;
     const uint32_t stride_enc = (stride == 2) ? 1 : 0;
+    #define DMA_MAX_CHUNK 16380
 
     dpu_write(REG_LAYER_TYPE, LAYER_CONV);
-    dpu_write(REG_C_OUT,      L->c_out);
     dpu_write(REG_KSP,        (stride_enc << 2) | ksize_enc);
     dpu_write(REG_X_ZP,       (uint32_t)(int32_t)L->x_zp & 0x1FF);
     dpu_write(REG_W_ZP,       (uint32_t)(int32_t)L->w_zp & 0xFF);
     dpu_write(REG_M0,         L->M0);
     dpu_write(REG_N_SHIFT,    L->n_shift);
     dpu_write(REG_Y_ZP,       (uint32_t)(int32_t)L->y_zp & 0xFF);
-    dpu_write(REG_ADDR_OUTPUT, 0);  /* output siempre al inicio del BRAM */
+    dpu_write(REG_ADDR_OUTPUT, 0);
 
     int total_tiles = 0;
     int rc;
 
-    /* Loop por spatial tiles (H+W) */
+    /* Number of OC groups: 1 for non-IC-tiled, ceil(c_out/32) for IC-tiled */
+    int n_oc_groups = needs_ic_tiling ? (L->c_out + N_MAC - 1) / N_MAC : 1;
+
+    /* ================================================================
+     * MAIN LOOP: spatial tiles → OC groups → IC tiles
+     *
+     * Spatial: divides the output H×W into tile_h × tile_w regions
+     * OC group: divides output channels into groups of N_MAC=32
+     *           (only when IC tiling needed; otherwise conv_engine handles)
+     * IC tile: divides input channels into ic_tile_size chunks
+     *          (only when total weights > 32KB)
+     * ================================================================ */
     for (int oh0 = 0; oh0 < L->h_out; oh0 += tile_h) {
         int h_tile = (oh0 + tile_h <= L->h_out) ? tile_h : (L->h_out - oh0);
         for (int ow0 = 0; ow0 < L->w_out; ow0 += tile_w) {
             int w_tile = (ow0 + tile_w <= L->w_out) ? tile_w : (L->w_out - ow0);
 
-            /* Calcular input region y pads */
+            /* Compute input region and padding for this spatial tile */
             int ih_start = oh0 * stride - L->pad;
             int iw_start = ow0 * stride - L->pad;
             int in_h_needed = (h_tile - 1) * stride + kh;
@@ -307,185 +367,148 @@ int dpu_exec_conv_v4(const layer_config_t *L,
             int in_w_real = iw_hi - iw_lo;
             if (in_h_real <= 0 || in_w_real <= 0) continue;
 
-            /* IC tile loop */
-            for (int ic_base = 0; ic_base < L->c_in; ic_base += ic_tile_size) {
-                int ic_ts = ic_tile_size;
-                if (ic_base + ic_ts > L->c_in) ic_ts = L->c_in - ic_base;
-                int is_first = (ic_base == 0);
-                int is_last  = (ic_base + ic_ts >= L->c_in);
+            /* --- OC group loop --- */
+            for (int oc_grp = 0; oc_grp < n_oc_groups; oc_grp++) {
+                int oc_base = oc_grp * N_MAC;
+                int oc_count = (oc_base + N_MAC <= L->c_out) ? N_MAC : (L->c_out - oc_base);
 
-                int w_bytes = L->c_out * kh * kw * ic_ts;
-                int in_bytes = ic_ts * in_h_real * in_w_real;
+                /* --- IC tile loop (inside OC group → accumulators preserved) --- */
+                for (int ic_base = 0; ic_base < L->c_in; ic_base += ic_tile_size) {
+                    int ic_ts = ic_tile_size;
+                    if (ic_base + ic_ts > L->c_in) ic_ts = L->c_in - ic_base;
+                    int is_first_ic = (ic_base == 0);
+                    int is_last_ic  = (ic_base + ic_ts >= L->c_in);
 
-                /* ============================================ */
-                /* PASO 1: Cargar pesos via DMA_W → FIFO → wb_ram */
-                /* ============================================ */
-                UINTPTR w_dma_src;
-                if (ic_ts == L->c_in) {
-                    w_dma_src = (UINTPTR)weights_ddr;
-                    Xil_DCacheFlushRange(w_dma_src, w_bytes);
-                } else {
-                    int8_t *wt = (int8_t *)W_TILE_BUF;
-                    int inner = kh * kw * L->c_in;
-                    for (int oc = 0; oc < L->c_out; oc++) {
-                        for (int p = 0; p < kh * kw; p++) {
-                            memcpy(wt + (oc * kh * kw + p) * ic_ts,
-                                   weights_ddr + oc * inner + p * L->c_in + ic_base,
-                                   ic_ts);
+                    /* Weight bytes for this (oc_group, ic_tile) */
+                    int oc_w = needs_ic_tiling ? oc_count : L->c_out;
+                    int w_bytes = oc_w * kh * kw * ic_ts;
+                    int in_bytes = ic_ts * in_h_real * in_w_real;
+                    int bias_now = is_first_ic ? oc_w * 4 : 0;
+
+                    /* === STEP 1: Load weights via FIFO → wb_ram === */
+                    int8_t *wt;
+                    UINTPTR w_dma_src;
+                    if (!needs_ic_tiling && ic_ts == L->c_in) {
+                        /* No IC/OC tiling: send all weights directly */
+                        w_dma_src = (UINTPTR)weights_ddr;
+                    } else {
+                        /* Extract weights for this (oc_group, ic_tile) from OHWI blob */
+                        wt = (int8_t *)W_TILE_BUF;
+                        int full_ic_stride = kh * kw * L->c_in;
+                        for (int oc = 0; oc < oc_w; oc++) {
+                            for (int p = 0; p < kh * kw; p++) {
+                                memcpy(wt + (oc * kh * kw + p) * ic_ts,
+                                       weights_ddr + (oc_base + oc) * full_ic_stride
+                                                   + p * L->c_in + ic_base,
+                                       ic_ts);
+                            }
+                        }
+                        w_dma_src = (UINTPTR)wt;
+                    }
+                    Xil_DCacheFlushRange(w_dma_src, ALIGN_UP(w_bytes, 64));
+
+                    dpu_write(REG_WB_N_BYTES, w_bytes);
+                    dpu_write(REG_CTRL, CMD_LOAD_WEIGHTS);
+                    {
+                        int rem = w_bytes; UINTPTR src = w_dma_src;
+                        while (rem > 0) {
+                            int chunk = rem > DMA_MAX_CHUNK ? DMA_MAX_CHUNK : rem;
+                            chunk = ALIGN_UP(chunk, 4);
+                            rc = wait_dma_idle(&g_dma_w, 5000000);
+                            if (rc != DPU_OK) { DBGSNAP(0xE1, 0); return rc; }
+                            dma_send(&g_dma_w, src, chunk);
+                            src += chunk; rem -= chunk;
                         }
                     }
-                    w_dma_src = (UINTPTR)wt;
-                    Xil_DCacheFlushRange(w_dma_src, w_bytes);
-                }
+                    rc = wait_done_latch(20000000);
+                    if (rc != DPU_OK) { DBGSNAP(0xE3, 0); return rc; }
 
-                /* --- PASO 1: pesos via DMA_W → FIFO → wb_ram ---
-                 * DMA max = 16380 bytes (14-bit length register).
-                 * Wrapper stays in S_LOAD_WEIGHTS counting total bytes.
-                 * ARM sends N chunks, FIFO buffers between DMA and wrapper. */
-                #define DMA_MAX_CHUNK 16380
-                DBGSNAP(0x20, w_bytes);
-                dpu_write(REG_WB_N_BYTES, w_bytes);
-                dpu_write(REG_CTRL, CMD_LOAD_WEIGHTS);
+                    /* === STEP 2: Load input + bias → BRAM === */
+                    uint8_t *tile_buf = (uint8_t *)TILE_SCRATCH;
+                    int out_bytes_tile = oc_w * h_tile * w_tile;
+                    uint32_t IN_OFF = ALIGN_UP(out_bytes_tile, 64);
+                    uint32_t B_OFF  = ALIGN_UP(IN_OFF + in_bytes, 64);
+                    uint32_t TOT    = ALIGN_UP(B_OFF + bias_now, 64);
 
-                {
-                    int remaining = w_bytes;
-                    UINTPTR src = w_dma_src;
-                    while (remaining > 0) {
-                        int chunk = remaining > DMA_MAX_CHUNK ? DMA_MAX_CHUNK : remaining;
-                        chunk = ALIGN_UP(chunk, 4);
-                        rc = wait_dma_idle(&g_dma_w, 5000000);
-                        if (rc != DPU_OK) { DBGSNAP(0xE1, Xil_In32(g_dma_w.RegBase+0x04)); return rc; }
-                        if (dma_send(&g_dma_w, src, chunk) != DPU_OK)
-                            { DBGSNAP(0xE2, remaining); return DPU_ERR_PARAMS; }
-                        src += chunk;
-                        remaining -= chunk;
-                    }
-                }
-
-                rc = wait_done_latch(20000000);
-                if (rc != DPU_OK) { DBGSNAP(0xE3, 0); return rc; }
-
-                /* Weights loaded — wrapper should be back to IDLE */
-                CHK_STATE(0x23, WRAPPER_IDLE, CE_IDLE);
-
-                /* ============================================ */
-                /* PASO 2: Cargar input+bias via DMA_IN → BRAM   */
-                /* ============================================ */
-                uint8_t *tile_buf = (uint8_t *)TILE_SCRATCH;
-                int out_bytes_tile = L->c_out * h_tile * w_tile;
-                uint32_t OUT_OFF = 0;
-                uint32_t IN_OFF  = ALIGN_UP(out_bytes_tile, 64);
-                uint32_t B_OFF   = ALIGN_UP(IN_OFF + in_bytes, 64);
-                uint32_t TOT     = ALIGN_UP(B_OFF + (is_first ? b_bytes : 0), 64);
-
-                memset(tile_buf, 0, TOT);
-
-                /* Extraer input NCHW para este ic_tile (cache already invalidated above) */
-                for (int c = 0; c < ic_ts; c++) {
-                    for (int rr = 0; rr < in_h_real; rr++) {
-                        const uint8_t *src = in_ddr
-                            + (uint32_t)(ic_base + c) * L->h_in * L->w_in
-                            + (uint32_t)(ih_lo + rr) * L->w_in + iw_lo;
-                        uint8_t *dst = tile_buf + IN_OFF
-                            + (uint32_t)c * in_h_real * in_w_real
-                            + rr * in_w_real;
-                        memcpy(dst, src, in_w_real);
-                    }
-                }
-
-                /* Bias (solo en el primer ic_tile, cache already invalidated above) */
-                if (is_first) {
-                    memcpy(tile_buf + B_OFF, bias_ddr, b_bytes);
-                }
-
-                Xil_DCacheFlushRange((UINTPTR)tile_buf, TOT);
-
-                /* Programar registros para este tile */
-                dpu_write(REG_C_IN,         ic_ts);
-                dpu_write(REG_H_IN,         in_h_real);
-                dpu_write(REG_W_IN,         in_w_real);
-                dpu_write(REG_IC_TILE_SIZE, ic_ts);
-                dpu_write(REG_N_WORDS,      TOT / 4);
-                dpu_write(REG_ADDR_INPUT,   IN_OFF);
-                dpu_write(REG_ADDR_WEIGHTS, 0);
-                dpu_write(REG_SKIP_WL,      1);  /* weights via FIFO, skip BRAM preload */
-                dpu_write(REG_ADDR_BIAS,    B_OFF);
-                dpu_write(REG_PAD_TOP,      pad_t);
-                dpu_write(REG_PAD_BOTTOM,   pad_b);
-                dpu_write(REG_PAD_LEFT,     pad_l);
-                dpu_write(REG_PAD_RIGHT,    pad_r);
-                dpu_write(REG_NO_CLEAR,     is_first ? 0 : 1);
-                dpu_write(REG_NO_REQUANTIZE, is_last ? 0 : 1);
-
-                /* --- PASO 2: input+bias via DMA_IN → BRAM --- */
-                DBGSNAP(0x30, TOT);
-                dpu_write(REG_CTRL, CMD_LOAD);
-                /* Clear pending IRQs on DMA_IN before transfer */
-                Xil_Out32(g_dma_in.RegBase + 0x04,
-                          Xil_In32(g_dma_in.RegBase + 0x04) | 0x7000);
-                rc = wait_dma_idle(&g_dma_in, 5000000);
-                if (rc != DPU_OK) {
-                    xil_printf("E4a tile=%d SR=0x%08x TOT=%d\r\n",
-                               total_tiles, Xil_In32(g_dma_in.RegBase+0x04), TOT);
-                    DBGSNAP(0xE4, Xil_In32(g_dma_in.RegBase+0x04)); return rc;
-                }
-                if (dma_send(&g_dma_in, (UINTPTR)tile_buf, TOT) != DPU_OK)
-                    { DBGSNAP(0xE4, 0x10000 | TOT); return DPU_ERR_PARAMS; }
-                rc = wait_dma_idle(&g_dma_in, 10000000);
-                if (rc != DPU_OK) {
-                    xil_printf("E4b tile=%d SR=0x%08x TOT=%d\r\n",
-                               total_tiles, Xil_In32(g_dma_in.RegBase+0x04), TOT);
-                    DBGSNAP(0xE4, (total_tiles << 16) | (TOT & 0xFFFF));
-                    return rc;
-                }
-                /* Wait wrapper idle after LOAD */
-                int tm = 0;
-                while (((dpu_read(REG_CTRL) >> 10) & 0x3) != 0) {
-                    if (++tm > 1000000) { DBGSNAP(0xE5, 0); return DPU_ERR_TIMEOUT; }
-                }
-                /* Input loaded — wrapper and conv should be IDLE */
-                CHK_STATE(0x35, WRAPPER_IDLE, CE_IDLE);
-
-                /* --- PASO 3: START conv --- */
-                DBGSNAP(0x40, total_tiles);
-                dpu_write(REG_CTRL, CMD_START);
-                rc = wait_done_latch(20000000);
-                if (rc != DPU_OK) { DBGSNAP(0xE6, 0); return rc; }
-                /* Conv done — back to IDLE */
-                CHK_STATE(0x45, WRAPPER_IDLE, CE_IDLE);
-
-                /* --- PASO 4: DRAIN output (solo ultimo ic_tile) --- */
-                if (is_last) {
-                    uint8_t *out_tile = (uint8_t *)TILE_OUT_BUF;
-                    DBGSNAP(0x50, out_bytes_tile);
-                    dm_configure((uintptr_t)out_tile, out_bytes_tile);
-                    dpu_write(REG_N_WORDS, (out_bytes_tile + 3) / 4);
-                    dpu_write(REG_CTRL, CMD_DRAIN);
-                    rc = wait_dm_done(20000000);
-                    if (rc != DPU_OK) { DBGSNAP(0xE7, 0); return DPU_ERR_DM_FAULT; }
-
-                    /* Copiar tile output al tensor global NCHW */
-                    Xil_DCacheInvalidateRange((UINTPTR)out_tile, out_bytes_tile);
-                    for (int c = 0; c < L->c_out; c++) {
-                        for (int rr = 0; rr < h_tile; rr++) {
-                            memcpy(out_ddr + (uint32_t)c * L->h_out * L->w_out
-                                           + (uint32_t)(oh0 + rr) * L->w_out + ow0,
-                                   out_tile + (uint32_t)c * h_tile * w_tile
-                                            + rr * w_tile,
-                                   w_tile);
+                    memset(tile_buf, 0, TOT);
+                    for (int c = 0; c < ic_ts; c++) {
+                        for (int rr = 0; rr < in_h_real; rr++) {
+                            memcpy(tile_buf + IN_OFF + c * in_h_real * in_w_real + rr * in_w_real,
+                                   in_ddr + (uint32_t)(ic_base + c) * L->h_in * L->w_in
+                                          + (uint32_t)(ih_lo + rr) * L->w_in + iw_lo,
+                                   in_w_real);
                         }
                     }
+                    if (is_first_ic) {
+                        /* Bias for this OC group (offset by oc_base in bias array) */
+                        memcpy(tile_buf + B_OFF, bias_ddr + oc_base, bias_now);
+                    }
+                    Xil_DCacheFlushRange((UINTPTR)tile_buf, TOT);
+
+                    /* Set conv registers */
+                    dpu_write(REG_C_OUT,         oc_w);
+                    dpu_write(REG_C_IN,          ic_ts);
+                    dpu_write(REG_H_IN,          in_h_real);
+                    dpu_write(REG_W_IN,          in_w_real);
+                    dpu_write(REG_IC_TILE_SIZE,  ic_ts);
+                    dpu_write(REG_N_WORDS,       TOT / 4);
+                    dpu_write(REG_ADDR_INPUT,    IN_OFF);
+                    dpu_write(REG_ADDR_WEIGHTS,  0);
+                    dpu_write(REG_SKIP_WL,       1);
+                    dpu_write(REG_ADDR_BIAS,     B_OFF);
+                    dpu_write(REG_PAD_TOP,       pad_t);
+                    dpu_write(REG_PAD_BOTTOM,    pad_b);
+                    dpu_write(REG_PAD_LEFT,      pad_l);
+                    dpu_write(REG_PAD_RIGHT,     pad_r);
+                    dpu_write(REG_NO_CLEAR,      is_first_ic ? 0 : 1);
+                    dpu_write(REG_NO_REQUANTIZE, is_last_ic  ? 0 : 1);
+
+                    /* LOAD input → BRAM */
+                    dpu_write(REG_CTRL, CMD_LOAD);
+                    Xil_Out32(g_dma_in.RegBase + 0x04,
+                              Xil_In32(g_dma_in.RegBase + 0x04) | 0x7000);
+                    rc = wait_dma_idle(&g_dma_in, 5000000);
+                    if (rc != DPU_OK) { DBGSNAP(0xE4, 0); return rc; }
+                    dma_send(&g_dma_in, (UINTPTR)tile_buf, TOT);
+                    rc = wait_dma_idle(&g_dma_in, 10000000);
+                    if (rc != DPU_OK) { DBGSNAP(0xE4, 1); return rc; }
+                    int tm = 0;
+                    while (((dpu_read(REG_CTRL) >> 10) & 0x3) != 0) {
+                        if (++tm > 1000000) { DBGSNAP(0xE5, 0); return DPU_ERR_TIMEOUT; }
+                    }
+
+                    /* === STEP 3: START conv === */
+                    dpu_write(REG_CTRL, CMD_START);
+                    rc = wait_done_latch(20000000);
+                    if (rc != DPU_OK) { DBGSNAP(0xE6, 0); return rc; }
+
+                } /* ic_tile loop */
+
+                /* === STEP 4: DRAIN output for this OC group === */
+                int out_bytes_grp = oc_count * h_tile * w_tile;
+                uint8_t *out_tile = (uint8_t *)TILE_OUT_BUF;
+                dm_configure((uintptr_t)out_tile, out_bytes_grp);
+                dpu_write(REG_N_WORDS, (out_bytes_grp + 3) / 4);
+                dpu_write(REG_CTRL, CMD_DRAIN);
+                rc = wait_dm_done(20000000);
+                if (rc != DPU_OK) { DBGSNAP(0xE7, 0); return DPU_ERR_DM_FAULT; }
+
+                /* Copy OC group output to correct position in global NCHW tensor */
+                Xil_DCacheInvalidateRange((UINTPTR)out_tile, out_bytes_grp);
+                for (int c = 0; c < oc_count; c++) {
+                    for (int rr = 0; rr < h_tile; rr++) {
+                        memcpy(out_ddr + (uint32_t)(oc_base + c) * L->h_out * L->w_out
+                                       + (uint32_t)(oh0 + rr) * L->w_out + ow0,
+                               out_tile + (uint32_t)c * h_tile * w_tile + rr * w_tile,
+                               w_tile);
+                    }
                 }
 
-                total_tiles++;
-                /* After first tile OK, reduce UART output to errors only */
-                if (total_tiles == 1)
-                    xil_printf("[OK] tile 0 done, quiet mode (errors still print)\r\n");
-                if (total_tiles <= 2 || (total_tiles % 500) == 0)
-                    dbg_verbose = 1;
-                else
-                    dbg_verbose = 0;
-            } /* ic_tile loop */
+            } /* oc_group loop */
+
+            total_tiles++;
+            if (total_tiles <= 2 || (total_tiles % 500) == 0) dbg_verbose = 1;
+            else dbg_verbose = 0;
         } /* ow0 */
     } /* oh0 */
 
