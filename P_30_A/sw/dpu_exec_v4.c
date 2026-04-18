@@ -102,10 +102,22 @@ static int wait_dma_idle(XAxiDma *dma, int max) {
     int t = 0;
     for (;;) {
         uint32_t sr = Xil_In32(dma->RegBase + 0x04);
-        if (sr & 0x01) return DPU_OK;  /* HALTED → channel stopped, no transfer */
-        if (sr & 0x02) return DPU_OK;  /* IDLE → running but no active transfer */
+        if (sr & 0x01) return DPU_OK;  /* HALTED */
+        if (sr & 0x02) return DPU_OK;  /* IDLE (transfer done, channel running) */
         if (++t > max) return DPU_ERR_TIMEOUT;
     }
+}
+
+/* Direct DMA transfer — bypasses Xilinx SimpleTransfer which has a broken
+ * busy check (rejects RUNNING+IDLE channels). Writes MM2S registers directly:
+ * 1. Set RUNSTOP if not set  2. Write source addr  3. Write length (triggers) */
+static int dma_send(XAxiDma *dma, UINTPTR addr, uint32_t len) {
+    uint32_t base = dma->RegBase;
+    uint32_t cr = Xil_In32(base + 0x00);
+    if (!(cr & 1)) Xil_Out32(base + 0x00, cr | 1);  /* set RUNSTOP */
+    Xil_Out32(base + 0x18, (uint32_t)addr);           /* MM2S source addr */
+    Xil_Out32(base + 0x28, len);                       /* MM2S length → triggers */
+    return DPU_OK;
 }
 
 static int wait_done_latch(int max) {
@@ -179,7 +191,7 @@ int dpu_exec_conv_v4(const layer_config_t *L,
         *(volatile uint32_t *)(DBG_ADDR +  8) = _ce; \
         *(volatile uint32_t *)(DBG_ADDR + 12) = _x; \
         Xil_DCacheFlushRange(DBG_ADDR, 16); \
-        if (dbg_verbose || (_s & 0xE0) == 0xE0) \
+        if (_s >= 0xE0) \
             xil_printf("[0x%02x] W=%d CE=%d x=0x%08x\r\n", \
                        _s, (_ctrl>>10)&3, _ce, _x); \
     } while(0)
@@ -225,9 +237,24 @@ int dpu_exec_conv_v4(const layer_config_t *L,
     }
     w_per_tile = L->c_out * kh * kw * ic_tile_size;
 
-    /* Spatial tiling: tile_h x tile_w output que quepa en BRAM 8KB sin pesos */
-    int tile_h = 8, tile_w = 8;
-    /* TODO: calcular segun BRAM 8KB room (output + input_tile + bias) */
+    /* Spatial tiling: find largest square tile_h=tile_w that fits in BRAM.
+     * BRAM = 8192 bytes. Payload = output + input + bias:
+     *   output = c_out * tile_h * tile_w
+     *   input  = ic_tile_size * ((tile_h-1)*stride+kh) * ((tile_w-1)*stride+kw)
+     *   bias   = c_out * 4   (only first ic_tile)
+     * We search downward from tile=16 until it fits. */
+    int tile_h, tile_w;
+    for (tile_h = 16; tile_h >= 1; tile_h--) {
+        tile_w = tile_h;
+        int in_h = (tile_h - 1) * stride + kh;
+        int in_w = (tile_w - 1) * stride + kw;
+        int tot = ALIGN_UP(L->c_out * tile_h * tile_w, 64)
+                + ALIGN_UP(ic_tile_size * in_h * in_w, 64)
+                + ALIGN_UP(b_bytes, 64);
+        if (tot <= DPU_BRAM_BYTES) break;
+    }
+    if (tile_h < 1) tile_h = tile_w = 1;
+    xil_printf("tile=%dx%d ic_tile=%d\r\n", tile_h, tile_w, ic_tile_size);
 
     /* Registros constantes (no cambian entre ic_tiles) */
     const uint32_t ksize_enc = (kh == 3) ? 2 : 0;
@@ -323,8 +350,7 @@ int dpu_exec_conv_v4(const layer_config_t *L,
                         chunk = ALIGN_UP(chunk, 4);
                         rc = wait_dma_idle(&g_dma_w, 5000000);
                         if (rc != DPU_OK) { DBGSNAP(0xE1, Xil_In32(g_dma_w.RegBase+0x04)); return rc; }
-                        if (XAxiDma_SimpleTransfer(&g_dma_w, src, chunk,
-                                                   XAXIDMA_DMA_TO_DEVICE) != XST_SUCCESS)
+                        if (dma_send(&g_dma_w, src, chunk) != DPU_OK)
                             { DBGSNAP(0xE2, remaining); return DPU_ERR_PARAMS; }
                         src += chunk;
                         remaining -= chunk;
@@ -392,13 +418,24 @@ int dpu_exec_conv_v4(const layer_config_t *L,
                 /* --- PASO 2: input+bias via DMA_IN → BRAM --- */
                 DBGSNAP(0x30, TOT);
                 dpu_write(REG_CTRL, CMD_LOAD);
+                /* Clear pending IRQs on DMA_IN before transfer */
+                Xil_Out32(g_dma_in.RegBase + 0x04,
+                          Xil_In32(g_dma_in.RegBase + 0x04) | 0x7000);
                 rc = wait_dma_idle(&g_dma_in, 5000000);
-                if (rc != DPU_OK) { DBGSNAP(0xE4, Xil_In32(g_dma_in.RegBase+0x04)); return rc; }
-                if (XAxiDma_SimpleTransfer(&g_dma_in, (UINTPTR)tile_buf,
-                                           TOT, XAXIDMA_DMA_TO_DEVICE) != XST_SUCCESS)
-                    { DBGSNAP(0xE4, 1); return DPU_ERR_PARAMS; }
+                if (rc != DPU_OK) {
+                    xil_printf("E4a tile=%d SR=0x%08x TOT=%d\r\n",
+                               total_tiles, Xil_In32(g_dma_in.RegBase+0x04), TOT);
+                    DBGSNAP(0xE4, Xil_In32(g_dma_in.RegBase+0x04)); return rc;
+                }
+                if (dma_send(&g_dma_in, (UINTPTR)tile_buf, TOT) != DPU_OK)
+                    { DBGSNAP(0xE4, 0x10000 | TOT); return DPU_ERR_PARAMS; }
                 rc = wait_dma_idle(&g_dma_in, 10000000);
-                if (rc != DPU_OK) { DBGSNAP(0xE4, 2); return rc; }
+                if (rc != DPU_OK) {
+                    xil_printf("E4b tile=%d SR=0x%08x TOT=%d\r\n",
+                               total_tiles, Xil_In32(g_dma_in.RegBase+0x04), TOT);
+                    DBGSNAP(0xE4, (total_tiles << 16) | (TOT & 0xFFFF));
+                    return rc;
+                }
                 /* Wait wrapper idle after LOAD */
                 int tm = 0;
                 while (((dpu_read(REG_CTRL) >> 10) & 0x3) != 0) {
