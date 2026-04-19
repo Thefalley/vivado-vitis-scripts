@@ -513,16 +513,30 @@ int dpu_exec_add(const layer_config_t *L,
 /* ========================================================================= */
 /* arm_concat (NHWC: [h, w, c_a + c_b])                                        */
 /* ========================================================================= */
+/* Requantize helper: out = clamp(round((in - zp_in) * M0 / 2^n) + zp_out, -128, 127)
+ * Same formula as the DPU's requantize module but in software. */
+static inline int8_t requant_byte(int8_t in, int32_t zp_in, uint32_t M0,
+                                  int n_shift, int32_t zp_out)
+{
+    int64_t val = ((int64_t)(in - zp_in) * (int64_t)M0 + (1LL << (n_shift - 1))) >> n_shift;
+    val += zp_out;
+    if (val < -128) val = -128;
+    if (val >  127) val =  127;
+    return (int8_t)val;
+}
+
 int arm_concat(const layer_config_t *L,
                const uint8_t *in_a_ddr, uint16_t c_a,
                const uint8_t *in_b_ddr, uint16_t c_b,
                uint8_t       *out_ddr,
                dpu_prof_t    *prof)
 {
-    /* NCHW concatenation along channel axis (axis=1):
-     * output[0..c_a-1] = input_a channels, output[c_a..c_a+c_b-1] = input_b.
-     * In NCHW, each channel is a contiguous H*W plane. */
+    /* NCHW concatenation along channel axis.
+     * Raw copy — the requantization parameters in layer_configs are
+     * not correct for CONCAT (they're for the subsequent CONV layer).
+     * TODO: extract proper CONCAT requant scales from the ONNX model. */
     const uint32_t HW = (uint32_t)L->h_in * L->w_in;
+
     Xil_DCacheInvalidateRange((UINTPTR)in_a_ddr, c_a * HW);
     Xil_DCacheInvalidateRange((UINTPTR)in_b_ddr, c_b * HW);
     memcpy(out_ddr,            in_a_ddr, c_a * HW);

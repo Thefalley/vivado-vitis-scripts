@@ -486,9 +486,12 @@ int dpu_exec_conv_v4(const layer_config_t *L,
 
                 /* === STEP 4: DRAIN output for this OC group === */
                 int out_bytes_grp = oc_count * h_tile * w_tile;
+                /* DataMover requires 4-byte aligned transfers.
+                 * Pad to multiple of 4; extra bytes are harmless (discarded). */
+                int drain_bytes = ALIGN_UP(out_bytes_grp, 4);
                 uint8_t *out_tile = (uint8_t *)TILE_OUT_BUF;
-                dm_configure((uintptr_t)out_tile, out_bytes_grp);
-                dpu_write(REG_N_WORDS, (out_bytes_grp + 3) / 4);
+                dm_configure((uintptr_t)out_tile, drain_bytes);
+                dpu_write(REG_N_WORDS, drain_bytes / 4);
                 dpu_write(REG_CTRL, CMD_DRAIN);
                 rc = wait_dm_done(20000000);
                 if (rc != DPU_OK) { DBGSNAP(0xE7, 0); return DPU_ERR_DM_FAULT; }
