@@ -981,20 +981,22 @@ begin
                         act_tile_base <= act_tile_base
                                        + resize(cfg_ic_tile_size * hw_reg, 25);
                         if cfg_skip_wl = '1' then
-                            -- Weights are in wb_ram via FIFO. Need ARM to
-                            -- reload wb_ram with the next IC tile's weights.
-                            -- Pause until weights_loaded pulse from wrapper.
                             state <= PAUSE_FOR_WEIGHTS;
                         else
-                            -- Weights in BRAM: conv_engine loads them itself
                             state <= WL_NEXT;
                         end if;
+                    else
+                        -- Todos los ic_tiles del pixel completados
+                        rq_ch <= (others => '0');
+                        if cfg_no_requantize = '1' then
+                            state <= DONE_ST;
+                        else
+                            state <= MAC_DONE_WAIT;
+                        end if;
+                    end if;
 
                 when PAUSE_FOR_WEIGHTS =>
                     -- Wait for ARM to reload wb_ram via FIFO.
-                    -- need_weights='1' (combinational, driven above).
-                    -- When wrapper finishes S_LOAD_WEIGHTS, it pulses
-                    -- weights_loaded='1' and we resume.
                     if weights_loaded = '1' then
                         state <= WL_NEXT;
                     end if;
