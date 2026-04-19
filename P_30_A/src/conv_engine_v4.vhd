@@ -1000,15 +1000,6 @@ begin
                     if weights_loaded = '1' then
                         state <= WL_NEXT;
                     end if;
-                    else
-                        -- Todos los ic_tiles del pixel completados
-                        rq_ch <= (others => '0');
-                        if cfg_no_requantize = '1' then
-                            state <= DONE_ST;
-                        else
-                            state <= MAC_DONE_WAIT;
-                        end if;
-                    end if;
 
                 ---------------------------------------------------------------
                 -- DRENAR PIPELINE MAC (2 ciclos)
