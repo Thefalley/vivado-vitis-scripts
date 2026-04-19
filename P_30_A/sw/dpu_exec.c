@@ -519,17 +519,15 @@ int arm_concat(const layer_config_t *L,
                uint8_t       *out_ddr,
                dpu_prof_t    *prof)
 {
-    (void)L;
-    for (int h = 0; h < L->h_in; h++) {
-        for (int w = 0; w < L->w_in; w++) {
-            const uint8_t *sa = in_a_ddr + (h * L->w_in + w) * c_a;
-            const uint8_t *sb = in_b_ddr + (h * L->w_in + w) * c_b;
-            uint8_t *d = out_ddr + (h * L->w_in + w) * (c_a + c_b);
-            memcpy(d,         sa, c_a);
-            memcpy(d + c_a,   sb, c_b);
-        }
-    }
-    Xil_DCacheFlushRange((UINTPTR)out_ddr, L->h_in * L->w_in * (c_a + c_b));
+    /* NCHW concatenation along channel axis (axis=1):
+     * output[0..c_a-1] = input_a channels, output[c_a..c_a+c_b-1] = input_b.
+     * In NCHW, each channel is a contiguous H*W plane. */
+    const uint32_t HW = (uint32_t)L->h_in * L->w_in;
+    Xil_DCacheInvalidateRange((UINTPTR)in_a_ddr, c_a * HW);
+    Xil_DCacheInvalidateRange((UINTPTR)in_b_ddr, c_b * HW);
+    memcpy(out_ddr,            in_a_ddr, c_a * HW);
+    memcpy(out_ddr + c_a * HW, in_b_ddr, c_b * HW);
+    Xil_DCacheFlushRange((UINTPTR)out_ddr, (c_a + c_b) * HW);
     if (prof) { prof->n_tiles = 1; }
     return DPU_OK;
 }
@@ -542,23 +540,66 @@ int arm_upsample(const layer_config_t *L,
                  uint8_t       *out_ddr,
                  dpu_prof_t    *prof)
 {
+    /* NCHW 2x nearest-neighbour upsample.
+     * Each channel plane (H×W) → (2H×2W) by duplicating each pixel to 2x2. */
     const int H = L->h_in, W = L->w_in, C = L->c_in;
     const int OW = 2 * W;
-    for (int h = 0; h < H; h++) {
-        for (int w = 0; w < W; w++) {
-            const uint8_t *s = in_ddr + (h * W + w) * C;
-            /* 4 destinos: (2h, 2w), (2h, 2w+1), (2h+1, 2w), (2h+1, 2w+1) */
-            uint8_t *d00 = out_ddr + ((2*h)  *OW + (2*w))  *C;
-            uint8_t *d01 = out_ddr + ((2*h)  *OW + (2*w+1))*C;
-            uint8_t *d10 = out_ddr + ((2*h+1)*OW + (2*w))  *C;
-            uint8_t *d11 = out_ddr + ((2*h+1)*OW + (2*w+1))*C;
-            memcpy(d00, s, C);
-            memcpy(d01, s, C);
-            memcpy(d10, s, C);
-            memcpy(d11, s, C);
+    Xil_DCacheInvalidateRange((UINTPTR)in_ddr, C * H * W);
+    for (int c = 0; c < C; c++) {
+        const uint8_t *src_plane = in_ddr + (uint32_t)c * H * W;
+        uint8_t *dst_plane = out_ddr + (uint32_t)c * (2*H) * OW;
+        for (int h = 0; h < H; h++) {
+            for (int w = 0; w < W; w++) {
+                uint8_t v = src_plane[h * W + w];
+                dst_plane[(2*h)   * OW + (2*w)]   = v;
+                dst_plane[(2*h)   * OW + (2*w+1)] = v;
+                dst_plane[(2*h+1) * OW + (2*w)]   = v;
+                dst_plane[(2*h+1) * OW + (2*w+1)] = v;
+            }
         }
     }
-    Xil_DCacheFlushRange((UINTPTR)out_ddr, 2*H * 2*W * C);
+    Xil_DCacheFlushRange((UINTPTR)out_ddr, C * 2*H * 2*W);
+    if (prof) { prof->n_tiles = 1; }
+    return DPU_OK;
+}
+
+/* ========================================================================= */
+/* arm_pool_large — Software max pooling for kernel > 2 (SPP layers).       */
+/* NCHW layout. Stride = L->stride, kernel = L->kernel, pad = L->pad.      */
+/* ========================================================================= */
+int arm_pool_large(const layer_config_t *L,
+                   const uint8_t *in_ddr,
+                   uint8_t       *out_ddr,
+                   dpu_prof_t    *prof)
+{
+    const int C = L->c_in, H = L->h_in, W = L->w_in;
+    const int K = L->kernel, S = L->stride, P = L->pad;
+    const int OH = L->h_out, OW = L->w_out;
+
+    Xil_DCacheInvalidateRange((UINTPTR)in_ddr, C * H * W);
+
+    for (int c = 0; c < C; c++) {
+        const int8_t *src = (const int8_t *)in_ddr + (uint32_t)c * H * W;
+        int8_t *dst = (int8_t *)out_ddr + (uint32_t)c * OH * OW;
+        for (int oh = 0; oh < OH; oh++) {
+            for (int ow = 0; ow < OW; ow++) {
+                int8_t maxv = -128;
+                for (int kh = 0; kh < K; kh++) {
+                    int ih = oh * S - P + kh;
+                    if (ih < 0 || ih >= H) continue;
+                    for (int kw = 0; kw < K; kw++) {
+                        int iw = ow * S - P + kw;
+                        if (iw < 0 || iw >= W) continue;
+                        int8_t v = src[ih * W + iw];
+                        if (v > maxv) maxv = v;
+                    }
+                }
+                dst[oh * OW + ow] = maxv;
+            }
+        }
+    }
+
+    Xil_DCacheFlushRange((UINTPTR)out_ddr, C * OH * OW);
     if (prof) { prof->n_tiles = 1; }
     return DPU_OK;
 }
