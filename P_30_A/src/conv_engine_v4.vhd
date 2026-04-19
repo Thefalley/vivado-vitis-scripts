@@ -463,7 +463,7 @@ begin
     dbg_kw           <= kw;
     dbg_ic           <= ic;
     dbg_oc_tile_base <= oc_tile_base;
-    dbg_ic_tile_base <= ic_tile_base;
+    dbg_ic_tile_base <= ic_tile_base(9 downto 0);
     dbg_w_base       <= w_base_idx_r;
     dbg_mac_a        <= mac_a;
     dbg_mac_b        <= mac_b;
@@ -745,7 +745,7 @@ begin
                     if (cfg_c_in - ic_tile_base) < cfg_ic_tile_size then
                         v_limit := cfg_c_in - ic_tile_base;
                     else
-                        v_limit := cfg_ic_tile_size(9 downto 0);
+                        v_limit := cfg_ic_tile_size(10 downto 0);
                     end if;
                     ic_in_tile_limit <= v_limit;
 
@@ -967,7 +967,7 @@ begin
                 when IC_TILE_ADV =>
                     if (ic_tile_base + cfg_ic_tile_size) < cfg_c_in then
                         -- Hay mas ic tiles en este pixel
-                        ic_tile_base <= ic_tile_base + cfg_ic_tile_size(9 downto 0);
+                        ic_tile_base <= ic_tile_base + cfg_ic_tile_size(10 downto 0);
                         -- Actualizar act_tile_base: +ic_tile_size × hw_reg
                         -- 1 mult de 10×20, 1 vez por ic_tile (aceptable)
                         act_tile_base <= act_tile_base
