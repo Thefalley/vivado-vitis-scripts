@@ -467,13 +467,19 @@ int dpu_exec_conv_v4(const layer_config_t *L,
                 if (real_ic_tiling) {
                     /* Conv_engine processes IC tiles internally per-pixel.
                      * Between IC tiles, it pauses (need_weights=1) and we
-                     * reload wb_ram with the next IC tile's weights. */
-                    int ic_idx = 1;  /* IC tile 0 already loaded */
+                     * reload wb_ram with the next IC tile's weights.
+                     *
+                     * IMPORTANT: done_latch is set by BOTH S_LOAD_WEIGHTS
+                     * completion AND conv DONE. We use CE_STATE=IDLE to
+                     * distinguish: conv done = (CE_STATE==0 AND done_latch). */
+                    int ic_idx = 1;
                     int n_ic_tiles = (L->c_in + ic_tile_size - 1) / ic_tile_size;
 
                     for (;;) {
                         uint32_t ctrl = dpu_read(REG_CTRL);
-                        if (ctrl & 0x100) break;     /* done_latch → finished */
+                        uint32_t ce   = dpu_read(REG_DBG_CE_STATE);
+                        /* Conv finished: CE in IDLE(0) or DONE and done_latch set */
+                        if ((ctrl & 0x100) && ce == 0) break;
                         if (ctrl & 0x1000) {          /* need_weights → reload */
                             if (ic_idx >= n_ic_tiles) {
                                 /* Shouldn't happen — conv asks for more tiles than exist */
