@@ -73,7 +73,11 @@
 --                                       (weights already in wb_ram via FIFO)
 --   0x78: dbg_ce_state   (5:0, RO)   -- conv_engine internal FSM state index
 --                                       (0=IDLE, 14=WL_NEXT, 19=MAC_PAD_REG,
---                                        27=IC_TILE_ADV, 31=DONE_ST)
+--                                        27=IC_TILE_ADV, 28=PAUSE_FOR_WEIGHTS,
+--                                        31=DONE_ST)
+--
+--   REG_CTRL bit 12 (RO): need_weights — conv_engine needs new weights
+--     ARM should: load weights via CMD_LOAD_WEIGHTS, then conv resumes
 --
 -------------------------------------------------------------------------------
 
@@ -202,6 +206,10 @@ architecture rtl of dpu_stream_wrapper is
     signal ext_wb_data : signed(7 downto 0) := (others => '0');
     signal ext_wb_we   : std_logic := '0';
     signal wb_load_count : unsigned(17 downto 0) := (others => '0');
+
+    -- IC tile weight reload handshake
+    signal ce_need_weights   : std_logic;  -- from conv_engine
+    signal ce_weights_loaded : std_logic := '0';  -- pulse to conv_engine
 
     -- P_30_A: w_stream_ready_o driven combinationally (see concurrent assignment below)
 
@@ -410,6 +418,8 @@ begin
             ddr_wr_data      => ddr_wr_data,
             ddr_wr_en        => ddr_wr_en,
             cfg_skip_wl      => reg_skip_wl,
+            need_weights     => ce_need_weights,
+            weights_loaded   => ce_weights_loaded,
             dbg_state        => ce_dbg_state,
             dbg_oh           => open,
             dbg_ow           => open,
@@ -666,8 +676,9 @@ begin
                 stream_out_last     <= '0';
                 stream_out_count    <= (others => '0');
             else
-                -- Default: single-cycle pulse
+                -- Default: single-cycle pulses
                 ce_start <= '0';
+                ce_weights_loaded <= '0';
                 -- P_17 Fase 2: lr_valid_in es pulso (alto solo mientras alimentamos byte)
                 lr_valid_in <= '0';
                 -- P_17 Fase 3: mp_valid_in / mp_clear tambien pulsos
@@ -1131,8 +1142,13 @@ begin
                     ---------------------------------------------------------------
                     when S_LOAD_WEIGHTS =>
                         ext_wb_we <= '0';
+                        ce_weights_loaded <= '0';
                         if wb_load_count >= reg_wb_n_bytes then
                             done_latch <= '1';
+                            -- Pulse weights_loaded if conv_engine is waiting
+                            if ce_need_weights = '1' then
+                                ce_weights_loaded <= '1';
+                            end if;
                             state <= S_IDLE;
                         elsif w_stream_valid_i = '1' then
                             ext_wb_addr <= wb_load_count(14 downto 0);
@@ -1256,6 +1272,7 @@ begin
                                     reg_rd_data(8)           <= done_latch;
                                     reg_rd_data(9)           <= ce_busy;
                                     reg_rd_data(11 downto 10) <= fsm_code;
+                                    reg_rd_data(12)          <= ce_need_weights;
                                 when 16#04# =>
                                     reg_rd_data <= (others => '0');
                                     reg_rd_data(10 downto 0) <= std_logic_vector(reg_n_words);

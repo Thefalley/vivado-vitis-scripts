@@ -168,6 +168,14 @@ entity conv_engine_v4 is
         dbg_pad         : out std_logic;
         dbg_act_addr    : out unsigned(24 downto 0);
 
+        -- IC tile weight reload handshake (S_WAIT_WEIGHTS mechanism).
+        -- When the conv_engine needs new weights for the next IC tile,
+        -- it asserts need_weights='1' and pauses. The wrapper loads new
+        -- weights via FIFO, then asserts weights_loaded='1' for 1 cycle.
+        -- The conv_engine resumes from where it paused.
+        need_weights   : out std_logic;
+        weights_loaded : in  std_logic;
+
         -- External weight buffer write (from wrapper FIFO_W)
         ext_wb_addr : in  unsigned(14 downto 0);
         ext_wb_data : in  signed(7 downto 0);
@@ -209,6 +217,7 @@ architecture rtl of conv_engine_v4 is
         MAC_EMIT, MAC_WAIT_DDR, MAC_CAPTURE, MAC_FIRE,
         -- Avanzar ic_tile o terminar pixel
         IC_TILE_ADV,       -- siguiente ic_tile del MISMO pixel (sin clear)
+        PAUSE_FOR_WEIGHTS, -- pause for ARM to reload wb_ram via FIFO
         -- Drain pipeline MAC
         MAC_DONE_WAIT, MAC_DONE_WAIT2,
         -- Requantize + escritura DDR
@@ -457,6 +466,7 @@ begin
     -- DEBUG (combinacional)
     ---------------------------------------------------------------------------
     dbg_state        <= state_t'pos(state);
+    need_weights     <= '1' when state = PAUSE_FOR_WEIGHTS else '0';
     dbg_oh           <= oh;
     dbg_ow           <= ow;
     dbg_kh           <= kh;
@@ -968,12 +978,26 @@ begin
                     if (ic_tile_base + cfg_ic_tile_size) < cfg_c_in then
                         -- Hay mas ic tiles en este pixel
                         ic_tile_base <= ic_tile_base + cfg_ic_tile_size(9 downto 0);
-                        -- Actualizar act_tile_base: +ic_tile_size × hw_reg
-                        -- 1 mult de 10×20, 1 vez por ic_tile (aceptable)
                         act_tile_base <= act_tile_base
                                        + resize(cfg_ic_tile_size * hw_reg, 25);
-                        -- Relanzar carga de pesos del siguiente tile
+                        if cfg_skip_wl = '1' then
+                            -- Weights are in wb_ram via FIFO. Need ARM to
+                            -- reload wb_ram with the next IC tile's weights.
+                            -- Pause until weights_loaded pulse from wrapper.
+                            state <= PAUSE_FOR_WEIGHTS;
+                        else
+                            -- Weights in BRAM: conv_engine loads them itself
+                            state <= WL_NEXT;
+                        end if;
+
+                when PAUSE_FOR_WEIGHTS =>
+                    -- Wait for ARM to reload wb_ram via FIFO.
+                    -- need_weights='1' (combinational, driven above).
+                    -- When wrapper finishes S_LOAD_WEIGHTS, it pulses
+                    -- weights_loaded='1' and we resume.
+                    if weights_loaded = '1' then
                         state <= WL_NEXT;
+                    end if;
                     else
                         -- Todos los ic_tiles del pixel completados
                         rq_ch <= (others => '0');
