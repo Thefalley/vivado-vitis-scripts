@@ -531,16 +531,60 @@ int arm_concat(const layer_config_t *L,
                uint8_t       *out_ddr,
                dpu_prof_t    *prof)
 {
-    /* NCHW concatenation along channel axis.
-     * Raw copy — the requantization parameters in layer_configs are
-     * not correct for CONCAT (they're for the subsequent CONV layer).
-     * TODO: extract proper CONCAT requant scales from the ONNX model. */
+    /* NCHW concatenation along channel axis with per-input requantization.
+     * Parameters extracted from ONNX QLinearConcat initializers.
+     * Each input may have different scale/zp than the output.
+     * Passthrough inputs (same scale/zp) are raw-copied for speed. */
     const uint32_t HW = (uint32_t)L->h_in * L->w_in;
+
+    /* Correct requant params from ONNX model (see concat_requant.json).
+     * Format: { layer_idx, M0_a, n_a, zp_a, M0_b, n_b, zp_b, y_zp, pass_a, pass_b } */
+    /* idx = layer_id (NOT config index). Extracted from ONNX QLinearConcat. */
+    static const struct { int idx; uint32_t M0_a; int n_a; int zp_a;
+                          uint32_t M0_b; int n_b; int zp_b; int y_zp;
+                          int pass_a, pass_b; } CQ[] = {
+        {  20, 1073741824,30,-95, 1260369140,31,-94, -95, 1,0 },
+        {  41, 1073741824,30,-108,1798597439,31,-105,-108, 1,0 },
+        {  92, 1073741824,30,-107,1541979019,31,-102,-107, 1,0 },
+        { 145, 1073741824,30,-116,1903176794,32,-107,-116, 1,0 },
+        { 178, 2107051304,31,-103,1951878780,31, -96, -99, 0,0 },
+        { 190, 1073741824,30,-116,1073741824,30,-116,-116, 1,1 },
+        { 200, 1073741824,30, -98,1301865859,31,-111, -98, 1,0 },
+        { 214, 1918228730,32,-107,1073741824,30,-112,-112, 0,1 },
+        { 229, 1548186647,31,-105,1073741824,30,-110,-110, 0,1 },
+        { 247, 1073741824,30,-108,1608604529,31,-112,-108, 1,0 },
+    };
+
+    /* Find params for this layer */
+    int qi = -1;
+    for (int k = 0; k < 10; k++) { if (CQ[k].idx == L->layer_id) { qi = k; break; } }
 
     Xil_DCacheInvalidateRange((UINTPTR)in_a_ddr, c_a * HW);
     Xil_DCacheInvalidateRange((UINTPTR)in_b_ddr, c_b * HW);
-    memcpy(out_ddr,            in_a_ddr, c_a * HW);
-    memcpy(out_ddr + c_a * HW, in_b_ddr, c_b * HW);
+
+    if (qi < 0) {
+        /* Unknown concat — raw copy fallback */
+        memcpy(out_ddr, in_a_ddr, c_a * HW);
+        memcpy(out_ddr + c_a * HW, in_b_ddr, c_b * HW);
+    } else {
+        /* Input A */
+        if (CQ[qi].pass_a) {
+            memcpy(out_ddr, in_a_ddr, c_a * HW);
+        } else {
+            for (uint32_t i = 0; i < c_a * HW; i++)
+                out_ddr[i] = (uint8_t)requant_byte((int8_t)in_a_ddr[i],
+                                CQ[qi].zp_a, CQ[qi].M0_a, CQ[qi].n_a, CQ[qi].y_zp);
+        }
+        /* Input B */
+        if (CQ[qi].pass_b) {
+            memcpy(out_ddr + c_a * HW, in_b_ddr, c_b * HW);
+        } else {
+            for (uint32_t i = 0; i < c_b * HW; i++)
+                out_ddr[c_a * HW + i] = (uint8_t)requant_byte((int8_t)in_b_ddr[i],
+                                            CQ[qi].zp_b, CQ[qi].M0_b, CQ[qi].n_b, CQ[qi].y_zp);
+        }
+    }
+
     Xil_DCacheFlushRange((UINTPTR)out_ddr, (c_a + c_b) * HW);
     if (prof) { prof->n_tiles = 1; }
     return DPU_OK;
