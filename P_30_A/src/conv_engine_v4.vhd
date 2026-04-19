@@ -243,12 +243,13 @@ architecture rtl of conv_engine_v4 is
     ---------------------------------------------------------------------------
     -- Contadores pixel / kernel / ic
     ---------------------------------------------------------------------------
-    signal oh, ow, kh, kw, ic : unsigned(9 downto 0);
+    signal oh, ow, kh, kw : unsigned(9 downto 0);
+    signal ic : unsigned(10 downto 0);             -- up to 2048
 
     ---------------------------------------------------------------------------
     -- Contadores de TILING
     ---------------------------------------------------------------------------
-    signal oc_tile_base : unsigned(9 downto 0);   -- 0, 32, 64, ...
+    signal oc_tile_base : unsigned(10 downto 0);  -- 0, 32, ..., up to c_out
     signal ic_tile_base : unsigned(10 downto 0);   -- 0, ic_tile_size, 2*ic_tile_size, ...
     signal ic_in_tile_limit : unsigned(10 downto 0); -- min(ic_tile_size, c_in - ic_tile_base)
 
@@ -262,7 +263,7 @@ architecture rtl of conv_engine_v4 is
     signal wl_i          : unsigned(5 downto 0);
     signal wl_kh         : unsigned(9 downto 0);
     signal wl_kw         : unsigned(9 downto 0);
-    signal wl_j          : unsigned(9 downto 0);
+    signal wl_j          : unsigned(10 downto 0);
     signal wl_ddr_addr   : unsigned(24 downto 0);  -- direccion DDR actual
     signal wl_buf_addr   : unsigned(19 downto 0);  -- indice dentro del weight_buf
     signal wl_oc_base_addr: unsigned(24 downto 0); -- base en DDR del filtro oc_tile_base+wl_i
@@ -308,7 +309,7 @@ architecture rtl of conv_engine_v4 is
     ---------------------------------------------------------------------------
     -- Requantize: escritura incremental
     ---------------------------------------------------------------------------
-    signal rq_ch        : unsigned(9 downto 0);
+    signal rq_ch        : unsigned(10 downto 0);
     signal rq_wr_addr_r : unsigned(24 downto 0);
 
     ---------------------------------------------------------------------------
@@ -461,8 +462,8 @@ begin
     dbg_ow           <= ow;
     dbg_kh           <= kh;
     dbg_kw           <= kw;
-    dbg_ic           <= ic;
-    dbg_oc_tile_base <= oc_tile_base;
+    dbg_ic           <= ic(9 downto 0);
+    dbg_oc_tile_base <= oc_tile_base(9 downto 0);
     dbg_ic_tile_base <= ic_tile_base(9 downto 0);
     dbg_w_base       <= w_base_idx_r;
     dbg_mac_a        <= mac_a;
@@ -483,7 +484,7 @@ begin
         variable v_iw       : signed(10 downto 0);
         variable v_h_dim    : signed(10 downto 0);
         variable v_w_dim    : signed(10 downto 0);
-        variable v_limit    : unsigned(9 downto 0);
+        variable v_limit    : unsigned(10 downto 0);
     begin
         if rising_edge(clk) then
             if rst_n = '0' then
