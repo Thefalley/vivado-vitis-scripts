@@ -99,8 +99,8 @@ entity conv_engine_v4 is
         rst_n     : in  std_logic;
 
         -- Configuracion de la capa (igual que v1)
-        cfg_c_in        : in  unsigned(9 downto 0);
-        cfg_c_out       : in  unsigned(9 downto 0);
+        cfg_c_in        : in  unsigned(10 downto 0);  -- 11 bits: supports c_in up to 2048
+        cfg_c_out       : in  unsigned(10 downto 0);
         cfg_h_in        : in  unsigned(9 downto 0);
         cfg_w_in        : in  unsigned(9 downto 0);
         cfg_ksize       : in  unsigned(1 downto 0);
@@ -122,7 +122,7 @@ entity conv_engine_v4 is
         -- NUEVO: tamaño del tile de canales de entrada
         -- Restriccion: ic_tile_size × kh × kw × N_MAC ≤ WB_SIZE
         -- Ejemplo: WB_SIZE=32768, kh=kw=3, N_MAC=32 → ic_tile_size ≤ 113
-        cfg_ic_tile_size : in  unsigned(9 downto 0);
+        cfg_ic_tile_size : in  unsigned(10 downto 0);
 
         cfg_no_clear      : in std_logic;  -- '1' = do NOT clear MAC accumulators at pixel start
         cfg_no_requantize : in std_logic;  -- '1' = skip requantize+DDR write, go straight to DONE
@@ -249,8 +249,8 @@ architecture rtl of conv_engine_v4 is
     -- Contadores de TILING
     ---------------------------------------------------------------------------
     signal oc_tile_base : unsigned(9 downto 0);   -- 0, 32, 64, ...
-    signal ic_tile_base : unsigned(9 downto 0);   -- 0, ic_tile_size, 2*ic_tile_size, ...
-    signal ic_in_tile_limit : unsigned(9 downto 0); -- min(ic_tile_size, c_in - ic_tile_base)
+    signal ic_tile_base : unsigned(10 downto 0);   -- 0, ic_tile_size, 2*ic_tile_size, ...
+    signal ic_in_tile_limit : unsigned(10 downto 0); -- min(ic_tile_size, c_in - ic_tile_base)
 
     ---------------------------------------------------------------------------
     -- Carga de pesos del tile (WL_*)
