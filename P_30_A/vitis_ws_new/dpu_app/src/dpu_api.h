@@ -94,6 +94,11 @@ int arm_upsample (const layer_config_t *L,
                   uint8_t       *out_ddr,
                   dpu_prof_t    *prof);
 
+int arm_pool_large(const layer_config_t *L,
+                   const uint8_t *in_ddr,
+                   uint8_t       *out_ddr,
+                   dpu_prof_t    *prof);
+
 /* ----------------------- Memory pool API ------------------------------ */
 typedef struct mem_pool mem_pool_t;
 mem_pool_t *pool_create (uintptr_t base, uint32_t bytes);

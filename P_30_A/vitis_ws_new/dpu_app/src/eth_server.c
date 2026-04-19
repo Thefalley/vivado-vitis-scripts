@@ -205,10 +205,19 @@ static err_t handle_cmd_exec_layer(struct tcp_pcb *tpcb, eth_conn_t *c)
                             &prof);
         break;
     case OP_MAXPOOL:
-        rc = dpu_exec_pool(L,
-                           (const uint8_t *)(uintptr_t)cfg.in_addr,
-                           (uint8_t       *)(uintptr_t)cfg.out_addr,
-                           &prof);
+        if (L->kernel <= 2) {
+            rc = dpu_exec_pool(L,
+                               (const uint8_t *)(uintptr_t)cfg.in_addr,
+                               (uint8_t       *)(uintptr_t)cfg.out_addr,
+                               &prof);
+        } else {
+            /* SPP pool (kernel 5/9/13): ARM software fallback.
+             * HW maxpool_unit only supports 2x2 windows. */
+            rc = arm_pool_large(L,
+                                (const uint8_t *)(uintptr_t)cfg.in_addr,
+                                (uint8_t       *)(uintptr_t)cfg.out_addr,
+                                &prof);
+        }
         break;
     case OP_ADD:
         if (cfg.in_b_addr) {
@@ -247,6 +256,10 @@ static err_t handle_cmd_exec_layer(struct tcp_pcb *tpcb, eth_conn_t *c)
 
     uint32_t status = STATUS_OK;
     if (rc != DPU_OK) {
+        /* Reset DPU after error to prevent cascading failures.
+         * Without this, a timeout leaves the wrapper FSM stuck,
+         * and all subsequent layers fail with CHK_STATE mismatch. */
+        dpu_reset();
         switch (rc) {
         case DPU_ERR_TIMEOUT:  status = STATUS_ERR_DPU_TIMEOUT;  break;
         case DPU_ERR_DM_FAULT: status = STATUS_ERR_DPU_FAULT;    break;
